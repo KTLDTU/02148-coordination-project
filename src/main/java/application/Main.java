@@ -9,18 +9,18 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-public class Main extends Application{
+public class Main extends Application {
 
-	public static void main(String[] args) {
-		launch(args);
+    public static void main(String[] args) {
+        launch(args);
+    }
 
-	}
-	
+
     private int counter = 0;
     private Button button = new Button();
 
-// TODO: replace with code to launch game
-	public void start(Stage primaryStage) {
+    // TODO: replace with code to launch game
+    public void start(Stage primaryStage) {
         primaryStage.setTitle("Hello World!");
         this.button.setText("Im a counter! Click ME!!!");
         this.button.setOnAction(this::handleClick);
