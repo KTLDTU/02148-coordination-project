@@ -1,32 +1,26 @@
-package dk.dtu.project_02148;
-
-import org.jspace.FormalField;
-import org.jspace.SequentialSpace;
-import org.jspace.Space;
+package application;
 
 import javafx.application.Application;
-import javafx.event.*;
-import javafx.scene.control.Button;
-import javafx.scene.input.*;
-import javafx.scene.layout.StackPane;
+import javafx.event.ActionEvent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-public class TestJSpaceFX extends Application {
+public class Main extends Application{
 
-    public static void main(String[] args) throws InterruptedException {
-        Space inbox = new SequentialSpace();
-        inbox.put("Hello World!");
-        Object[] tuple = inbox.get(new FormalField(String.class));
-        System.out.println(tuple[0]);
-        launch(args);
-    }
+	public static void main(String[] args) {
+		launch(args);
 
+	}
+	
     private int counter = 0;
     private Button button = new Button();
 
-    @Override
-    public void start(Stage primaryStage) {
+// TODO: replace with code to launch game
+	public void start(Stage primaryStage) {
         primaryStage.setTitle("Hello World!");
         this.button.setText("Im a counter! Click ME!!!");
         this.button.setOnAction(this::handleClick);
@@ -53,4 +47,5 @@ public class TestJSpaceFX extends Application {
         }
         this.button.setText("" + this.counter);
     }
+
 }
