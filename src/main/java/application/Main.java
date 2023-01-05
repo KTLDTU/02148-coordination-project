@@ -9,13 +9,15 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
     }
 
-    public void start(Stage stage) {
+    public void start(Stage stage) throws IOException {
         stage.setTitle("AZ Tractor game");
         stage.setResizable(false);
         Game game = new Game(stage);
