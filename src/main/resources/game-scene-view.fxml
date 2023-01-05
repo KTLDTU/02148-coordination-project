@@ -6,11 +6,11 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="540.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.GameSceneViewController">
+<AnchorPane fx:id="scene" prefHeight="540.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.GameSceneViewController">
    <BorderPane prefHeight="540.0" prefWidth="960.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
       <top>
          <Pane fx:id="scoreboard" prefHeight="50.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-            <Text fx:id="player_scores" layoutX="14.0" layoutY="31.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Alice: 3          Bob: 1          Charlie: 7" textAlignment="CENTER" wrappingWidth="891.1156311035156">
+            <Text fx:id="playerScores" layoutX="14.0" layoutY="31.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Alice: 3          Bob: 1          Charlie: 7" textAlignment="CENTER" wrappingWidth="891.1156311035156">
                <font>
                   <Font size="16.0" />
                </font>
@@ -18,7 +18,7 @@
          </Pane>
       </top>
       <center>
-         <Pane fx:id="game" maxWidth="450.0" prefHeight="450.0" prefWidth="450.0" BorderPane.alignment="CENTER" />
+         <Pane fx:id="gamePane" maxWidth="450.0" prefHeight="450.0" prefWidth="450.0" BorderPane.alignment="CENTER" />
       </center>
       <left>
          <Pane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
