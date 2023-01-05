@@ -7,7 +7,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatHost {
+public class ChatHost{
     private SpaceRepository repository = new SpaceRepository();
     private Space chat = new SequentialSpace();
     String uri;
@@ -23,7 +23,10 @@ public class ChatHost {
     }
     public ChatHost(String uri) throws IOException {
         try {
-            chat = new RemoteSpace(uri);
+            repository.add("chat", chat);
+            URI myUri = new URI(uri);
+            String gateUri = "tcp://" + myUri.getHost() + ":" + myUri.getPort() +  "?keep" ;
+            repository.addGate(gateUri);
             chat.put("token");
         } catch (Exception ignored) {}
     }
@@ -33,7 +36,7 @@ public class ChatHost {
         } catch (Exception ignored) {
         }
     }
-    public List<String> recieveMessages() {
+    public List<String> receiveMessages() {
         List<String> strings = new ArrayList<>();
         try {
             chat.get(new ActualField("token"));
