@@ -68,7 +68,7 @@ public class GameSceneViewController {
                     p1 = new Pair<>(row, col);
                     p2 = new Pair<>(row+1, col);
 
-                    if (notConnected(grid, p1, p2)) {
+                    if (grid.notConnected(p1, p2)) {
                         double x = paneWidth * col / grid.COLS;
                         double y = paneHeight * (row + 1) / grid.ROWS;
                         addInnerWall(new Rectangle(x, y, wallLength, wallThickness));
@@ -79,7 +79,7 @@ public class GameSceneViewController {
                     p1 = new Pair<>(row, col);
                     p2 = new Pair<>(row, col+1);
 
-                    if (notConnected(grid, p1, p2)) {
+                    if (grid.notConnected(p1, p2)) {
                         double x = paneWidth * (col + 1) / grid.COLS;
                         double y = paneHeight * row / grid.ROWS;
                         addInnerWall(new Rectangle(x, y, wallThickness, wallLength));
@@ -90,10 +90,6 @@ public class GameSceneViewController {
 
         for (var wall : walls)
             gamePane.getChildren().add(wall);
-    }
-
-    private boolean notConnected(Grid grid, Pair<Integer, Integer> p1, Pair<Integer, Integer> p2) {
-        return !grid.connected.contains(new Pair<>(p1, p2)) && !grid.connected.contains(new Pair<>(p2, p1));
     }
 
 
