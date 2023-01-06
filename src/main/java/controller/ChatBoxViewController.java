@@ -23,19 +23,15 @@ public class ChatBoxViewController {
     int index = 0;
 
     @FXML
-    private Button add;
-    @FXML
     private TextArea area;
     @FXML
     private ScrollPane container;
 
-    @FXML
-    void postMessage(ActionEvent event) {
+    void postMessage(String message) {
         // HBox to hold messages
         HBox messageBox = new HBox();
         messageBox.setPrefWidth(200);
         // Get the message from the text area and convert to label with desired properties.
-        String message = area.getText();
         if (message.trim().isEmpty()) {
             return;
         }
@@ -67,7 +63,7 @@ public class ChatBoxViewController {
     void sendOnEnter(KeyEvent event) {
         if (event.getCode() == KeyCode.getKeyCode("Enter")) {
             if (!event.isShiftDown()) {
-                postMessage(null);
+                postMessage(area.getText());
                 area.clear();
             } else {
                 area.appendText("\n");
@@ -77,7 +73,6 @@ public class ChatBoxViewController {
 
     @FXML
     void initialize() {
-        assert add != null : "fx:id=\"add\" was not injected: check your FXML file 'ChatboxView.fxml'.";
         assert area != null : "fx:id=\"area\" was not injected: check your FXML file 'ChatboxView.fxml'.";
         assert container != null : "fx:id=\"container\" was not injected: check your FXML file 'ChatboxView.fxml'.";
         chatBox = new VBox(5);

@@ -7,8 +7,7 @@
    <bottom>
       <HBox alignment="TOP_CENTER" prefHeight="50.0" BorderPane.alignment="CENTER">
          <children>
-            <TextArea fx:id="area" onKeyPressed="#sendOnEnter" prefWidth="175.0" promptText="type something :)" wrapText="true" HBox.hgrow="NEVER" />
-            <Button fx:id="add" alignment="CENTER" mnemonicParsing="false" onAction="#postMessage" prefHeight="25.0" prefWidth="50.0" text="Add" textAlignment="CENTER" translateY="13.0" />
+            <TextArea fx:id="area" onKeyPressed="#sendOnEnter" prefWidth="200.0" promptText="type something :)" wrapText="true" HBox.hgrow="NEVER" />
          </children>
       </HBox>
    </bottom>
