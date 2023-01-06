@@ -51,7 +51,9 @@ public class GameSceneViewController {
     public void displayGrid(Grid grid) {
         double paneWidth = gamePane.getWidth();
         double paneHeight = gamePane.getHeight();
-        double wallThickness = 2.0, wallLength = paneWidth / grid.COLS + wallThickness;
+        double wallThickness = 2.0;
+        double wallWidth = paneWidth / grid.COLS + wallThickness;
+        double wallHeight = paneHeight / grid.ROWS + wallThickness;
 
         // outer walls
         walls.add(new Rectangle(0, 0, paneWidth, wallThickness));
@@ -64,6 +66,7 @@ public class GameSceneViewController {
             for (int col = 0; col < grid.COLS; col++) {
                 Pair<Integer, Integer> p1, p2;
 
+                // add wall below
                 if (row < grid.ROWS - 1) {
                     p1 = new Pair<>(row, col);
                     p2 = new Pair<>(row+1, col);
@@ -71,10 +74,11 @@ public class GameSceneViewController {
                     if (grid.notConnected(p1, p2)) {
                         double x = paneWidth * col / grid.COLS;
                         double y = paneHeight * (row + 1) / grid.ROWS;
-                        addInnerWall(new Rectangle(x, y, wallLength, wallThickness));
+                        addInnerWall(new Rectangle(x, y, wallWidth, wallThickness));
                     }
                 }
 
+                // add wall to the right
                 if (col < grid.COLS - 1) {
                     p1 = new Pair<>(row, col);
                     p2 = new Pair<>(row, col+1);
@@ -82,7 +86,7 @@ public class GameSceneViewController {
                     if (grid.notConnected(p1, p2)) {
                         double x = paneWidth * (col + 1) / grid.COLS;
                         double y = paneHeight * row / grid.ROWS;
-                        addInnerWall(new Rectangle(x, y, wallThickness, wallLength));
+                        addInnerWall(new Rectangle(x, y, wallThickness, wallHeight));
                     }
                 }
             }
