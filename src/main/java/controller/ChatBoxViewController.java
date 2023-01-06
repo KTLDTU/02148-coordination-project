@@ -31,8 +31,10 @@ public class ChatBoxViewController {
 
     @FXML
     void postMessage(ActionEvent event) {
+        // HBox to hold messages
         HBox messageBox = new HBox();
         messageBox.setPrefWidth(200);
+        // Get the message from the text area and convert to label with desired properties.
         String message = area.getText();
         if (message.trim().isEmpty()) {
             return;
@@ -59,6 +61,8 @@ public class ChatBoxViewController {
         index++;
     }
 
+    // Listener applied to the TextArea that sends the message if the enter key is pressed
+    // If enter is pressed while shift is held down a newline is appended instead.
     @FXML
     void sendOnEnter(KeyEvent event) {
         if (event.getCode() == KeyCode.getKeyCode("Enter")) {
@@ -77,6 +81,7 @@ public class ChatBoxViewController {
         assert area != null : "fx:id=\"area\" was not injected: check your FXML file 'ChatboxView.fxml'.";
         assert container != null : "fx:id=\"container\" was not injected: check your FXML file 'ChatboxView.fxml'.";
         chatBox = new VBox(5);
+        // Ensure scrollbar is always scrolled all the way down
         chatBox.heightProperty().addListener(observable -> container.setVvalue(1.0));
         container.setContent(chatBox);
     }
