@@ -1,14 +1,16 @@
 package application;
 
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import controller.ChatBoxViewController;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 
 public class Game {
 
@@ -19,22 +21,22 @@ public class Game {
     private static int windowHeight = 540;
 
     public Game(Stage stage) {
-        makeStartScreen(stage);
-        makeLobbyScreen(stage);
-        makeGameScreen(stage);
+        makeStartScene(stage);
+        makeRoomScene(stage);
+        makeGameScene(stage);
     }
 
     public void startGame(Stage stage) {
-        showStartScreen(stage);
+        showStartScene(stage);
         stage.show();
     }
 
-    private void showStartScreen(Stage stage) {
+    private void showStartScene(Stage stage) {
         stage.setScene(startScene);
         stage.centerOnScreen();
     }
 
-    private void makeStartScreen(Stage stage) {
+    private void makeStartScene(Stage stage) {
         Label gameTitle = new Label("AZ");
 
         // Make buttons
@@ -58,18 +60,21 @@ public class Game {
     private void launchGame(Stage stage) {
     }
 
-    private void makeLobbyScreen(Stage stage) {
-        Text chat = new Text();
-        chat.setText("Chat");
-
-
-
+    private void makeRoomScene(Stage stage) {
         BorderPane lobbyLayout = new BorderPane();
-        lobbyLayout.setRight(chat);
 
-        lobbyScene = new Scene(lobbyLayout, windowWidth, windowWidth);
+        // Chatbox resource file name
+        String fileName = "/ChatboxView.fxml";
+        try {
+            FXMLLoader chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(fileName));
+            BorderPane chatbox = chatboxLoader.load();
+            lobbyLayout.setRight(chatbox);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        lobbyScene = new Scene(lobbyLayout, windowWidth, windowHeight);
     }
 
-    private void makeGameScreen(Stage stage) {
+    private void makeGameScene(Stage stage) {
     }
 }
