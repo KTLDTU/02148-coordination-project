@@ -22,6 +22,7 @@ public class Game {
     private static final int windowWidth = 960;
     private static final int windowHeight = 540;
     GameSceneViewController gameController;
+    Grid grid;
 
     public Game(Stage stage) throws IOException {
         makeStartScreen(stage);
@@ -48,11 +49,7 @@ public class Game {
         lobbyButton.setOnAction(e -> stage.setScene(lobbyScene));
         Button gameButton = new Button("Start game");
         gameButton.setPrefSize(150, 30);
-        gameButton.setOnAction(e -> {
-            stage.setScene(gameScene);
-            launchGame(stage);
-            gameController.gamePane.requestFocus();
-        });
+        gameButton.setOnAction(e -> launchGame(stage));
         Button exitButton = new Button("Exit");
         exitButton.setPrefSize(150, 30);
         exitButton.setOnAction(e -> stage.close());
@@ -65,7 +62,10 @@ public class Game {
     }
 
     private void launchGame(Stage stage) {
-        Grid grid = new Grid(gameScene);
+        stage.setScene(gameScene);
+        grid = new Grid(gameScene);
+        gameController.displayGrid(grid);
+        gameScene.getRoot().requestFocus();
     }
 
     private void makeLobbyScreen(Stage stage) {
@@ -80,8 +80,8 @@ public class Game {
 
     private void makeGameScreen(Stage stage) throws IOException {
         FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("/game-scene-view.fxml"));
-        AnchorPane gamePane = gameLoader.load();
+        BorderPane scene = gameLoader.load();
         gameController = gameLoader.getController();
-        gameScene = new Scene(gamePane);
+        gameScene = new Scene(scene);
     }
 }

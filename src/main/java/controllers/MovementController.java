@@ -6,6 +6,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 
@@ -22,11 +23,11 @@ public class MovementController {
     private Rectangle player;
 
     @FXML
-    private Pane gamePane;
+    private BorderPane scene;
 
-    public void makeMovable(Rectangle player, Pane game) {
+    public void makeMovable(Rectangle player, BorderPane scene) {
         this.player = player;
-        this.gamePane = game;
+        this.scene = scene;
         movementSetup();
 
         keyPressed.addListener(((observableValue, aBoolean, t1) -> {
@@ -47,8 +48,8 @@ public class MovementController {
     };
 
     private void movementSetup() {
-        gamePane.setOnKeyPressed(e -> setButtonStates(e.getCode(), true));
-        gamePane.setOnKeyReleased(e -> setButtonStates(e.getCode(), false));
+        scene.setOnKeyPressed(e -> setButtonStates(e.getCode(), true));
+        scene.setOnKeyReleased(e -> setButtonStates(e.getCode(), false));
     }
 
     private void setButtonStates(KeyCode key, boolean b) {
