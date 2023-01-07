@@ -5,7 +5,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -24,7 +23,7 @@ public class Game {
     GameSceneViewController gameController;
     Grid grid;
 
-    public Game(Stage stage) throws IOException {
+    public Game(Stage stage) {
         makeStartScreen(stage);
         makeLobbyScreen(stage);
         makeGameScreen(stage);
@@ -79,10 +78,14 @@ public class Game {
         lobbyScene = new Scene(lobbyLayout, windowWidth, windowHeight);
     }
 
-    private void makeGameScreen(Stage stage) throws IOException {
-        FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("/game-scene-view.fxml"));
-        BorderPane scene = gameLoader.load();
-        gameController = gameLoader.getController();
-        gameScene = new Scene(scene);
+    private void makeGameScreen(Stage stage) {
+        try {
+            FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("/game-scene-view.fxml"));
+            BorderPane scene = gameLoader.load();
+            gameController = gameLoader.getController();
+            gameScene = new Scene(scene);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -38,8 +38,6 @@ public class Grid {
                 dfsBacktracker(newRow, newCol);
             }
         }
-
-
     }
 
     private boolean inBounds(int row, int col) {

@@ -17,7 +17,7 @@ public class Main extends Application {
         launch(args);
     }
 
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage) {
         stage.setTitle("AZ Tractor game");
         stage.setResizable(false);
         Game game = new Game(stage);
