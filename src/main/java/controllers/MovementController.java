@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 
 public class MovementController {
     private final BooleanProperty upPressed = new SimpleBooleanProperty();
@@ -25,6 +26,11 @@ public class MovementController {
     private BorderPane scene;
 
     private static final double MOVEMENT_SPEED = 1.9, ROTATION_SPEED = 4.2;
+    GameSceneViewController gameSceneViewController;
+
+    public MovementController(GameSceneViewController gameSceneViewController) {
+        this.gameSceneViewController = gameSceneViewController;
+    }
 
     public void makeMovable(Rectangle player, BorderPane scene) {
         this.player = player;
@@ -35,6 +41,17 @@ public class MovementController {
             if (!aBoolean) timer.start();
             else timer.stop();
         }));
+    }
+
+    private boolean isCollision() {
+        for (var wall : gameSceneViewController.walls) {
+            Shape intersect = Shape.intersect(player, wall);
+
+            if (intersect.getBoundsInParent().getWidth() > 0)
+                return true;
+        }
+
+        return false;
     }
 
     AnimationTimer timer = new AnimationTimer() {
@@ -51,13 +68,23 @@ public class MovementController {
         double angle = player.getRotate() * Math.PI / 180;
         double dX = Math.cos(angle) * MOVEMENT_SPEED * (dir.equals("forwards") ? 1 : -1);
         double dY = Math.sin(angle) * MOVEMENT_SPEED * (dir.equals("forwards") ? 1 : -1);
+
         player.setLayoutX(player.getLayoutX() + dX);
         player.setLayoutY(player.getLayoutY() + dY);
+
+        // naive collision detection - undo movement if colliding with wall
+        if (isCollision()) {
+            player.setLayoutX(player.getLayoutX() - dX);
+            player.setLayoutY(player.getLayoutY() - dY);
+        }
     }
 
     private void rotate(String dir) {
         double dAngle = ROTATION_SPEED * (dir.equals("clockwise") ? 1 : -1);
         player.setRotate(player.getRotate() + dAngle);
+
+        if (isCollision())
+            player.setRotate(player.getRotate() - dAngle); // undo rotation
     }
 
     private void movementSetup() {

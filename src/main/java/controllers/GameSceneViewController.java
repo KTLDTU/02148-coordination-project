@@ -30,7 +30,7 @@ public class GameSceneViewController {
     @FXML
     private Text playerScores;
 
-    private final MovementController movementController = new MovementController();
+    private final MovementController movementController = new MovementController(this);
     Rectangle player;
     ArrayList<Rectangle> walls = new ArrayList<>();
 
