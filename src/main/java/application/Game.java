@@ -65,6 +65,7 @@ public class Game {
         stage.setScene(gameScene);
         grid = new Grid(gameScene);
         gameController.displayGrid(grid);
+        gameController.initializePlayer(grid);
         gameScene.getRoot().requestFocus();
     }
 

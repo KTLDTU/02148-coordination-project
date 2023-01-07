@@ -39,11 +39,13 @@ public class GameSceneViewController {
         assert gamePane != null : "fx:id=\"game\" was not injected: check your FXML file 'game-scene-view.fxml'.";
         assert playerScores != null : "fx:id=\"player_scores\" was not injected: check your FXML file 'game-scene-view.fxml'.";
         assert scene != null : "fx:id=\"scene\" was not injected: check your FXML file 'game-scene-view.fxml'.";
-        initializePlayer();
     }
 
-    private void initializePlayer() {
-        player = new Rectangle(50, 60, 70, 80);
+    public void initializePlayer(Grid grid) {
+        // place player in center of upper left square
+        int playerWidth = 20, playerHeight = 15;
+        Pair<Double, Double> startPos = new Pair<>(gamePane.getWidth() / (grid.COLS * 2) - playerWidth / 2, gamePane.getHeight() / (grid.ROWS * 2) - playerHeight / 2);
+        player = new Rectangle(startPos.getKey(), startPos.getValue(), playerWidth, playerHeight);
         gamePane.getChildren().add(player);
         movementController.makeMovable(player, scene);
     }
