@@ -11,7 +11,7 @@ public class ChatHost{
     private SpaceRepository repository = new SpaceRepository();
     private Space chat = new SequentialSpace();
     private Space messages = new SequentialSpace();
-    Receiver reciever = new Receiver(chat, messages);
+    Receiver reciever = new Receiver(chat, messages,1);
     Thread thread;
     String uri;
     public ChatHost() throws IOException {
@@ -25,6 +25,9 @@ public class ChatHost{
             repository.add("chat", chat);
             chat.put("token");
             chat.put("reader_lock");
+            chat.put("player_lock");
+            chat.put("turn",1);
+            chat.put("players",1);
             chat.put("readers",0);
         } catch (Exception ignored) {}
     }
@@ -36,6 +39,9 @@ public class ChatHost{
             repository.add("chat", chat);
             chat.put("token");
             chat.put("reader_lock");
+            chat.put("player_lock");
+            chat.put("turn",1);
+            chat.put("players",1);
             chat.put("readers",0);
         } catch (Exception ignored) {}
     }
@@ -43,6 +49,7 @@ public class ChatHost{
         try {
             chat.get(new ActualField("token"));
             chat.put("message", message);
+            chat.put("turn",1);
             chat.put("token");
         } catch (Exception ignored) {
         }

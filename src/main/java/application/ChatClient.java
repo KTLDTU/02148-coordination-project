@@ -9,19 +9,21 @@ import java.util.List;
 public class ChatClient{
     private Space chat = new SequentialSpace();
     private Space messages = new QueueSpace();
-    Receiver receiver = new Receiver(chat, messages);
+    Receiver receiver;
     Thread thread;
     String uri;
-    public ChatClient() throws IOException {
+    public ChatClient(int player) throws IOException, InterruptedException {
         try {
             uri = "tcp://127.0.0.1:9001/chat?keep";
             chat = new RemoteSpace(uri);
         } catch (Exception ignored) {}
-        receiver = new Receiver(chat, messages);
+        receiver = new Receiver(chat, messages,player);
         thread = new Thread(receiver);
         thread.start();
+        chat.get(new ActualField("players"), new FormalField(Integer.class));
+        chat.put("players",player);
     }
-    public ChatClient(String uri) throws IOException {
+    public ChatClient(String uri, int player) throws IOException {
         try {
             this.uri = uri;
             chat = new RemoteSpace(this.uri);
@@ -31,6 +33,7 @@ public class ChatClient{
         try {
             chat.get(new ActualField("token"));
             chat.put("message", message);
+            chat.put("turn",1);
             chat.put("token");
         } catch (Exception ignored) {
         }
