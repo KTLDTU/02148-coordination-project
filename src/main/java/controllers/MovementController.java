@@ -26,10 +26,10 @@ public class MovementController {
     private BorderPane scene;
 
     private static final double MOVEMENT_SPEED = 1.9, ROTATION_SPEED = 4.2;
-    GameSceneViewController gameSceneViewController;
+    GameSceneController gameSceneController;
 
-    public MovementController(GameSceneViewController gameSceneViewController) {
-        this.gameSceneViewController = gameSceneViewController;
+    public MovementController(GameSceneController gameSceneController) {
+        this.gameSceneController = gameSceneController;
     }
 
     public void makeMovable(Rectangle player, BorderPane scene) {
@@ -44,7 +44,7 @@ public class MovementController {
     }
 
     private boolean isCollision() {
-        for (var wall : gameSceneViewController.walls) {
+        for (var wall : gameSceneController.walls) {
             Shape intersect = Shape.intersect(player, wall);
 
             if (intersect.getBoundsInParent().getWidth() > 0)

@@ -1,6 +1,6 @@
 package application;
 
-import controllers.GameSceneViewController;
+import controllers.GameSceneController;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -20,7 +20,7 @@ public class Game {
     private Scene startScene;
     private static final int windowWidth = 960;
     private static final int windowHeight = 540;
-    GameSceneViewController gameController;
+    GameSceneController gameController;
     Grid grid;
 
     public Game(Stage stage) {

@@ -13,7 +13,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Pair;
 
-public class GameSceneViewController {
+public class GameSceneController {
 
     @FXML
     private ResourceBundle resources;
