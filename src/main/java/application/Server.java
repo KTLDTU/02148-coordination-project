@@ -1,5 +1,6 @@
 package application;
 
+import controllers.GameSceneController;
 import org.jspace.ActualField;
 import org.jspace.SequentialSpace;
 import org.jspace.SpaceRepository;
@@ -8,9 +9,10 @@ public class Server implements Runnable {
     SpaceRepository repository;
     SequentialSpace game;
 
-    public Server() {
+    public Server(Grid grid, GameSceneController gameController) {
         repository = new SpaceRepository();
         game = new SequentialSpace();
+        gameController.displayGrid(grid);
     }
 
     @Override

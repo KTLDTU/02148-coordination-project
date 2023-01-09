@@ -5,6 +5,7 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
@@ -23,7 +24,7 @@ public class MovementController {
     private Rectangle player;
 
     @FXML
-    private BorderPane scene;
+    private Scene scene;
 
     private static final double MOVEMENT_SPEED = 1.9, ROTATION_SPEED = 4.2;
     GameSceneController gameSceneController;
@@ -32,7 +33,7 @@ public class MovementController {
         this.gameSceneController = gameSceneController;
     }
 
-    public void makeMovable(Rectangle player, BorderPane scene) {
+    public void makeMovable(Rectangle player, Scene scene) {
         this.player = player;
         this.scene = scene;
         movementSetup();

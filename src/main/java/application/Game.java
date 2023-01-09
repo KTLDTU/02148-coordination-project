@@ -23,8 +23,7 @@ public class Game {
     private static final int WINDOW_WIDTH = 960;
     private static final int WINDOW_HEIGHT = 540;
     private GameSceneController gameController;
-    private Grid grid;
-    public static final String HOST_IP = "10.209.82.248";
+    public static final String HOST_IP = "10.209.120.222";
 
     public Game(Stage stage) {
         makeStartScene(stage);
@@ -65,8 +64,6 @@ public class Game {
 
     private void launchGame(Stage stage) {
         stage.setScene(gameScene);
-        grid = new Grid(gameScene);
-        gameController.displayGrid(grid);
 //        gameController.initializePlayer(grid);
         gameScene.getRoot().requestFocus();
 
@@ -86,14 +83,14 @@ public class Game {
         }
 
         if (ip.equals(HOST_IP)) {
-            Thread server = new Thread(new Server());
+            Thread server = new Thread(new Server(new Grid(gameScene), gameController));
             server.setDaemon(true);
             server.start();
         }
         else
             System.out.println("ip didn't match. was: " + ip);
 
-        Thread player = new Thread(new Player());
+        Thread player = new Thread(new Player(gameController, gameScene));
         player.setDaemon(true);
         player.start();
     }

@@ -1,6 +1,7 @@
 package controllers;
 
 import java.util.ArrayList;
+
 import application.Grid;
 import javafx.fxml.FXML;
 import javafx.scene.layout.BorderPane;
@@ -21,7 +22,8 @@ public class GameSceneController {
     @FXML
     private Text playerScores;
 
-    private final MovementController movementController = new MovementController(this);
+    private Grid grid;
+
     Rectangle player;
     ArrayList<Rectangle> walls = new ArrayList<>();
 
@@ -32,17 +34,18 @@ public class GameSceneController {
         assert scene != null : "fx:id=\"scene\" was not injected: check your FXML file 'game-scene-view.fxml'.";
     }
 
-    public void initializePlayer(Grid grid) {
+    public Rectangle initializePlayer() {
 //        player = new Player();
         // place player in center of upper left square
         int playerWidth = 20, playerHeight = 15;
         Pair<Double, Double> startPos = new Pair<>(gamePane.getWidth() / (grid.COLS * 2) - playerWidth / 2, gamePane.getHeight() / (grid.ROWS * 2) - playerHeight / 2);
         player = new Rectangle(startPos.getKey(), startPos.getValue(), playerWidth, playerHeight);
         gamePane.getChildren().add(player);
-        movementController.makeMovable(player, scene);
+        return player;
     }
 
     public void displayGrid(Grid grid) {
+        this.grid = grid;
         double paneWidth = gamePane.getWidth();
         double paneHeight = gamePane.getHeight();
         double wallThickness = 2.0;
@@ -63,7 +66,7 @@ public class GameSceneController {
                 // add wall below
                 if (row < grid.ROWS - 1) {
                     p1 = new Pair<>(row, col);
-                    p2 = new Pair<>(row+1, col);
+                    p2 = new Pair<>(row + 1, col);
 
                     if (grid.notConnected(p1, p2)) {
                         double x = paneWidth * col / grid.COLS;
@@ -75,7 +78,7 @@ public class GameSceneController {
                 // add wall to the right
                 if (col < grid.COLS - 1) {
                     p1 = new Pair<>(row, col);
-                    p2 = new Pair<>(row, col+1);
+                    p2 = new Pair<>(row, col + 1);
 
                     if (grid.notConnected(p1, p2)) {
                         double x = paneWidth * (col + 1) / grid.COLS;
@@ -95,4 +98,5 @@ public class GameSceneController {
         wall.setFill(Color.DIMGRAY);
         walls.add(wall);
     }
+
 }

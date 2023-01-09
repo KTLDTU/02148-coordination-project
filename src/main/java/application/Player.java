@@ -1,11 +1,26 @@
 package application;
 
+import controllers.GameSceneController;
+import controllers.MovementController;
+import javafx.scene.Scene;
+import javafx.scene.shape.Rectangle;
 import org.jspace.RemoteSpace;
 
 import java.io.IOException;
 
 public class Player implements Runnable {
-    RemoteSpace game;
+    private MovementController movementController;
+    private RemoteSpace game;
+    private GameSceneController gameController;
+    private Scene gameScene;
+
+    public Player(GameSceneController gameController, Scene gameScene) {
+        this.gameController = gameController;
+        this.gameScene = gameScene;
+        Rectangle player = gameController.initializePlayer();
+        movementController = new MovementController(gameController);
+        movementController.makeMovable(player, gameScene);
+    }
 
     @Override
     public void run() {
