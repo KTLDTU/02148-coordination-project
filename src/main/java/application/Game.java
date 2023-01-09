@@ -1,5 +1,6 @@
 package application;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import controller.ChatBoxViewController;
@@ -14,7 +15,7 @@ import java.io.IOException;
 
 public class Game {
 
-    private Scene lobbyScene;
+    private Scene roomScene;
     private Scene gameScene;
     private Scene startScene;
     private static int windowWidth = 960;
@@ -42,7 +43,7 @@ public class Game {
         // Make buttons
         Button lobbyButton = new Button("Start lobby");
         lobbyButton.setPrefSize(150, 30);
-        lobbyButton.setOnAction(e -> stage.setScene(lobbyScene));
+        lobbyButton.setOnAction(e -> stage.setScene(roomScene));
         Button optionsButton = new Button("Start game");
         optionsButton.setPrefSize(150, 30);
         optionsButton.setOnAction(e -> stage.setScene(gameScene));
@@ -61,18 +62,19 @@ public class Game {
     }
 
     private void makeRoomScene(Stage stage) {
-        BorderPane lobbyLayout = new BorderPane();
+        BorderPane roomLayout = new BorderPane();
 
         // Chatbox resource file name
         String fileName = "/ChatboxView.fxml";
         try {
             FXMLLoader chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(fileName));
             BorderPane chatbox = chatboxLoader.load();
-            lobbyLayout.setRight(chatbox);
+            chatbox.setMargin(chatbox, new Insets(0,2, 0,0));
+            roomLayout.setRight(chatbox);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        lobbyScene = new Scene(lobbyLayout, windowWidth, windowHeight);
+        roomScene = new Scene(roomLayout, windowWidth, windowHeight);
     }
 
     private void makeGameScene(Stage stage) {
