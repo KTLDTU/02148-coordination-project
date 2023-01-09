@@ -20,6 +20,7 @@ class Receiver implements Runnable{
     public void run() {
         while(true) {
             try {
+                //something is wrong here
                 chat.get(new ActualField("reader_lock"));
                 Object[] readers = chat.get(new ActualField("readers"), new FormalField(Integer.class));
                 chat.put("readers",(int)readers[1]+1);
