@@ -41,7 +41,9 @@ public class ChatHost{
     }
     public void sendMessage(String message) {
         try {
+            chat.get(new ActualField("token"));
             chat.put("message", message);
+            chat.put("token");
         } catch (Exception ignored) {
         }
     }

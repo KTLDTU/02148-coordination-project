@@ -17,6 +17,7 @@ public class ChatClient{
             uri = "tcp://127.0.0.1:9001/chat?keep";
             chat = new RemoteSpace(uri);
         } catch (Exception ignored) {}
+        receiver = new Receiver(chat, messages);
         thread = new Thread(receiver);
         thread.start();
     }
@@ -28,7 +29,9 @@ public class ChatClient{
     }
     public void sendMessage(String message) {
         try {
+            chat.get(new ActualField("token"));
             chat.put("message", message);
+            chat.put("token");
         } catch (Exception ignored) {
         }
     }
