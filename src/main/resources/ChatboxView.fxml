@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="root" prefHeight="400.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ChatBoxViewController">
+   <bottom>
+      <HBox alignment="TOP_CENTER" prefHeight="50.0" BorderPane.alignment="CENTER">
+         <children>
+            <TextArea fx:id="area" onKeyPressed="#sendOnEnter" prefWidth="200.0" promptText="type something :)" wrapText="true" HBox.hgrow="NEVER" />
+         </children>
+      </HBox>
+   </bottom>
+   <right>
+      <ScrollPane fx:id="container" hbarPolicy="NEVER" prefHeight="400.0" prefWidth="200.0" vbarPolicy="NEVER" vvalue="1.0" BorderPane.alignment="CENTER">
+        <content>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0" />
+        </content>
+      </ScrollPane>
+   </right>
+</BorderPane>
