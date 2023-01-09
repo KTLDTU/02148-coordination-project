@@ -1,6 +1,7 @@
-package controller;
+package controllers;
 
 import javafx.event.ActionEvent;
+import javafx.geometry.Insets;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.fxml.FXML;
@@ -38,6 +39,7 @@ public class ChatBoxViewController {
         Label textLabel = new Label(message);
         textLabel.setPrefWidth(175);
         textLabel.setWrapText(true);
+        textLabel.setPadding(new Insets(0, 2, 0,0));
         messageBox.getChildren().add(textLabel);
         messages.add(textLabel);
 
@@ -75,7 +77,7 @@ public class ChatBoxViewController {
     void initialize() {
         assert area != null : "fx:id=\"area\" was not injected: check your FXML file 'ChatboxView.fxml'.";
         assert container != null : "fx:id=\"container\" was not injected: check your FXML file 'ChatboxView.fxml'.";
-        chatBox = new VBox(5);
+        chatBox = new VBox();
         // Ensure scrollbar is always scrolled all the way down
         chatBox.heightProperty().addListener(observable -> container.setVvalue(1.0));
         container.setContent(chatBox);

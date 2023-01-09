@@ -4,7 +4,7 @@ import controllers.GameSceneController;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import controller.ChatBoxViewController;
+import controllers.ChatBoxViewController;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;

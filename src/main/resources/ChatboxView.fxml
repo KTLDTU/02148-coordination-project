@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane fx:id="root" prefHeight="400.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ChatBoxViewController">
+<BorderPane fx:id="root" prefHeight="400.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ChatBoxViewController">
    <bottom>
       <HBox alignment="TOP_CENTER" prefHeight="50.0" BorderPane.alignment="CENTER">
          <children>
