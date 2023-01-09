@@ -92,12 +92,6 @@ public class ChatBoxViewController {
         // Ensure scrollbar is always scrolled all the way down
         chatBox.heightProperty().addListener(observable -> container.setVvalue(1.0));
         container.setContent(chatBox);
-    }
-
-    // I hate this, but it works somewhat
-    // When the mouse hovers the chat box, this will start. Every second, it pots the message the chat has received.
-    // The problem with this, is that it will only start showing the messages after the mouse has been in the box
-    public void updateChat(MouseEvent mouseEvent) throws InterruptedException {
         Timeline chatUpdater = new Timeline(
                 new KeyFrame(Duration.seconds(0.1),
                         new EventHandler<ActionEvent>() {
