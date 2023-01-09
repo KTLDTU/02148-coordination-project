@@ -33,7 +33,9 @@ class Receiver implements Runnable{
                 readers = chat.get(new ActualField("readers"), new FormalField(Integer.class));
                 chat.put("readers",(int)readers[1]-1);
                 if((int)readers[1] == 1){
-                    chat.getAll(new ActualField("message"), new FormalField(String.class));
+                    for(Object[] message : messages) {
+                        chat.get(new ActualField(message[0]), new ActualField(message[1]));
+                    }
                     chat.put("token");
                 }
                 chat.put("reader_lock");

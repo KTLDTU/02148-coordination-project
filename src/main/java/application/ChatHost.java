@@ -18,11 +18,11 @@ public class ChatHost{
         thread = new Thread(reciever);
         thread.start();
         try {
-            repository.add("chat", chat);
             uri = "tcp://127.0.0.1:9001/?keep";
             URI myUri = new URI(uri);
             String gateUri = "tcp://" + myUri.getHost() + ":" + myUri.getPort() +  "?keep" ;
             repository.addGate(gateUri);
+            repository.add("chat", chat);
             chat.put("token");
             chat.put("reader_lock");
             chat.put("readers",0);
