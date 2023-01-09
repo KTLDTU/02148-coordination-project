@@ -13,7 +13,12 @@ public class Server implements Runnable {
         repository = new SpaceRepository();
         game = new SequentialSpace();
         gameController.displayGrid(grid);
-        gameController.setGrid(grid);
+
+        try {
+            game.put("gameGrid", grid);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

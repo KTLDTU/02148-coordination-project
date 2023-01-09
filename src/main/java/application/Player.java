@@ -4,6 +4,8 @@ import controllers.GameSceneController;
 import controllers.MovementController;
 import javafx.scene.Scene;
 import javafx.scene.shape.Rectangle;
+import org.jspace.ActualField;
+import org.jspace.FormalField;
 import org.jspace.RemoteSpace;
 
 import java.io.IOException;
@@ -17,9 +19,7 @@ public class Player implements Runnable {
     public Player(GameSceneController gameController, Scene gameScene) {
         this.gameController = gameController;
         this.gameScene = gameScene;
-        Rectangle player = gameController.initializePlayer();
         movementController = new MovementController(gameController);
-        movementController.makeMovable(player, gameScene);
     }
 
     @Override
@@ -29,6 +29,11 @@ public class Player implements Runnable {
             game = new RemoteSpace(uri);
             game.put("join");
             System.out.println("Player has put \"join\" in remote space");
+            Grid grid = (Grid) game.get(new ActualField("gameGrid"), new FormalField(Grid.class))[1];
+            gameController.setGrid(grid);
+
+            Rectangle player = gameController.initializePlayer();
+            movementController.makeMovable(player, gameScene);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
