@@ -10,24 +10,33 @@ import java.util.List;
 public class ChatHost{
     private SpaceRepository repository = new SpaceRepository();
     private Space chat = new SequentialSpace();
+    private Space messages = new SequentialSpace();
+    Receiver reciever = new Receiver(chat, messages);
+    Thread thread;
     String uri;
     public ChatHost() throws IOException {
+        thread = new Thread(reciever);
+        thread.start();
         try {
             repository.add("chat", chat);
-            uri = "tcp://127.0.0.1:9001/chat?keep";
+            uri = "tcp://127.0.0.1:9001/?keep";
             URI myUri = new URI(uri);
             String gateUri = "tcp://" + myUri.getHost() + ":" + myUri.getPort() +  "?keep" ;
             repository.addGate(gateUri);
             chat.put("token");
+            chat.put("reader_lock");
+            chat.put("readers",0);
         } catch (Exception ignored) {}
     }
     public ChatHost(String uri) throws IOException {
         try {
-            repository.add("chat", chat);
             URI myUri = new URI(uri);
             String gateUri = "tcp://" + myUri.getHost() + ":" + myUri.getPort() +  "?keep" ;
             repository.addGate(gateUri);
+            repository.add("chat", chat);
             chat.put("token");
+            chat.put("reader_lock");
+            chat.put("readers",0);
         } catch (Exception ignored) {}
     }
     public void sendMessage(String message) {
@@ -36,17 +45,10 @@ public class ChatHost{
         } catch (Exception ignored) {
         }
     }
-    public List<String> receiveMessages() {
+    public List<String> receiveMessages() throws InterruptedException {
         List<String> strings = new ArrayList<>();
-        try {
-            chat.get(new ActualField("token"));
-            List<Object[]> messages = chat.getAll(new ActualField("message"), new FormalField(String.class));
-            for(Object[] message : messages){
-                strings.add((String) message[1]);
-            }
-            chat.put("token");
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        for(Object[] message : messages.getAll(new FormalField(String.class))){
+            strings.add((String) message[0]);
         }
         return strings;
     }
