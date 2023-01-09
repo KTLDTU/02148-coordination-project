@@ -1,9 +1,6 @@
 package controllers;
 
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.ResourceBundle;
-
 import application.Grid;
 import javafx.fxml.FXML;
 import javafx.scene.layout.BorderPane;
@@ -14,12 +11,6 @@ import javafx.scene.text.Text;
 import javafx.util.Pair;
 
 public class GameSceneController {
-
-    @FXML
-    private ResourceBundle resources;
-
-    @FXML
-    private URL location;
 
     @FXML
     private Pane gamePane;
