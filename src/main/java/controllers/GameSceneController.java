@@ -45,7 +45,6 @@ public class GameSceneController {
     }
 
     public void displayGrid(Grid grid) {
-        this.grid = grid;
         double paneWidth = gamePane.getWidth();
         double paneHeight = gamePane.getHeight();
         double wallThickness = 2.0;
@@ -99,4 +98,7 @@ public class GameSceneController {
         walls.add(wall);
     }
 
+    public void setGrid(Grid grid) {
+        this.grid = grid;
+    }
 }
