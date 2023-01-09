@@ -1,9 +1,10 @@
 package application;
 
+import controllers.GameSceneController;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import controller.ChatBoxViewController;
+import controllers.ChatBoxViewController;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -18,8 +19,10 @@ public class Game {
     private Scene roomScene;
     private Scene gameScene;
     private Scene startScene;
-    private static int windowWidth = 960;
-    private static int windowHeight = 540;
+    private static final int WINDOW_WIDTH = 960;
+    private static final int WINDOW_HEIGHT = 540;
+    private GameSceneController gameController;
+    private Grid grid;
 
     public Game(Stage stage) {
         makeStartScene(stage);
@@ -44,21 +47,37 @@ public class Game {
         Button lobbyButton = new Button("Start lobby");
         lobbyButton.setPrefSize(150, 30);
         lobbyButton.setOnAction(e -> stage.setScene(roomScene));
-        Button optionsButton = new Button("Start game");
-        optionsButton.setPrefSize(150, 30);
-        optionsButton.setOnAction(e -> stage.setScene(gameScene));
+        Button gameButton = new Button("Start game");
+        gameButton.setPrefSize(150, 30);
+        gameButton.setOnAction(e -> launchGame(stage));
         Button exitButton = new Button("Exit");
         exitButton.setPrefSize(150, 30);
         exitButton.setOnAction(e -> stage.close());
 
         // Make layout and insert buttons
         VBox startLayout = new VBox(20);
-        startLayout.getChildren().addAll(gameTitle, lobbyButton, optionsButton, exitButton);
+        startLayout.getChildren().addAll(gameTitle, lobbyButton, gameButton, exitButton);
         startLayout.setAlignment(Pos.CENTER);
-        startScene = new Scene(startLayout, windowWidth, windowHeight);
+        startScene = new Scene(startLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
 
     private void launchGame(Stage stage) {
+        stage.setScene(gameScene);
+        grid = new Grid(gameScene);
+        gameController.displayGrid(grid);
+        gameController.initializePlayer(grid);
+        gameScene.getRoot().requestFocus();
+    }
+
+    private void makeGameScene(Stage stage) {
+        try {
+            FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("/game-scene-view.fxml"));
+            BorderPane scene = gameLoader.load();
+            gameController = gameLoader.getController();
+            gameScene = new Scene(scene);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void makeRoomScene(Stage stage) {
@@ -74,9 +93,6 @@ public class Game {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        roomScene = new Scene(roomLayout, windowWidth, windowHeight);
-    }
-
-    private void makeGameScene(Stage stage) {
+        roomScene = new Scene(roomLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
 }
