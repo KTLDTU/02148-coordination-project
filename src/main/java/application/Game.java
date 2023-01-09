@@ -46,7 +46,7 @@ public class Game {
         // Make buttons
         Button lobbyButton = new Button("Start lobby");
         lobbyButton.setPrefSize(150, 30);
-        lobbyButton.setOnAction(e -> stage.setScene(lobbyScene));
+        lobbyButton.setOnAction(e -> stage.setScene(roomScene));
         Button gameButton = new Button("Start game");
         gameButton.setPrefSize(150, 30);
         gameButton.setOnAction(e -> launchGame(stage));
@@ -69,7 +69,7 @@ public class Game {
         gameScene.getRoot().requestFocus();
     }
 
-    private void makeGameScreen(Stage stage) {
+    private void makeGameScene(Stage stage) {
         try {
             FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("/game-scene-view.fxml"));
             BorderPane scene = gameLoader.load();
