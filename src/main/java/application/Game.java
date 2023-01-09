@@ -19,10 +19,10 @@ public class Game {
     private Scene roomScene;
     private Scene gameScene;
     private Scene startScene;
-    private static final int windowWidth = 960;
-    private static final int windowHeight = 540;
-    GameSceneController gameController;
-    Grid grid;
+    private static final int WINDOW_WIDTH = 960;
+    private static final int WINDOW_HEIGHT = 540;
+    private GameSceneController gameController;
+    private Grid grid;
 
     public Game(Stage stage) {
         makeStartScene(stage);
@@ -58,7 +58,7 @@ public class Game {
         VBox startLayout = new VBox(20);
         startLayout.getChildren().addAll(gameTitle, lobbyButton, gameButton, exitButton);
         startLayout.setAlignment(Pos.CENTER);
-        startScene = new Scene(startLayout, windowWidth, windowHeight);
+        startScene = new Scene(startLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
 
     private void launchGame(Stage stage) {
@@ -93,6 +93,6 @@ public class Game {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        roomScene = new Scene(roomLayout, windowWidth, windowHeight);
+        roomScene = new Scene(roomLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
 }
