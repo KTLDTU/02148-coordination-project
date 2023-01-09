@@ -15,4 +15,9 @@ public class Main extends Application {
         Game game = new Game(stage);
         game.startGame(stage);
     }
+
+    @Override
+    public void stop() {
+        System.exit(0);
+    }
 }

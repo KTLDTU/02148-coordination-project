@@ -13,6 +13,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.*;
 
 public class Game {
 
@@ -65,8 +66,35 @@ public class Game {
         stage.setScene(gameScene);
         grid = new Grid(gameScene);
         gameController.displayGrid(grid);
-        gameController.initializePlayer(grid);
+//        gameController.initializePlayer(grid);
         gameScene.getRoot().requestFocus();
+
+        String ip;
+
+//        try {
+//            ip = Inet4Address.getLocalHost().getHostAddress();
+//        } catch (UnknownHostException e) {
+//            throw new RuntimeException(e);
+//        }
+
+        try(final DatagramSocket socket = new DatagramSocket()){
+            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+            ip = socket.getLocalAddress().getHostAddress();
+        } catch (SocketException | UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (ip.equals("10.209.82.248")) {
+            Thread server = new Thread(new Server());
+            server.setDaemon(true);
+            server.start();
+        }
+        else
+            System.out.println("ip didn't match. was: " + ip);
+
+        Thread player = new Thread(new Player());
+        player.setDaemon(true);
+        player.start();
     }
 
     private void makeGameScene(Stage stage) {

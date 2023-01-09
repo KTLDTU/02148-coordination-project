@@ -33,6 +33,7 @@ public class GameSceneController {
     }
 
     public void initializePlayer(Grid grid) {
+//        player = new Player();
         // place player in center of upper left square
         int playerWidth = 20, playerHeight = 15;
         Pair<Double, Double> startPos = new Pair<>(gamePane.getWidth() / (grid.COLS * 2) - playerWidth / 2, gamePane.getHeight() / (grid.ROWS * 2) - playerHeight / 2);
