@@ -25,7 +25,6 @@ public class ChatHost{
             repository.add("chat", chat);
             chat.put("token");
             chat.put("reader_lock");
-            chat.put("player_lock");
             chat.put("turn",1);
             chat.put("players",1);
             chat.put("readers",0);
@@ -39,7 +38,6 @@ public class ChatHost{
             repository.add("chat", chat);
             chat.put("token");
             chat.put("reader_lock");
-            chat.put("player_lock");
             chat.put("turn",1);
             chat.put("players",1);
             chat.put("readers",0);

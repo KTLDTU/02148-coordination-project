@@ -19,6 +19,8 @@ public class ChatClient{
             receiver = new Receiver(chat, messages,player);
             thread = new Thread(receiver);
             thread.start();
+            chat.getp(new ActualField("token"));
+            chat.put("token");
             chat.get(new ActualField("players"), new FormalField(Integer.class));
             chat.put("players",player);
         } catch (Exception ignored) {}
@@ -30,6 +32,8 @@ public class ChatClient{
             receiver = new Receiver(chat, messages,player);
             thread = new Thread(receiver);
             thread.start();
+            chat.getp(new ActualField("token"));
+            chat.put("token");
             chat.get(new ActualField("players"), new FormalField(Integer.class));
             chat.put("players",player);
         } catch (Exception ignored) {}
