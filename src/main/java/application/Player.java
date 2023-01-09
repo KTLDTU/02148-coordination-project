@@ -10,7 +10,7 @@ public class Player implements Runnable {
     @Override
     public void run() {
         try {
-            String uri = "tcp://127.0.0.1:9005/game?keep";
+            String uri = "tcp://" + Game.HOST_IP + ":9005/game?keep";
             game = new RemoteSpace(uri);
             game.put("join");
             System.out.println("Player has put \"join\" in remote space");

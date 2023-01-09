@@ -24,6 +24,7 @@ public class Game {
     private static final int WINDOW_HEIGHT = 540;
     private GameSceneController gameController;
     private Grid grid;
+    public static final String HOST_IP = "10.209.82.248";
 
     public Game(Stage stage) {
         makeStartScene(stage);
@@ -84,7 +85,7 @@ public class Game {
             throw new RuntimeException(e);
         }
 
-        if (ip.equals("10.209.82.248")) {
+        if (ip.equals(HOST_IP)) {
             Thread server = new Thread(new Server());
             server.setDaemon(true);
             server.start();

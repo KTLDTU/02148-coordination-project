@@ -17,7 +17,7 @@ public class Server implements Runnable {
     public void run() {
         try {
             repository.add("game", game);
-            String uri = "tcp://127.0.0.1:9005/?keep";
+            String uri = "tcp://" + Game.HOST_IP + ":9005/?keep";
             repository.addGate(uri);
 
             while (true) {
