@@ -9,10 +9,12 @@ import java.util.List;
 public class ChatClient{
     private Space chat = new SequentialSpace();
     private Space messages = new QueueSpace();
-    Receiver receiver;
-    Thread thread;
-    String uri;
-    public ChatClient(int player) throws IOException, InterruptedException {
+    private Receiver receiver;
+    private Thread thread;
+    private String uri;
+    private String name;
+    public ChatClient(int player, String name) throws IOException, InterruptedException {
+        this.name = name;
         try {
             uri = "tcp://127.0.0.1:9001/chat?keep";
             chat = new RemoteSpace(uri);
@@ -25,7 +27,8 @@ public class ChatClient{
             chat.put("players",player);
         } catch (Exception ignored) {}
     }
-    public ChatClient(String uri, int player) throws IOException, InterruptedException {
+    public ChatClient(String uri, int player, String name) throws IOException, InterruptedException {
+        this.name = name;
         try {
             this.uri = uri;
             chat = new RemoteSpace(this.uri);
@@ -42,7 +45,7 @@ public class ChatClient{
     public void sendMessage(String message) {
         try {
             chat.get(new ActualField("token"));
-            chat.put("message", message);
+            chat.put("message", name + ": " + message);
             chat.put("turn",1);
             chat.put("token");
         } catch (Exception ignored) {
@@ -54,6 +57,10 @@ public class ChatClient{
             strings.add((String) message[0]);
         }
         return strings;
+    }
+
+    public String getName(){
+        return name;
     }
 }
 

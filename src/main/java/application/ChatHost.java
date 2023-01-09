@@ -11,10 +11,12 @@ public class ChatHost{
     private SpaceRepository repository = new SpaceRepository();
     private Space chat = new SequentialSpace();
     private Space messages = new SequentialSpace();
-    Receiver reciever = new Receiver(chat, messages,1);
-    Thread thread;
-    String uri;
-    public ChatHost() throws IOException {
+    private Receiver reciever = new Receiver(chat, messages,1);
+    private Thread thread;
+    private String uri;
+    private String name;
+    public ChatHost(String name) throws IOException {
+        this.name = name;
         thread = new Thread(reciever);
         thread.start();
         try {
@@ -30,7 +32,8 @@ public class ChatHost{
             chat.put("readers",0);
         } catch (Exception ignored) {}
     }
-    public ChatHost(String uri) throws IOException {
+    public ChatHost(String uri, String name) throws IOException {
+        this.name = name;
         try {
             URI myUri = new URI(uri);
             String gateUri = "tcp://" + myUri.getHost() + ":" + myUri.getPort() +  "?keep" ;
@@ -46,7 +49,7 @@ public class ChatHost{
     public void sendMessage(String message) {
         try {
             chat.get(new ActualField("token"));
-            chat.put("message", message);
+            chat.put("message", name + ": " + message);
             chat.put("turn",1);
             chat.put("token");
         } catch (Exception ignored) {
@@ -58,5 +61,8 @@ public class ChatHost{
             strings.add((String) message[0]);
         }
         return strings;
+    }
+    public String getName(){
+        return name;
     }
 }

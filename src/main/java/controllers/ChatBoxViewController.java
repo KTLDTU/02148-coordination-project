@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class ChatBoxViewController {
-    ChatHost chatHost = new ChatHost();
+    ChatHost chatHost = new ChatHost("Jonas");
     // Not used atm
     private ArrayList<Label> messages = new ArrayList<>();
 
@@ -55,7 +55,7 @@ public class ChatBoxViewController {
 
         // Position of the message should change depending on who the message is from
         // TODO: Extend this to work with users in a jSpace
-        if (index % 2 == 0) {
+        if (!message.startsWith(chatHost.getName() + ":")) {
             messageBox.setStyle("-fx-background-color:#d7d7d7");
             messageBox.setAlignment(Pos.CENTER_LEFT);
             textLabel.setTextAlignment(TextAlignment.LEFT);
@@ -98,7 +98,7 @@ public class ChatBoxViewController {
     // When the mouse hovers the chat box, this will start. Every second, it pots the message the chat has received.
     // The problem with this, is that it will only start showing the messages after the mouse has been in the box
     public void updateChat(MouseEvent mouseEvent) throws InterruptedException {
-        Timeline fiveSecondsWonder = new Timeline(
+        Timeline chatUpdater = new Timeline(
                 new KeyFrame(Duration.seconds(1),
                         new EventHandler<ActionEvent>() {
 
@@ -113,7 +113,7 @@ public class ChatBoxViewController {
                                 }
                             }
                         }));
-        fiveSecondsWonder.setCycleCount(Timeline.INDEFINITE);
-        fiveSecondsWonder.play();
+        chatUpdater.setCycleCount(Timeline.INDEFINITE);
+        chatUpdater.play();
     }
 }
