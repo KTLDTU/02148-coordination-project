@@ -16,18 +16,24 @@ public class ChatClient{
         try {
             uri = "tcp://127.0.0.1:9001/chat?keep";
             chat = new RemoteSpace(uri);
+            receiver = new Receiver(chat, messages,player);
+            thread = new Thread(receiver);
+            thread.start();
+            chat.get(new ActualField("players"), new FormalField(Integer.class));
+            chat.put("players",player);
         } catch (Exception ignored) {}
-        receiver = new Receiver(chat, messages,player);
-        thread = new Thread(receiver);
-        thread.start();
-        chat.get(new ActualField("players"), new FormalField(Integer.class));
-        chat.put("players",player);
     }
-    public ChatClient(String uri, int player) throws IOException {
+    public ChatClient(String uri, int player) throws IOException, InterruptedException {
         try {
             this.uri = uri;
             chat = new RemoteSpace(this.uri);
+            receiver = new Receiver(chat, messages,player);
+            thread = new Thread(receiver);
+            thread.start();
+            chat.get(new ActualField("players"), new FormalField(Integer.class));
+            chat.put("players",player);
         } catch (Exception ignored) {}
+
     }
     public void sendMessage(String message) {
         try {
