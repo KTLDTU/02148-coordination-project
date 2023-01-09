@@ -99,7 +99,7 @@ public class ChatBoxViewController {
     // The problem with this, is that it will only start showing the messages after the mouse has been in the box
     public void updateChat(MouseEvent mouseEvent) throws InterruptedException {
         Timeline chatUpdater = new Timeline(
-                new KeyFrame(Duration.seconds(1),
+                new KeyFrame(Duration.seconds(0.1),
                         new EventHandler<ActionEvent>() {
 
                             @Override
