@@ -1,10 +1,14 @@
 package controllers;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+
+import java.util.ArrayList;
 
 public class RoomSceneViewController {
 
@@ -34,4 +38,9 @@ public class RoomSceneViewController {
         playerList.getItems().add(name);
     }
 
+
+    public void updatePlayerList(ArrayList<String> newPlayerNames) {
+        ObservableList<String> observableList = FXCollections.observableArrayList(newPlayerNames);
+        playerList.getItems().setAll(observableList);
+    }
 }
