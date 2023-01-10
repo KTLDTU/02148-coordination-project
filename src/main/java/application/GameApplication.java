@@ -1,5 +1,6 @@
 package application;
 
+import controllers.LobbySceneController;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -7,6 +8,7 @@ import controllers.ChatBoxViewController;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -19,9 +21,10 @@ public class GameApplication {
 
     private Scene roomScene;
     private Scene startScene;
+    private Scene lobbyScene;
     private static final int WINDOW_WIDTH = 960;
     private static final int WINDOW_HEIGHT = 540;
-    public static final String HOST_IP = "192.168.72.216";
+    public static final String HOST_IP = "10.209.82.248";
 
     SpaceRepository repository;
     SequentialSpace serverLobby;
@@ -30,6 +33,7 @@ public class GameApplication {
     public GameApplication(Stage stage) {
         makeStartScene(stage);
         makeRoomScene(stage);
+        makeLobbyScene(stage);
     }
 
     public void startGame(Stage stage) {
@@ -48,7 +52,10 @@ public class GameApplication {
         // Make buttons
         Button lobbyButton = new Button("Start lobby");
         lobbyButton.setPrefSize(150, 30);
-        lobbyButton.setOnAction(e -> stage.setScene(roomScene));
+        lobbyButton.setOnAction(e -> stage.setScene(lobbyScene));
+        Button chatButton = new Button("Start chat");
+        chatButton.setPrefSize(150, 30);
+        chatButton.setOnAction(e -> stage.setScene(roomScene));
         Button gameButton = new Button("Start game");
         gameButton.setPrefSize(150, 30);
         gameButton.setOnAction(e -> launchGame(stage));
@@ -58,7 +65,7 @@ public class GameApplication {
 
         // Make layout and insert buttons
         VBox startLayout = new VBox(20);
-        startLayout.getChildren().addAll(gameTitle, lobbyButton, gameButton, exitButton);
+        startLayout.getChildren().addAll(gameTitle, lobbyButton, chatButton, gameButton, exitButton);
         startLayout.setAlignment(Pos.CENTER);
         startScene = new Scene(startLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
@@ -124,5 +131,16 @@ public class GameApplication {
             throw new RuntimeException(e);
         }
         roomScene = new Scene(roomLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
+    }
+
+    private void makeLobbyScene(Stage stage) {
+        try {
+            FXMLLoader lobbyLoader = new FXMLLoader(LobbySceneController.class.getResource("/lobbyScene.fxml"));
+            AnchorPane scene = lobbyLoader.load();
+            LobbySceneController lobbyController = lobbyLoader.getController();
+            lobbyScene = new Scene(scene);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
