@@ -87,7 +87,6 @@ public class Room {
         lobbyButton.setOnAction(e -> stage.setScene(application.lobbyScene));
         startGameButton.setOnAction(e -> application.launchGame(stage));
 
-        chatbox.setMargin(chatbox, new Insets(0, 2, 0, 0));
         roomLayout.setRight(chatbox);
         roomScene = new Scene(roomLayout, application.WINDOW_WIDTH, application.WINDOW_HEIGHT);
 
