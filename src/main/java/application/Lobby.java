@@ -1,9 +1,6 @@
 package application;
 
-import org.jspace.RandomSpace;
-import org.jspace.SequentialSpace;
-import org.jspace.Space;
-import org.jspace.SpaceRepository;
+import org.jspace.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -23,5 +20,7 @@ public class Lobby {
         spaceRepository.add("lobby",space);
         space.put("players",0);
     }
-
+    public int getPlayerAmount() throws InterruptedException {
+        return (int)space.queryp(new ActualField("players"), new FormalField(Integer.class))[1];
+    }
 }
