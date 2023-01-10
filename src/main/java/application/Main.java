@@ -12,7 +12,12 @@ public class Main extends Application {
     public void start(Stage stage) {
         stage.setTitle("AZ Tractor game");
         stage.setResizable(false);
-        Game game = new Game(stage);
-        game.startGame(stage);
+        GameApplication gameApplication = new GameApplication(stage);
+        gameApplication.startGame(stage);
+    }
+
+    @Override
+    public void stop() {
+        System.exit(0);
     }
 }

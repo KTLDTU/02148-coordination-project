@@ -1,14 +1,17 @@
 package controllers;
 
+import application.Game;
 import javafx.animation.AnimationTimer;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+
+import java.util.ArrayList;
 
 public class MovementController {
     private final BooleanProperty upPressed = new SimpleBooleanProperty();
@@ -20,21 +23,18 @@ public class MovementController {
     private final BooleanBinding keyPressed = upPressed.or(downPressed).or(leftPressed).or(rightPressed).or(spacePressed);
 
     @FXML
-    private Rectangle player;
+    private Rectangle tractor;
 
     @FXML
-    private BorderPane scene;
+    private Scene scene;
 
     private static final double MOVEMENT_SPEED = 1.9, ROTATION_SPEED = 4.2;
-    GameSceneController gameSceneController;
+    ArrayList<Rectangle> walls;
 
-    public MovementController(GameSceneController gameSceneController) {
-        this.gameSceneController = gameSceneController;
-    }
-
-    public void makeMovable(Rectangle player, BorderPane scene) {
-        this.player = player;
-        this.scene = scene;
+    public MovementController(Rectangle tractor, Game game) {
+        this.tractor = tractor;
+        this.scene = game.gameScene;
+        this.walls = game.grid.walls;
         movementSetup();
 
         keyPressed.addListener(((observableValue, aBoolean, t1) -> {
@@ -44,8 +44,8 @@ public class MovementController {
     }
 
     private boolean isCollision() {
-        for (var wall : gameSceneController.walls) {
-            Shape intersect = Shape.intersect(player, wall);
+        for (var wall : walls) {
+            Shape intersect = Shape.intersect(tractor, wall);
 
             if (intersect.getBoundsInParent().getWidth() > 0)
                 return true;
@@ -65,26 +65,26 @@ public class MovementController {
     };
 
     private void move(String dir) {
-        double angle = player.getRotate() * Math.PI / 180;
+        double angle = tractor.getRotate() * Math.PI / 180;
         double dX = Math.cos(angle) * MOVEMENT_SPEED * (dir.equals("forwards") ? 1 : -1);
         double dY = Math.sin(angle) * MOVEMENT_SPEED * (dir.equals("forwards") ? 1 : -1);
 
-        player.setLayoutX(player.getLayoutX() + dX);
-        player.setLayoutY(player.getLayoutY() + dY);
+        tractor.setLayoutX(tractor.getLayoutX() + dX);
+        tractor.setLayoutY(tractor.getLayoutY() + dY);
 
         // naive collision detection - undo movement if colliding with wall
         if (isCollision()) {
-            player.setLayoutX(player.getLayoutX() - dX);
-            player.setLayoutY(player.getLayoutY() - dY);
+            tractor.setLayoutX(tractor.getLayoutX() - dX);
+            tractor.setLayoutY(tractor.getLayoutY() - dY);
         }
     }
 
     private void rotate(String dir) {
         double dAngle = ROTATION_SPEED * (dir.equals("clockwise") ? 1 : -1);
-        player.setRotate(player.getRotate() + dAngle);
+        tractor.setRotate(tractor.getRotate() + dAngle);
 
         if (isCollision())
-            player.setRotate(player.getRotate() - dAngle); // undo rotation
+            tractor.setRotate(tractor.getRotate() - dAngle); // undo rotation
     }
 
     private void movementSetup() {
