@@ -1,5 +1,6 @@
 package controllers;
 
+import application.ChatClient;
 import application.ChatHost;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -13,7 +14,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class ChatBoxViewController {
-    ChatHost chatHost = new ChatHost("Jonas");
+    ChatHost chatHost = new ChatHost(null, "Jonas");
     // Not used atm
     private ArrayList<Label> messages = new ArrayList<>();
 
@@ -53,8 +53,6 @@ public class ChatBoxViewController {
         messageBox.getChildren().add(textLabel);
         messages.add(textLabel);
 
-        // Position of the message should change depending on who the message is from
-        // TODO: Extend this to work with users in a jSpace
         if (!message.startsWith(chatHost.getName() + ":")) {
             messageBox.setStyle("-fx-background-color:#d7d7d7");
             messageBox.setAlignment(Pos.CENTER_LEFT);
