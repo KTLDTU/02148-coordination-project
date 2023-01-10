@@ -25,13 +25,13 @@ public class RoomSceneViewController {
     private Button startGameButton;
 
     @FXML
-    void goBackToLobby(ActionEvent event) {
+    void initialize() {
+        assert backToLobbyButton != null : "fx:id=\"backToLobbyButton\" was not injected: check your FXML file 'room-scene-view.fxml'.";
+        assert playerList != null : "fx:id=\"playerList\" was not injected: check your FXML file 'room-scene-view.fxml'.";
+        assert roomNameText != null : "fx:id=\"roomNameText\" was not injected: check your FXML file 'room-scene-view.fxml'.";
 
-    }
-
-    @FXML
-    void startGame(ActionEvent event) {
-
+        playerList.setMouseTransparent(true);
+        playerList.setFocusTraversable(false);
     }
 
     public void addPlayerToList(String name) {
