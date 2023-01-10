@@ -22,9 +22,9 @@ class Receiver implements Runnable{
     public void run(){
         while(true){
             try {
+                chat.get(new ActualField("turn"), new ActualField(player));
                 Object[] players = chat.query(new ActualField("players"), new FormalField(Integer.class));
                 numberOfPlayers = (int)players[1];
-                chat.get(new ActualField("turn"), new ActualField(player));
                 List<Object[]> messages = chat.queryAll(new ActualField("message"), new FormalField(String.class));
                 for (Object[] message : messages) {
                     this.messages.put(message[1]);
