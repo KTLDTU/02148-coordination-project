@@ -53,7 +53,7 @@ public class Game {
         Button lobbyButton = new Button("Start lobby");
         lobbyButton.setPrefSize(150, 30);
         lobbyButton.setOnAction(e -> stage.setScene(lobbyScene));
-        Button chatButton = new Button("start chat");
+        Button chatButton = new Button("Start chat");
         chatButton.setPrefSize(150, 30);
         chatButton.setOnAction(e -> stage.setScene(roomScene));
         Button gameButton = new Button("Start game");
@@ -65,7 +65,7 @@ public class Game {
 
         // Make layout and insert buttons
         VBox startLayout = new VBox(20);
-        startLayout.getChildren().addAll(gameTitle, lobbyButton, chatButton,gameButton, exitButton);
+        startLayout.getChildren().addAll(gameTitle, lobbyButton, chatButton, gameButton, exitButton);
         startLayout.setAlignment(Pos.CENTER);
         startScene = new Scene(startLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
     }

@@ -6,14 +6,11 @@
 <?import javafx.scene.effect.InnerShadow?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="950.0" style="-fx-background-color: gray;" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">
-
-   <children>
-      <ListView layoutX="33.0" layoutY="167.0" prefHeight="359.0" prefWidth="638.0" />
-      <Button layoutX="42.0" layoutY="73.0" mnemonicParsing="false" text="creat room" />
-      <Button layoutX="165.0" layoutY="73.0" mnemonicParsing="false" text="refresh" />
-      <Label layoutX="33.0" layoutY="149.0" prefHeight="18.0" prefWidth="638.0" text="rooms                                               players                                                 Type                        " />
-   </children>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="960.0" style="-fx-background-color: darkgray;" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">
+   <ListView layoutX="33.0" layoutY="167.0" prefHeight="359.0" prefWidth="638.0" />
+   <Button layoutX="42.0" layoutY="73.0" mnemonicParsing="false" text="Create room" />
+   <Button layoutX="165.0" layoutY="73.0" mnemonicParsing="false" text="Refresh" />
+   <Label layoutX="33.0" layoutY="149.0" prefHeight="18.0" prefWidth="638.0" text="   Room name                                               Number of players                                                 Type" />
    <effect>
       <InnerShadow />
    </effect>

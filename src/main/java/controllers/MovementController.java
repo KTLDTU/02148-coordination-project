@@ -30,7 +30,6 @@ public class MovementController {
 
     public MovementController(GameSceneController gameSceneController) {
         this.gameSceneController = gameSceneController;
-
     }
 
     public void makeMovable(Rectangle player, BorderPane scene) {
