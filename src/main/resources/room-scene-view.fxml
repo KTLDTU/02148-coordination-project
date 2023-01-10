@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane prefHeight="540.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RoomSceneViewController">
+   <center>
+      <HBox alignment="CENTER" prefWidth="700.0" BorderPane.alignment="CENTER">
+         <children>
+            <VBox alignment="CENTER">
+               <children>
+                  <Label fx:id="roomNameText" text="Room #">
+                     <font>
+                        <Font name="System Bold" size="21.0" />
+                     </font>
+                  </Label>
+                  <HBox>
+                     <children>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Player">
+                           <font>
+                              <Font name="System Bold" size="12.0" />
+                           </font>
+                        </Text>
+                     </children>
+                  </HBox>
+                  <ListView fx:id="playerList" prefHeight="300.0" prefWidth="400.0" />
+               </children>
+            </VBox>
+            <VBox alignment="CENTER" spacing="50.0">
+               <HBox.margin>
+                  <Insets left="50.0" right="50.0" />
+               </HBox.margin>
+               <children>
+                  <Button id="startGameButton" fx:id="startGameButton" mnemonicParsing="false" onAction="#startGame" text="Start game" />
+                  <Button id="lobbyButton" fx:id="backToLobbyButton" mnemonicParsing="false" onAction="#goBackToLobby" text="Back to lobby" />
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </center>
+</BorderPane>
