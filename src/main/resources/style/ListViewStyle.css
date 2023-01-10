@@ -1,0 +1,17 @@
+.list-cell:filled:selected {
+    -fx-background-color: -fx-background ;
+    -fx-background-insets: 0 ;
+}
+
+.list-cell{
+    -fx-font-size:20.0;
+}
+
+/*.list-cell:even { !* <=== changed to even *!*/
+/*    -fx-background-color: white;*/
+/*}*/
+
+/*.list-cell:filled:hover {*/
+/*    -fx-background-color: #0093ff;*/
+/*    -fx-text-fill: white;*/
+/*}*/
