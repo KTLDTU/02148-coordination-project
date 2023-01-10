@@ -47,7 +47,7 @@ public class ChatBoxViewController {
         Label textLabel = new Label(message);
         textLabel.setPrefWidth(175);
         textLabel.setWrapText(true);
-        textLabel.setPadding(new Insets(0, 2, 0, 0));
+        textLabel.setPadding(new Insets(0, 5, 0, 0));
         messageBox.getChildren().add(textLabel);
         messages.add(textLabel);
 
