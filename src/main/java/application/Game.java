@@ -1,6 +1,7 @@
 package application;
 
 import controllers.GameSceneController;
+import controllers.LobbySceneController;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -8,6 +9,7 @@ import controllers.ChatBoxViewController;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -19,6 +21,7 @@ public class Game {
     private Scene roomScene;
     private Scene gameScene;
     private Scene startScene;
+    private Scene lobbyScene;
     private static final int WINDOW_WIDTH = 960;
     private static final int WINDOW_HEIGHT = 540;
     private GameSceneController gameController;
@@ -28,7 +31,10 @@ public class Game {
         makeStartScene(stage);
         makeRoomScene(stage);
         makeGameScene(stage);
+        makeLobbyScene(stage);
     }
+
+
 
     public void startGame(Stage stage) {
         showStartScene(stage);
@@ -46,7 +52,10 @@ public class Game {
         // Make buttons
         Button lobbyButton = new Button("Start lobby");
         lobbyButton.setPrefSize(150, 30);
-        lobbyButton.setOnAction(e -> stage.setScene(roomScene));
+        lobbyButton.setOnAction(e -> stage.setScene(lobbyScene));
+        Button chatButton = new Button("Start chat");
+        chatButton.setPrefSize(150, 30);
+        chatButton.setOnAction(e -> stage.setScene(roomScene));
         Button gameButton = new Button("Start game");
         gameButton.setPrefSize(150, 30);
         gameButton.setOnAction(e -> launchGame(stage));
@@ -56,7 +65,7 @@ public class Game {
 
         // Make layout and insert buttons
         VBox startLayout = new VBox(20);
-        startLayout.getChildren().addAll(gameTitle, lobbyButton, gameButton, exitButton);
+        startLayout.getChildren().addAll(gameTitle, lobbyButton, chatButton, gameButton, exitButton);
         startLayout.setAlignment(Pos.CENTER);
         startScene = new Scene(startLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
@@ -94,5 +103,17 @@ public class Game {
             throw new RuntimeException(e);
         }
         roomScene = new Scene(roomLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
+    }
+
+
+    private void makeLobbyScene(Stage stage) {
+        try {
+            FXMLLoader lobbyLoader = new FXMLLoader(LobbySceneController.class.getResource("/lobbyScene.fxml"));
+            AnchorPane scene = lobbyLoader.load();
+            LobbySceneController lobbyController = lobbyLoader.getController();
+            lobbyScene = new Scene(scene);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
