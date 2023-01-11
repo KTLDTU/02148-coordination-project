@@ -12,8 +12,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 
-import java.util.ArrayList;
-
 public class MovementController {
     private final BooleanProperty upPressed = new SimpleBooleanProperty();
     private final BooleanProperty downPressed = new SimpleBooleanProperty();
@@ -46,11 +44,11 @@ public class MovementController {
         }));
     }
 
-    public boolean isCollision(Shape shape) {
-        return isCollisionHorizontal(shape) || isCollisionVertical(shape);
+    public boolean isWallCollision(Shape shape) {
+        return isWallCollisionHorizontal(shape) || isWallCollisionVertical(shape);
     }
 
-    public boolean isCollisionHorizontal(Shape shape) {
+    public boolean isWallCollisionHorizontal(Shape shape) {
         for (var wall : grid.horizontalWalls) {
             Shape intersect = Shape.intersect(shape, wall);
 
@@ -61,15 +59,18 @@ public class MovementController {
         return false;
     }
 
-    public boolean isCollisionVertical(Shape shape) {
+    public boolean isWallCollisionVertical(Shape shape) {
         for (var wall : grid.verticalWalls) {
             Shape intersect = Shape.intersect(shape, wall);
 
             if (intersect.getBoundsInParent().getWidth() > 0)
                 return true;
         }
-
         return false;
+    }
+
+    public boolean isCollision(Shape s1, Shape s2) {
+        return Shape.intersect(s1, s2).getBoundsInParent().getWidth() > 0;
     }
 
     AnimationTimer timer = new AnimationTimer() {
@@ -95,7 +96,7 @@ public class MovementController {
         tractor.setLayoutY(tractor.getLayoutY() + dY);
 
         // naive collision detection - undo movement if colliding with wall
-        if (isCollision(tractor)) {
+        if (isWallCollision(tractor)) {
             tractor.setLayoutX(tractor.getLayoutX() - dX);
             tractor.setLayoutY(tractor.getLayoutY() - dY);
         }
@@ -105,7 +106,7 @@ public class MovementController {
         double dAngle = ROTATION_SPEED * (dir.equals("clockwise") ? 1 : -1);
         tractor.setRotate(tractor.getRotate() + dAngle);
 
-        if (isCollision(tractor))
+        if (isWallCollision(tractor))
             tractor.setRotate(tractor.getRotate() - dAngle); // undo rotation
     }
 
