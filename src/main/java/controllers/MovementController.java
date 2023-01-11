@@ -5,16 +5,9 @@ import javafx.animation.AnimationTimer;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
-import org.jspace.ActualField;
-import org.jspace.FormalField;
-import org.jspace.Space;
-
-import java.util.ArrayList;
 
 public class MovementController {
     private static final int PLAYERS = 2;
@@ -26,35 +19,23 @@ public class MovementController {
 
     private final BooleanBinding keyPressed = upPressed.or(downPressed).or(leftPressed).or(rightPressed).or(spacePressed);
 
-    @FXML
-    private Rectangle tractor;
-
-    @FXML
-    private Scene scene;
-
     private static final double MOVEMENT_SPEED = 1.9, ROTATION_SPEED = 4.2;
-    private final ArrayList<Rectangle> walls;
-    private final int PLAYER_ID;
-    private final Space gameSpace;
+    private final Game game;
+    private final Rectangle tractor;
 
     public MovementController(Game game) {
-        PLAYER_ID = game.MY_PLAYER_ID;
-        tractor = game.myTractor;
-        scene = game.gameScene;
-        walls = game.grid.walls;
-        gameSpace = game.gameSpace;
+        this.game = game;
+        this.tractor = game.myTractor;
         movementSetup();
 
         keyPressed.addListener(((observableValue, aBoolean, t1) -> {
             if (!aBoolean) timer.start();
             else timer.stop();
         }));
-
-        broadcastPosition();
     }
 
     private boolean isCollision() {
-        for (var wall : walls) {
+        for (var wall : game.grid.walls) {
             Shape intersect = Shape.intersect(tractor, wall);
 
             if (intersect.getBoundsInParent().getWidth() > 0)
@@ -88,7 +69,7 @@ public class MovementController {
             tractor.setLayoutY(tractor.getLayoutY() - dY);
         }
         else
-            broadcastPosition();
+            game.broadcastPosition();
     }
 
     private void rotate(String dir) {
@@ -98,24 +79,12 @@ public class MovementController {
         if (isCollision())
             tractor.setRotate(tractor.getRotate() - dAngle); // undo rotation
         else
-            broadcastPosition();
-    }
-
-    private void broadcastPosition() {
-        try {
-            // remove all previous position tuples
-            gameSpace.getAll(new ActualField("position"), new ActualField(PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
-
-            for (int i = 0; i < PLAYERS; i++)
-                gameSpace.put("position", PLAYER_ID, tractor.getLayoutX(), tractor.getLayoutY(), tractor.getRotate());
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+            game.broadcastPosition();
     }
 
     private void movementSetup() {
-        scene.setOnKeyPressed(e -> setButtonStates(e.getCode(), true));
-        scene.setOnKeyReleased(e -> setButtonStates(e.getCode(), false));
+        game.gameScene.setOnKeyPressed(e -> setButtonStates(e.getCode(), true));
+        game.gameScene.setOnKeyReleased(e -> setButtonStates(e.getCode(), false));
     }
 
     private void setButtonStates(KeyCode key, boolean b) {

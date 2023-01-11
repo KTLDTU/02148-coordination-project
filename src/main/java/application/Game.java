@@ -3,6 +3,7 @@ package application;
 import controllers.GameSceneController;
 import controllers.MovementController;
 import datatypes.HashSetIntArray;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
@@ -15,6 +16,7 @@ import org.jspace.Space;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 public class Game {
     public static final double PLAYER_WIDTH = 20, PLAYER_HEIGHT = 15;
@@ -40,10 +42,6 @@ public class Game {
             gameScene = new Scene(scene);
             stage.setScene(gameScene);
             tractors = new HashMap<>();
-
-            Thread movementListener = new Thread(new MovementListener(this));
-            movementListener.setDaemon(true);
-            movementListener.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -60,14 +58,50 @@ public class Game {
     }
 
     public void spawnPlayers() {
-        gameController.initializePlayer(this);
-        movementController = new MovementController(this);
-
         for (Integer playerID : playerIDs) {
-            if (playerID != MY_PLAYER_ID) {
-                tractors.put(playerID, new Rectangle(gameController.gamePane.getWidth() / (grid.COLS * 2) - PLAYER_WIDTH / 2, gameController.gamePane.getHeight() / (grid.ROWS * 2) - PLAYER_HEIGHT / 2, PLAYER_WIDTH, PLAYER_HEIGHT));
-                gameController.gamePane.getChildren().add(tractors.get(playerID));
-            }
+            Rectangle newTractor = (playerID == MY_PLAYER_ID ? randomSpawn() : new Rectangle(PLAYER_WIDTH, PLAYER_HEIGHT));
+            tractors.put(playerID, newTractor);
+            gameController.gamePane.getChildren().add(tractors.get(playerID));
+        }
+
+        myTractor = tractors.get(MY_PLAYER_ID);
+        movementController = new MovementController(this);
+        broadcastPosition();
+
+        Thread movementListener = new Thread(new MovementListener(this));
+        movementListener.setDaemon(true);
+        movementListener.start();
+    }
+
+    private Rectangle randomSpawn() {
+        Random random = new Random();
+        double offsetX = gameController.gamePane.getWidth() / (grid.COLS * 2) - PLAYER_WIDTH / 2;
+        double offsetY = gameController.gamePane.getHeight() / (grid.ROWS * 2) - PLAYER_HEIGHT / 2;
+        double col = random.nextInt(grid.COLS);
+        double row = random.nextInt(grid.ROWS);
+        double x = gameController.gamePane.getWidth() * col / grid.COLS + offsetX;
+        double y = gameController.gamePane.getHeight() * row / grid.ROWS + offsetY;
+        int rotation = random.nextInt(360);
+
+        Rectangle tractor = new Rectangle(PLAYER_WIDTH, PLAYER_HEIGHT);
+        tractor.setLayoutX(x);
+        tractor.setLayoutY(y);
+        tractor.setRotate(rotation);
+        return tractor;
+    }
+
+    public void broadcastPosition() {
+        try {
+            // remove all previous position tuples
+            gameSpace.getAll(new ActualField("position"), new ActualField(MY_PLAYER_ID), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
+
+            for (int playerID : playerIDs)
+                if (playerID != MY_PLAYER_ID) {
+                    gameSpace.put("position", MY_PLAYER_ID, playerID, myTractor.getLayoutX(), myTractor.getLayoutY(), myTractor.getRotate());
+//                    System.out.println("Player " + MY_PLAYER_ID + " has sent position (" + myTractor.getLayoutX() + ", " + myTractor.getLayoutY() + ") to " + playerID);
+                }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 }
@@ -83,23 +117,20 @@ class MovementListener implements Runnable {
     public void run() {
         try {
             while (true) {
-                // TODO: it's possible for a player to fetch their own position multiple times, thus not allowing other players to get the position... fix by creating a MovementListener for each player?
-                // TODO: no... fix by sending not only which player position to update, but also which player should receive... should be done in MovementController... or function in Game called by MovementController
-                Object[] obj = game.gameSpace.get(new ActualField("position"), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
+                Object[] obj = game.gameSpace.get(new ActualField("position"), new FormalField(Integer.class), new ActualField(game.MY_PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
                 int playerID = (int) obj[1];
+                double tractorX = (double) obj[3];
+                double tractorY = (double) obj[4];
+                double tractorRot = (double) obj[5];
+//                System.out.println("Player " + game.MY_PLAYER_ID + " has received position (" + tractorX + ", " + tractorY + ") from " + playerID);
 
-                // TODO?: make own player rectangle be part of the hashmap?
-                if (playerID != game.MY_PLAYER_ID) {
-//                    System.out.println("player " + game.MY_PLAYER_ID + " has received position from " + playerID);
-                    double tractorX = (double) obj[2];
-                    double tractorY = (double) obj[3];
-                    double tractorRot = (double) obj[4];
+                Rectangle tractor = game.tractors.get(playerID);
 
-                    Rectangle tractor = game.tractors.get(playerID);
+                Platform.runLater(() -> {
                     tractor.setLayoutX(tractorX);
                     tractor.setLayoutY(tractorY);
                     tractor.setRotate(tractorRot);
-                }
+                });
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
