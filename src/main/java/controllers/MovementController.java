@@ -19,22 +19,24 @@ public class MovementController {
     private final BooleanProperty leftPressed = new SimpleBooleanProperty();
     private final BooleanProperty rightPressed = new SimpleBooleanProperty();
     private final BooleanProperty spacePressed = new SimpleBooleanProperty();
+    private ShotController shotController;
 
     private final BooleanBinding keyPressed = upPressed.or(downPressed).or(leftPressed).or(rightPressed).or(spacePressed);
 
     @FXML
-    private Rectangle tractor;
+    public Rectangle tractor;
 
     @FXML
     private Scene scene;
 
-    private static final double MOVEMENT_SPEED = 1.9, ROTATION_SPEED = 4.2;
+    public static final double MOVEMENT_SPEED = 1.9, ROTATION_SPEED = 4.2;
     ArrayList<Rectangle> walls;
 
     public MovementController(Rectangle tractor, Game game) {
         this.tractor = tractor;
         this.scene = game.gameScene;
         this.walls = game.grid.walls;
+        shotController = new ShotController(this, scene);
         movementSetup();
 
         keyPressed.addListener(((observableValue, aBoolean, t1) -> {
@@ -43,9 +45,9 @@ public class MovementController {
         }));
     }
 
-    private boolean isCollision() {
+    public boolean isCollision(Shape shape) {
         for (var wall : walls) {
-            Shape intersect = Shape.intersect(tractor, wall);
+            Shape intersect = Shape.intersect(shape, wall);
 
             if (intersect.getBoundsInParent().getWidth() > 0)
                 return true;
@@ -61,6 +63,10 @@ public class MovementController {
             if (downPressed.get()) move("backwards");
             if (leftPressed.get()) rotate("counterclockwise");
             if (rightPressed.get()) rotate("clockwise");
+            if (spacePressed.get()) {
+                spacePressed.set(false);
+                shotController.shoot();
+            }
         }
     };
 
@@ -73,7 +79,7 @@ public class MovementController {
         tractor.setLayoutY(tractor.getLayoutY() + dY);
 
         // naive collision detection - undo movement if colliding with wall
-        if (isCollision()) {
+        if (isCollision(tractor)) {
             tractor.setLayoutX(tractor.getLayoutX() - dX);
             tractor.setLayoutY(tractor.getLayoutY() - dY);
         }
@@ -83,7 +89,7 @@ public class MovementController {
         double dAngle = ROTATION_SPEED * (dir.equals("clockwise") ? 1 : -1);
         tractor.setRotate(tractor.getRotate() + dAngle);
 
-        if (isCollision())
+        if (isCollision(tractor))
             tractor.setRotate(tractor.getRotate() - dAngle); // undo rotation
     }
 
