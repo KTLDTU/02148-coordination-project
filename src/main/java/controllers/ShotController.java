@@ -8,6 +8,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -73,18 +74,19 @@ public class ShotController {
         shot.setLayoutX(shot.getLayoutX() + dX);
         shot.setLayoutY(shot.getLayoutY() + dY);
 
-        if (movementController.isCollision(shot)) {
-//          If shot hits a wall it is rotated the opposite direction.
-            // The inverted angle has to be different for vertical and horizontal walls.
-            // We need a way to differentiate the two.
-            shot.setRotate(invertAngle(shot.getRotate()));
-            System.out.println("Shot collided with wall. Angle: " + shot.getRotate() + " Inverted: " + invertAngle(shot.getRotate()));
+        if (movementController.isCollisionHorizontal(shot)) {
+            shot.setRotate(invertAngleHorizontal(shot.getRotate()));
+        }
+        if (movementController.isCollisionVertical(shot)) {
+            shot.setRotate(invertAngleVertical(shot.getRotate()));
         }
     }
-    private double invertAngle(double angle) {
-        // Correct inverse angle for vertical walls
+
+    private double invertAngleVertical(double angle) {
         return (-1 * angle + 180) % 360;
-        // Correct inverse angle for horizontal walls
-//        return (-1 * angle);
+    }
+
+    private double invertAngleHorizontal(double angle) {
+        return (-1 * angle);
     }
 }
