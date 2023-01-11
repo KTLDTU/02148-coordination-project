@@ -18,6 +18,7 @@ import org.jspace.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GameApplication {
 
@@ -34,8 +35,6 @@ public class GameApplication {
     RemoteSpace clientLobby;
     SequentialSpace serverGameSpace;
     RemoteSpace clientGameSpace;
-
-    private ArrayList<Integer> playerIDs; // assuming that this is given from the room
 
     public GameApplication(Stage stage) {
         try {
@@ -54,10 +53,6 @@ public class GameApplication {
 
             if (isHost())
                 serverLobby.put("player id", 0);
-
-            playerIDs = new ArrayList<>();
-            playerIDs.add(0);
-            playerIDs.add(1);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -99,6 +94,8 @@ public class GameApplication {
 
     private void launchGame(Stage stage) {
         try {
+            ArrayList<Integer> playerIDs = new ArrayList<>(Arrays.asList(0, 1, 2, 3)); // assumed this is given from the room
+
             int playerID = (int) clientLobby.get(new ActualField("player id"), new FormalField(Integer.class))[1];
             clientLobby.put("player id", playerID + 1);
             System.out.println("Player id: " + playerID);

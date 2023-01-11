@@ -7,6 +7,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import org.jspace.ActualField;
@@ -87,6 +88,7 @@ public class Game {
         tractor.setLayoutX(x);
         tractor.setLayoutY(y);
         tractor.setRotate(rotation);
+        tractor.setFill(Color.ROYALBLUE); // color to distinguish from other tractors (temporary - all should have different colors)
         return tractor;
     }
 
