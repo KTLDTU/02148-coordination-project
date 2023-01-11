@@ -17,6 +17,7 @@ import org.jspace.*;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayList;
 
 public class GameApplication {
 
@@ -25,15 +26,18 @@ public class GameApplication {
     private Scene lobbyScene;
     private static final int WINDOW_WIDTH = 960;
     private static final int WINDOW_HEIGHT = 540;
-    public static final String HOST_IP = "10.209.82.248";
+    public static final String HOST_IP = "192.168.72.144";
     private static final int GAME_ID = 1535;
 
     SpaceRepository repository;
     SequentialSpace serverLobby;
     RemoteSpace clientLobby;
-    SequentialSpace gameSpace;
+    SequentialSpace serverGameSpace;
+    RemoteSpace clientGameSpace;
 
     Player player;
+
+    private ArrayList<Integer> playerIDs; // assuming that this is given from the room
 
     public GameApplication(Stage stage) {
         try {
@@ -49,7 +53,14 @@ public class GameApplication {
 
             String clientUri = "tcp://" + HOST_IP + ":9001/lobby?keep";
             clientLobby = new RemoteSpace(clientUri);
-        } catch (IOException e) {
+
+            if (isHost())
+                serverLobby.put("player id", 0);
+
+            playerIDs = new ArrayList<>();
+            playerIDs.add(0);
+            playerIDs.add(1);
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
@@ -90,29 +101,37 @@ public class GameApplication {
 
     private void launchGame(Stage stage) {
         try {
-            Game game = new Game(stage);
+            int playerID = (int) clientLobby.get(new ActualField("player id"), new FormalField(Integer.class))[1];
+            clientLobby.put("player id", playerID + 1);
+            System.out.println("Player id: " + playerID);
+            Game game;
 
             if (isHost()) {
                 System.out.println("Host is creating a new game...");
-                repository.add("game", gameSpace);
+                serverGameSpace = new SequentialSpace();
+                repository.add("gameSpace" + GAME_ID, serverGameSpace);
+
+                game = new Game(stage, serverGameSpace, playerIDs, playerID);
                 game.initializeGrid();
-                serverLobby.put(GAME_ID, game.grid.connectedSquares);
+                game.spawnPlayers();
+                game.gameSpace.put("connected squares", game.grid.connectedSquares);
             }
             else {
                 System.out.println("Client is getting existing game...");
+                String clientUri = "tcp://" + HOST_IP + ":9001/gameSpace" + GAME_ID + "?keep";
+                clientGameSpace = new RemoteSpace(clientUri);
 
-                HashSetIntArray connectedSquares = (HashSetIntArray) clientLobby.query(new ActualField(GAME_ID), new FormalField(HashSetIntArray.class))[1];
+                game = new Game(stage, clientGameSpace, playerIDs, playerID);
+
+                HashSetIntArray connectedSquares = (HashSetIntArray) clientGameSpace.query(new ActualField("connected squares"), new FormalField(HashSetIntArray.class))[1];
                 game.setGrid(connectedSquares);
-
-//                String gameUri = (String) clientLobby
-
-//                game.setUri()
+                game.spawnPlayers();
             }
 
+            player = new Player(game, playerID);
             stage.setScene(game.gameScene);
-            player = new Player(game);
             game.gameScene.getRoot().requestFocus();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | IOException e) {
             throw new RuntimeException(e);
         }
     }

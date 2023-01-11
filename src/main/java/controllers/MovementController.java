@@ -1,6 +1,7 @@
 package controllers;
 
 import application.Game;
+import application.Player;
 import javafx.animation.AnimationTimer;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
@@ -10,10 +11,14 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import org.jspace.ActualField;
+import org.jspace.FormalField;
+import org.jspace.Space;
 
 import java.util.ArrayList;
 
 public class MovementController {
+    private static final int PLAYERS = 2;
     private final BooleanProperty upPressed = new SimpleBooleanProperty();
     private final BooleanProperty downPressed = new SimpleBooleanProperty();
     private final BooleanProperty leftPressed = new SimpleBooleanProperty();
@@ -29,18 +34,25 @@ public class MovementController {
     private Scene scene;
 
     private static final double MOVEMENT_SPEED = 1.9, ROTATION_SPEED = 4.2;
-    ArrayList<Rectangle> walls;
+    private final ArrayList<Rectangle> walls;
+    private final int PLAYER_ID;
+    private final Space gameSpace;
 
-    public MovementController(Rectangle tractor, Game game) {
-        this.tractor = tractor;
-        this.scene = game.gameScene;
-        this.walls = game.grid.walls;
+    public MovementController(Player player, Game game) {
+        PLAYER_ID = player.PLAYER_ID;
+        tractor = player.tractor;
+//        tractor = game.tractors.get(PLAYER_ID);
+        scene = game.gameScene;
+        walls = game.grid.walls;
+        gameSpace = game.gameSpace;
         movementSetup();
 
         keyPressed.addListener(((observableValue, aBoolean, t1) -> {
             if (!aBoolean) timer.start();
             else timer.stop();
         }));
+
+        broadcastPosition();
     }
 
     private boolean isCollision() {
@@ -77,6 +89,8 @@ public class MovementController {
             tractor.setLayoutX(tractor.getLayoutX() - dX);
             tractor.setLayoutY(tractor.getLayoutY() - dY);
         }
+        else
+            broadcastPosition();
     }
 
     private void rotate(String dir) {
@@ -85,6 +99,20 @@ public class MovementController {
 
         if (isCollision())
             tractor.setRotate(tractor.getRotate() - dAngle); // undo rotation
+        else
+            broadcastPosition();
+    }
+
+    private void broadcastPosition() {
+        try {
+            // remove all previous position tuples
+            gameSpace.getAll(new ActualField("position"), new ActualField(PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
+
+            for (int i = 0; i < PLAYERS; i++)
+                gameSpace.put("position", PLAYER_ID, tractor.getLayoutX(), tractor.getLayoutY(), tractor.getRotate());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void movementSetup() {
