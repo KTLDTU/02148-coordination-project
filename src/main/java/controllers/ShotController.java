@@ -1,5 +1,6 @@
 package controllers;
 
+import application.Shot;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.geometry.Bounds;
@@ -14,17 +15,15 @@ import java.util.Queue;
 
 public class ShotController {
 
-    private Scene scene;
+    private final int shotSpeed = 2;
     private Pane gamePane;
-    private Queue<Circle> shots;
+    private Queue<Shot> shots;
     private MovementController movementController;
     private Rectangle tractor;
-    private int shotSpeed = 2;
 
     public ShotController(MovementController movementController, Scene scene) {
         this.movementController = movementController;
         tractor = movementController.tractor;
-        this.scene = scene;
         gamePane = (Pane) scene.lookup("#gamePane");
         shots = new LinkedList<>();
     }
@@ -33,30 +32,30 @@ public class ShotController {
         if (shots.size() > 5) {
             return;
         }
-        Circle shot = new Circle(5.);
+        Shot shot = new Shot(5.);
         shots.add(shot);
+
         // Place shot at the center of the tractor
         Bounds bounds = tractor.getBoundsInParent();
         shot.setLayoutX(bounds.getCenterX());
         shot.setLayoutY(bounds.getCenterY());
         shot.setRotate(tractor.getRotate());
-
         gamePane.getChildren().add(shot);
 
-        AnimationTimer timer = updateShotTimer(shot);
-        timer.start();
+        shot.setTimer(updateShotTimer(shot));
+        shot.getTimer().start();
 
         // Remove shot after 5s delay
-        PauseTransition delay = new PauseTransition(Duration.seconds(5));
-        delay.setOnFinished(e -> {
+        shot.setDelay(new PauseTransition(Duration.seconds(5)));
+        shot.getDelay().setOnFinished(e -> {
             gamePane.getChildren().remove(shot);
-            timer.stop();
+            shot.getTimer().stop();
             shots.remove();
         });
-        delay.play();
+        shot.getDelay().play();
     }
 
-    private AnimationTimer updateShotTimer(Circle shot) {
+    private AnimationTimer updateShotTimer(Shot shot) {
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -66,19 +65,37 @@ public class ShotController {
         return timer;
     }
 
-    public void updateShot(Circle shot) {
+    public void updateShot(Shot shot) {
         double angle = shot.getRotate() * Math.PI / 180;
         double dX = Math.cos(angle) * shotSpeed;
         double dY = Math.sin(angle) * shotSpeed;
-        System.out.println("dX: " + dX + " dY: " + dY);
         shot.setLayoutX(shot.getLayoutX() + dX);
         shot.setLayoutY(shot.getLayoutY() + dY);
 
-        if (movementController.isCollisionHorizontal(shot)) {
+        // If shot leaves the area of the tractor it is active
+        if (!movementController.isCollision(shot, movementController.tractor)) {
+            shot.setActive(true);
+        }
+
+        // If shot hits a wall it is active
+        if (movementController.isWallCollisionHorizontal(shot)) {
+            shot.setActive(true);
             shot.setRotate(invertAngleHorizontal(shot.getRotate()));
         }
-        if (movementController.isCollisionVertical(shot)) {
+        if (movementController.isWallCollisionVertical(shot)) {
+            shot.setActive(true);
             shot.setRotate(invertAngleVertical(shot.getRotate()));
+        }
+
+        // If a shot is active and it hits a tractor, ded
+        // TODO: Need some form of list of all tractors, so shot can hit all players, not just the shooter.
+        if (movementController.isCollision(shot, movementController.tractor) && shot.isActive()) {
+            shot.getDelay().stop();
+            // TODO: Remove tractor too.
+            gamePane.getChildren().remove(shot);
+//            gamePane.getChildren().remove(movementController.tractor);
+            shot.getTimer().stop();
+            shots.remove(shot);
         }
     }
 
