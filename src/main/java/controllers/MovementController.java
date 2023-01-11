@@ -1,6 +1,7 @@
 package controllers;
 
 import application.Game;
+import application.Grid;
 import javafx.animation.AnimationTimer;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
@@ -30,12 +31,12 @@ public class MovementController {
     private Scene scene;
 
     public static final double MOVEMENT_SPEED = 1.9, ROTATION_SPEED = 4.2;
-    ArrayList<Rectangle> walls;
+    private Grid grid;
 
     public MovementController(Rectangle tractor, Game game) {
         this.tractor = tractor;
         this.scene = game.gameScene;
-        this.walls = game.grid.walls;
+        this.grid = game.grid;
         shotController = new ShotController(this, scene);
         movementSetup();
 
@@ -46,7 +47,22 @@ public class MovementController {
     }
 
     public boolean isCollision(Shape shape) {
-        for (var wall : walls) {
+        return isCollisionHorizontal(shape) || isCollisionVertical(shape);
+    }
+
+    public boolean isCollisionHorizontal(Shape shape) {
+        for (var wall : grid.horizontalWalls) {
+            Shape intersect = Shape.intersect(shape, wall);
+
+            if (intersect.getBoundsInParent().getWidth() > 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    public boolean isCollisionVertical(Shape shape) {
+        for (var wall : grid.verticalWalls) {
             Shape intersect = Shape.intersect(shape, wall);
 
             if (intersect.getBoundsInParent().getWidth() > 0)

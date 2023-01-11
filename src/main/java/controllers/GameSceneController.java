@@ -38,7 +38,10 @@ public class GameSceneController {
     }
 
     public void displayGrid(Grid grid) {
-        for (var wall : grid.walls)
+        for (var wall : grid.horizontalWalls)
+            gamePane.getChildren().add(wall);
+
+        for (var wall : grid.verticalWalls)
             gamePane.getChildren().add(wall);
     }
 }
