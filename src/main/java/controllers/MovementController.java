@@ -1,7 +1,6 @@
 package controllers;
 
 import application.Game;
-import application.Player;
 import javafx.animation.AnimationTimer;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
@@ -38,10 +37,9 @@ public class MovementController {
     private final int PLAYER_ID;
     private final Space gameSpace;
 
-    public MovementController(Player player, Game game) {
-        PLAYER_ID = player.PLAYER_ID;
-        tractor = player.tractor;
-//        tractor = game.tractors.get(PLAYER_ID);
+    public MovementController(Game game) {
+        PLAYER_ID = game.MY_PLAYER_ID;
+        tractor = game.myTractor;
         scene = game.gameScene;
         walls = game.grid.walls;
         gameSpace = game.gameSpace;

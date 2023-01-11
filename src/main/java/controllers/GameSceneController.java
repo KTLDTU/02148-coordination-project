@@ -2,7 +2,6 @@ package controllers;
 
 import application.Game;
 import application.Grid;
-import application.Player;
 import javafx.fxml.FXML;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
@@ -29,13 +28,13 @@ public class GameSceneController {
     }
 
     // TODO: this function probably shouldn't be here
-    public void initializePlayer(Game game, Player player) {
+    public void initializePlayer(Game game) {
         try {
             // place player in center of upper left square
-            Pair<Double, Double> startPos = new Pair<>(gamePane.getWidth() / (game.grid.COLS * 2) - Player.PLAYER_WIDTH / 2, gamePane.getHeight() / (game.grid.ROWS * 2) - Player.PLAYER_HEIGHT / 2);
-            player.tractor = new Rectangle(startPos.getKey(), startPos.getValue(), Player.PLAYER_WIDTH, Player.PLAYER_HEIGHT);
-            gamePane.getChildren().add(player.tractor);
-            game.gameSpace.put("position", player.PLAYER_ID, player.tractor.getLayoutX(), player.tractor.getLayoutY(), player.tractor.getRotate());
+            Pair<Double, Double> startPos = new Pair<>(gamePane.getWidth() / (game.grid.COLS * 2) - Game.PLAYER_WIDTH / 2, gamePane.getHeight() / (game.grid.ROWS * 2) - Game.PLAYER_HEIGHT / 2);
+            game.myTractor = new Rectangle(startPos.getKey(), startPos.getValue(), Game.PLAYER_WIDTH, Game.PLAYER_HEIGHT);
+            gamePane.getChildren().add(game.myTractor);
+            game.gameSpace.put("position", game.MY_PLAYER_ID, game.myTractor.getLayoutX(), game.myTractor.getLayoutY(), game.myTractor.getRotate()); // TODO: broadcast instead
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

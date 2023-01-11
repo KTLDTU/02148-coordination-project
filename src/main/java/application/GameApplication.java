@@ -35,8 +35,6 @@ public class GameApplication {
     SequentialSpace serverGameSpace;
     RemoteSpace clientGameSpace;
 
-    Player player;
-
     private ArrayList<Integer> playerIDs; // assuming that this is given from the room
 
     public GameApplication(Stage stage) {
@@ -128,7 +126,6 @@ public class GameApplication {
                 game.spawnPlayers();
             }
 
-            player = new Player(game, playerID);
             stage.setScene(game.gameScene);
             game.gameScene.getRoot().requestFocus();
         } catch (InterruptedException | IOException e) {

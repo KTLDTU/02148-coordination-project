@@ -1,6 +1,7 @@
 package application;
 
 import controllers.GameSceneController;
+import controllers.MovementController;
 import datatypes.HashSetIntArray;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -16,13 +17,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Game {
+    public static final double PLAYER_WIDTH = 20, PLAYER_HEIGHT = 15;
     public GameSceneController gameController;
     public Scene gameScene;
     public Grid grid;
     public Space gameSpace;
     public HashMap<Integer, Rectangle> tractors;
-    private ArrayList<Integer> playerIDs;
+    public Rectangle myTractor;
+    public ArrayList<Integer> playerIDs;
     public final int MY_PLAYER_ID;
+    private MovementController movementController;
 
     public Game(Stage stage, Space gameSpace, ArrayList<Integer> playerIDs, int MY_PLAYER_ID) {
         try {
@@ -56,9 +60,12 @@ public class Game {
     }
 
     public void spawnPlayers() {
+        gameController.initializePlayer(this);
+        movementController = new MovementController(this);
+
         for (Integer playerID : playerIDs) {
             if (playerID != MY_PLAYER_ID) {
-                tractors.put(playerID, new Rectangle(gameController.gamePane.getWidth() / (grid.COLS * 2) - Player.PLAYER_WIDTH / 2, gameController.gamePane.getHeight() / (grid.ROWS * 2) - Player.PLAYER_HEIGHT / 2, Player.PLAYER_WIDTH, Player.PLAYER_HEIGHT));
+                tractors.put(playerID, new Rectangle(gameController.gamePane.getWidth() / (grid.COLS * 2) - PLAYER_WIDTH / 2, gameController.gamePane.getHeight() / (grid.ROWS * 2) - PLAYER_HEIGHT / 2, PLAYER_WIDTH, PLAYER_HEIGHT));
                 gameController.gamePane.getChildren().add(tractors.get(playerID));
             }
         }
