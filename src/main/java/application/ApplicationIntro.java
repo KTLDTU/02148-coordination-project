@@ -10,8 +10,10 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class ApplicationIntro {
-    private Scene createOrJoinScene;
+    // Made static for simplicity. May not be optimal
+    public static Scene createOrJoinScene;
     public static Scene lobbyScene;
+
     private boolean createLobby;
     public String HOST_IP;
 
