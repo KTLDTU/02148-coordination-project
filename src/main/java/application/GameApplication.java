@@ -27,7 +27,7 @@ public class GameApplication {
     private Scene lobbyScene;
     private static final int WINDOW_WIDTH = 960;
     private static final int WINDOW_HEIGHT = 540;
-    public static final String HOST_IP = "192.168.72.144";
+    public static final String HOST_IP = "10.209.82.248";
     private static final int GAME_ID = 1535;
 
     SpaceRepository repository;
