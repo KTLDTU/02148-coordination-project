@@ -1,6 +1,7 @@
 package application;
 
 import controllers.LobbySceneController;
+import controllers.PlayerNameInputController;
 import datatypes.HashSetIntArray;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -19,13 +20,14 @@ import java.util.Arrays;
 
 public class GameApplication {
 
-    public static final String HOST_IP = "10.209.120.222";
+    public static final String HOST_IP = "10.209.82.248";
     public static final String PORT = ":9001";
     public static final String PROTOCOL = "tcp://";
     private static final int GAME_ID = 1535;
     public static final int WINDOW_WIDTH = 960;
     public static final int WINDOW_HEIGHT = 540;
 
+    private Scene nameInputScene;
     private Scene startScene;
     public Scene lobbyScene;
     public String name = "defaultName";
@@ -40,6 +42,7 @@ public class GameApplication {
 
     public GameApplication(Stage stage) {
         try {
+            makeNameInputScene(stage);
             makeStartScene(stage);
             makeLobbyScene(stage);
 
@@ -65,7 +68,7 @@ public class GameApplication {
     }
 
     private void showStartScene(Stage stage) {
-        stage.setScene(startScene);
+        stage.setScene(nameInputScene);
         stage.centerOnScreen();
     }
 
@@ -96,8 +99,6 @@ public class GameApplication {
     private void launchRoom(Stage stage) {
         try {
             if (isHost()) {
-                // temp name
-                name = "bob";
                 System.out.println("Host is creating a new room");
                 serverRoom = new SequentialSpace();
 
@@ -114,8 +115,6 @@ public class GameApplication {
                 serverRoom.put("name", name);
                 new Room(stage, this, serverRoom);
             } else {
-                // temp name
-                name = "charlie";
                 System.out.println("Client joining room");
                 String uri = PROTOCOL + HOST_IP + PORT + "/room?keep";
                 clientRoom = new RemoteSpace(uri);
@@ -184,6 +183,24 @@ public class GameApplication {
             AnchorPane scene = lobbyLoader.load();
             LobbySceneController lobbyController = lobbyLoader.getController();
             lobbyScene = new Scene(scene);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void makeNameInputScene(Stage stage) {
+        try {
+            FXMLLoader playerInputLoader = new FXMLLoader(PlayerNameInputController.class.getResource("/player-name-input.fxml"));
+            VBox scene = playerInputLoader.load();
+            PlayerNameInputController playerNameInputController = playerInputLoader.getController();
+            playerNameInputController.continueButton.setOnAction(e -> {
+                String nameInput = playerNameInputController.inputNameField.getText().trim();
+                if (!nameInput.isEmpty()) {
+                    name = nameInput;
+                }
+                stage.setScene(startScene);
+            });
+            nameInputScene = new Scene(scene, WINDOW_WIDTH, WINDOW_HEIGHT);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
