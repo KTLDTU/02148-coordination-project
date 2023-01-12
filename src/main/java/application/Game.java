@@ -43,6 +43,7 @@ public class Game {
             gameScene = new Scene(scene);
             stage.setScene(gameScene);
             tractors = new HashMap<>();
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -67,11 +68,11 @@ public class Game {
 
         myTractor = tractors.get(MY_PLAYER_ID);
         movementController = new MovementController(this);
-        broadcastPosition();
 
         Thread movementListener = new Thread(new MovementListener(this));
         movementListener.setDaemon(true);
         movementListener.start();
+
     }
 
     private Rectangle randomSpawn() {
@@ -92,20 +93,6 @@ public class Game {
         return tractor;
     }
 
-    public void broadcastPosition() {
-        try {
-            // remove all previous position tuples
-            gameSpace.getAll(new ActualField("position"), new ActualField(MY_PLAYER_ID), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
-
-            for (int playerID : playerIDs)
-                if (playerID != MY_PLAYER_ID) {
-                    gameSpace.put("position", MY_PLAYER_ID, playerID, myTractor.getLayoutX(), myTractor.getLayoutY(), myTractor.getRotate());
-//                    System.out.println("Player " + MY_PLAYER_ID + " has sent position (" + myTractor.getLayoutX() + ", " + myTractor.getLayoutY() + ") to " + playerID);
-                }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }
 
 class MovementListener implements Runnable {

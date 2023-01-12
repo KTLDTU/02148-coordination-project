@@ -1,5 +1,6 @@
 package controllers;
 
+import application.Broadcaster;
 import application.Game;
 import javafx.animation.AnimationTimer;
 import javafx.beans.binding.BooleanBinding;
@@ -10,7 +11,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 
 public class MovementController {
-    private static final int PLAYERS = 2;
+    public static final int MAX_DELAY = 25;
     private final BooleanProperty upPressed = new SimpleBooleanProperty();
     private final BooleanProperty downPressed = new SimpleBooleanProperty();
     private final BooleanProperty leftPressed = new SimpleBooleanProperty();
@@ -22,6 +23,8 @@ public class MovementController {
     private static final double MOVEMENT_SPEED = 1.9, ROTATION_SPEED = 4.2;
     private final Game game;
     private final Rectangle tractor;
+
+    private Long lastBroadcast = null;
 
     public MovementController(Game game) {
         this.game = game;
@@ -67,20 +70,24 @@ public class MovementController {
         if (isCollision()) {
             tractor.setLayoutX(tractor.getLayoutX() - dX);
             tractor.setLayoutY(tractor.getLayoutY() - dY);
+        } else if (getLastBroadcastTime() > MAX_DELAY) {
+            lastBroadcast = System.currentTimeMillis();
+            new Thread(new Broadcaster(game)).start();
         }
-        else
-            game.broadcastPosition();
     }
 
     private void rotate(String dir) {
         double dAngle = ROTATION_SPEED * (dir.equals("clockwise") ? 1 : -1);
         tractor.setRotate(tractor.getRotate() + dAngle);
 
-        if (isCollision())
+        if (isCollision()) {
             tractor.setRotate(tractor.getRotate() - dAngle); // undo rotation
-        else
-            game.broadcastPosition();
+        } else if (getLastBroadcastTime() > MAX_DELAY) {
+            lastBroadcast = System.currentTimeMillis();
+            new Thread(new Broadcaster(game)).start();
+        }
     }
+
 
     private void movementSetup() {
         game.gameScene.setOnKeyPressed(e -> setButtonStates(e.getCode(), true));
@@ -93,5 +100,15 @@ public class MovementController {
         if (key == KeyCode.LEFT) leftPressed.set(b);
         if (key == KeyCode.RIGHT) rightPressed.set(b);
         if (key == KeyCode.SPACE) spacePressed.set(b);
+    }
+
+    private long getLastBroadcastTime() {
+        long time = System.currentTimeMillis();
+        if (lastBroadcast == null) {
+            lastBroadcast = time;
+            return 0;
+        }
+        long timeDiff = time - lastBroadcast;
+        return timeDiff;
     }
 }
