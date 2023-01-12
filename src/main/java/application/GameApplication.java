@@ -49,7 +49,7 @@ public class GameApplication {
         // Make buttons
         Button lobbyButton = new Button("Start lobby");
         lobbyButton.setPrefSize(150, 30);
-        lobbyButton.setOnAction(e -> stage.setScene(lobbyScene));
+        lobbyButton.setOnAction(e -> makeLobbyScene(stage));
         Button roomButton = new Button("Start room");
         roomButton.setPrefSize(150, 30);
         roomButton.setOnAction(e -> launchRoom(stage));
@@ -67,7 +67,7 @@ public class GameApplication {
         startScene = new Scene(startLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
 
-    private void launchRoom(Stage stage) {
+    public void launchRoom(Stage stage) {
         try {
             if (isHost()) {
                 // temp name
@@ -151,11 +151,8 @@ public class GameApplication {
 
     private void makeLobbyScene(Stage stage) {
         try {
-            FXMLLoader lobbyLoader = new FXMLLoader(LobbySceneController.class.getResource("/lobbyScene.fxml"));
-            AnchorPane scene = lobbyLoader.load();
-            LobbySceneController lobbyController = lobbyLoader.getController();
-            lobbyScene = new Scene(scene);
-        } catch (IOException e) {
+            new LobbyConnector(stage, this, null, name);
+        } catch (IOException | URISyntaxException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }

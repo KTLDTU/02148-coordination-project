@@ -5,11 +5,11 @@
 <?import javafx.scene.layout.*?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="960.0" style="-fx-background-color: darkgray;" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.LobbySceneController">
-   <ListView fx:id="rooms" layoutX="33.0" layoutY="167.0" onMouseClicked="#selectRoom" prefHeight="359.0" prefWidth="638.0" />
-   <Button fx:id="createroom" layoutX="42.0" layoutY="73.0" mnemonicParsing="false" onAction="#createRoom" text="Create room" />
-   <Button fx:id="refresh" layoutX="165.0" layoutY="73.0" mnemonicParsing="false" onAction="#onRefreshClicked" text="Refresh" />
+   <ListView id="rooms" layoutX="33.0" layoutY="167.0" prefHeight="359.0" prefWidth="638.0" />
+   <Button id="createroom" layoutX="42.0" layoutY="73.0" mnemonicParsing="false" text="Create room" />
+   <Button id="refresh" layoutX="165.0" layoutY="73.0" mnemonicParsing="false" text="Refresh" />
    <Label layoutX="33.0" layoutY="149.0" prefHeight="18.0" prefWidth="638.0" text="   Room name                                               Number of players                                                 Type" />
-   <Label fx:id="playerAmount" alignment="CENTER_RIGHT" layoutX="374.0" layoutY="97.0" prefHeight="18.0" prefWidth="297.0" text="Hello" />
+   <Label id="playerAmount" alignment="CENTER_RIGHT" layoutX="374.0" layoutY="97.0" prefHeight="18.0" prefWidth="297.0" text="Hello" />
    <effect>
       <InnerShadow />
    </effect>

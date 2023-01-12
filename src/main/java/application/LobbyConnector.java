@@ -1,27 +1,74 @@
 package application;
 
-import org.jspace.ActualField;
-import org.jspace.FormalField;
-import org.jspace.RemoteSpace;
-import org.jspace.Space;
+import controllers.LobbySceneController;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
+import org.jspace.*;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.List;
 
 public class LobbyConnector {
+    private String lobbyFileName = "/lobbyScene.fxml";
+    private FXMLLoader lobbyLoader;
+    private Stage stage;
     private String name;
     private Space space;
-    public LobbyConnector(String uri, String name) throws URISyntaxException, IOException, InterruptedException {
+    public LobbyConnector(Stage stage, GameApplication application, String ip, String name) throws URISyntaxException, IOException, InterruptedException {
+        this.stage = stage;
         this.name = name;
-        if(uri == null) uri = "tcp://127.0.0.1:9001/lobby?keep";
-        URI lobbyUri = new URI(uri);
-        String gateUri = "tcp://" + lobbyUri.getHost() + ":" + lobbyUri.getPort() + "lobby?keep";
-        space = new RemoteSpace(uri);
+        if(ip == null) ip = "127.0.0.1";
+        URI lobbyUri = new URI("tcp://" + ip + ":9001/lobby?keep");
+        space = new RemoteSpace(lobbyUri);
         Object[] players = space.get(new ActualField("players"), new FormalField(Integer.class));
         space.put("players",(int)players[1]+1);
         space.put("player",name);
+
+        lobbyLoader = new FXMLLoader(LobbySceneController.class.getResource(lobbyFileName));
+        AnchorPane lobby = lobbyLoader.load();
+        Button createRoomButton = (Button)lobby.lookup("#createroom");
+
+        Button refresh = (Button)lobby.lookup("#refresh");
+        ListView rooms = (ListView)lobby.lookup("#rooms");
+        createRoomButton.setOnAction(e -> {
+            try {
+                createRoom("uri");
+                application.launchRoom(stage);
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        refresh.setOnAction(e -> {
+            rooms.getItems().remove(0,rooms.getItems().size());
+            try {
+                for(Object[] room : getRooms()){
+                    rooms.getItems().add(room[2]);
+                }
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        rooms.setOnMouseClicked(e -> {
+            if(e.getClickCount() >= 2 && rooms.getSelectionModel().getSelectedItem() != null){
+                Label playerAmount = (Label)lobby.lookup("#playerAmount");
+                playerAmount.setText("Hello, why does this not work?");
+                try {
+                    playerAmount.setText("Joining room: " + joinRoom("" + rooms.getSelectionModel().getSelectedItem()));
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
+                application.launchRoom(stage);
+            }
+        });
+        stage.setScene(new Scene(lobby, GameApplication.WINDOW_WIDTH, GameApplication.WINDOW_HEIGHT));
     }
     public int getPlayerAmount() throws InterruptedException {
         return (int)space.queryp(new ActualField("players"), new FormalField(Integer.class))[1];

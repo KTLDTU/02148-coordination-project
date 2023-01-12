@@ -8,14 +8,14 @@ import java.net.URISyntaxException;
 public class Lobby {
     private SpaceRepository spaceRepository = new SpaceRepository();
     private Space space = new SequentialSpace();
-    private URI uri;
+    private URI ip;
 
-    public Lobby(String uri) throws URISyntaxException, InterruptedException {
-        if (uri == null) {
-            uri = "tcp://127.0.0.1:9001/?keep";
+    public Lobby(String ip) throws URISyntaxException, InterruptedException {
+        if (ip == null) {
+            ip = "tcp://127.0.0.1:9001/?keep";
         }
-        this.uri = new URI(uri);
-        String gateUri = "tcp://" + this.uri.getHost() + ":" + this.uri.getPort() + "?keep";
+        this.ip = new URI("tcp://" + ip + ":9001/?keep");
+        String gateUri = "tcp://" + this.ip.getHost() + ":" + this.ip.getPort() + "?keep";
         spaceRepository.addGate(gateUri);
         spaceRepository.add("lobby",space);
         space.put("players",0);
