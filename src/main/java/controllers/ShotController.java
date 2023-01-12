@@ -6,7 +6,6 @@ import javafx.animation.PauseTransition;
 import javafx.geometry.Bounds;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
@@ -15,7 +14,9 @@ import java.util.Queue;
 
 public class ShotController {
 
-    private final int shotSpeed = 2;
+    private static final double SHOT_RADIUS = 4.;
+    private static final int MAX_ACTIVE_SHOTS = 6;
+    private final int SHOT_SPEED = 3;
     private Pane gamePane;
     private Queue<Shot> shots;
     private MovementController movementController;
@@ -29,10 +30,10 @@ public class ShotController {
     }
 
     public void shoot() {
-        if (shots.size() > 5) {
+        if (shots.size() >= MAX_ACTIVE_SHOTS) {
             return;
         }
-        Shot shot = new Shot(5.);
+        Shot shot = new Shot(SHOT_RADIUS);
         shots.add(shot);
 
         // Place shot at the center of the tractor
@@ -67,13 +68,13 @@ public class ShotController {
 
     public void updateShot(Shot shot) {
         double angle = shot.getRotate() * Math.PI / 180;
-        double dX = Math.cos(angle) * shotSpeed;
-        double dY = Math.sin(angle) * shotSpeed;
+        double dX = Math.cos(angle) * SHOT_SPEED;
+        double dY = Math.sin(angle) * SHOT_SPEED;
         shot.setLayoutX(shot.getLayoutX() + dX);
         shot.setLayoutY(shot.getLayoutY() + dY);
 
         // If shot leaves the area of the tractor it is active
-        if (!movementController.isCollision(shot, movementController.tractor)) {
+        if (!shot.isActive() && !movementController.isCollision(shot, movementController.tractor)) {
             shot.setActive(true);
         }
 
