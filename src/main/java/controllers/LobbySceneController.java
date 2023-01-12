@@ -17,6 +17,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.MouseEvent;
 import javafx.util.Duration;
 
 public class LobbySceneController {
@@ -51,16 +52,27 @@ public class LobbySceneController {
                         }));
         chatUpdater.setCycleCount(Timeline.INDEFINITE);
         chatUpdater.play();
+        for(Object[] room : lobby.getRooms()){
+            rooms.getItems().add(room[2]);
+        }
     }
 
     public void onRefreshClicked(ActionEvent actionEvent) throws InterruptedException {
         rooms.getItems().remove(0,rooms.getItems().size());
         for(Object[] room : lobby.getRooms()){
-            rooms.getItems().add((String)room[2] + room[1]);
+            rooms.getItems().add(room[2]);
         }
     }
 
     public void createRoom(ActionEvent actionEvent) throws InterruptedException {
         lobby.createRoom("uri");
+        // go to created room
+    }
+
+    public void selectRoom(MouseEvent mouseEvent) throws InterruptedException {
+         if(mouseEvent.getClickCount() >= 2 && rooms.getSelectionModel().getSelectedItem() != null){
+             playerAmount.setText("Joining room: " + lobby.joinRoom("" + rooms.getSelectionModel().getSelectedItem()));
+            // go to selected room
+         }
     }
 }

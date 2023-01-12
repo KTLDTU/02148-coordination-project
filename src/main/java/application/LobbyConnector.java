@@ -32,6 +32,12 @@ public class LobbyConnector {
         space.getp(new ActualField("player"),new ActualField(name));
         space.put("room", uri, name);
     }
+    public String joinRoom(String name) throws InterruptedException {
+        Object[] players = space.get(new ActualField("players"), new FormalField(Integer.class));
+        space.put("players",(int)players[1]-1);
+        space.getp(new ActualField("player"),new ActualField(name));
+        return (String)space.queryp(new ActualField("room"), new FormalField(String.class),new ActualField(name))[1];
+    }
     public List<Object[]> getRooms() throws InterruptedException {
         return space.queryAll(new ActualField("room"), new FormalField(String.class),new FormalField(String.class));
     }
