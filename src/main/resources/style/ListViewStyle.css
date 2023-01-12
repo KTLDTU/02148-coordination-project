@@ -1,0 +1,8 @@
+.list-cell:filled:selected {
+    -fx-background-color: -fx-background ;
+    -fx-background-insets: 0 ;
+}
+
+.list-cell{
+    -fx-font-size:20.0;
+}

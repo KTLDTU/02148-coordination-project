@@ -17,15 +17,13 @@ public class ChatClient {
         try {
             this.name = name;
             if (uri == null) {
-                uri = "tcp://127.0.0.1:9001/chat?keep";
+                uri = "tcp://127.0.0.1:9001/room?keep";
             }
             chat = new RemoteSpace(uri);
             messages = new QueueSpace();
             receiver = new Receiver(chat, messages, player);
             thread = new Thread(receiver);
             thread.start();
-            chat.getp(new ActualField("token"));
-            chat.put("token");
             chat.get(new ActualField("players"), new FormalField(Integer.class));
             chat.put("players", player);
         } catch (IOException e) {
@@ -37,10 +35,8 @@ public class ChatClient {
 
     public void sendMessage(String message) {
         try {
-            chat.get(new ActualField("token"));
             chat.put("message", name + ": " + message);
             chat.put("turn", 1);
-            chat.put("token");
         } catch (Exception ignored) {
         }
     }
