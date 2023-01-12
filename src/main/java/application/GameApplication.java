@@ -8,7 +8,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jspace.*;
@@ -36,8 +35,6 @@ public class GameApplication {
         makeStartScene(stage);
         makeLobbyScene(stage);
     }
-
-
 
     public void startGame(Stage stage) {
         showStartScene(stage);
@@ -165,7 +162,7 @@ public class GameApplication {
     private void makeNameInputScene(Stage stage) {
         try {
             FXMLLoader playerInputLoader = new FXMLLoader(PlayerNameInputController.class.getResource("/player-name-input.fxml"));
-            BorderPane scene = playerInputLoader.load();
+            VBox scene = playerInputLoader.load();
             PlayerNameInputController playerNameInputController = playerInputLoader.getController();
             playerNameInputController.continueButton.setOnAction(e -> {
                 String nameInput = playerNameInputController.inputNameField.getText().trim();
