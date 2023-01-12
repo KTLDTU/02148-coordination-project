@@ -1,9 +1,9 @@
 package controllers;
 
 import application.ChatClient;
-import application.ChatHost;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -19,24 +19,22 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class ChatBoxViewController {
-    ChatHost chatHost = new ChatHost(null, "Jonas");
+    ChatClient chatClient;
     // Not used atm
     private ArrayList<Label> messages = new ArrayList<>();
 
-    private VBox chatBox;
-    int index = 0;
+    public VBox chatBox;
 
+    public ChatBoxViewController(ObservableList data) {
+        chatClient = new ChatClient((String) data.get(0), (int) data.get(1), (String) data.get(2));
+    }
     @FXML
     private TextArea area;
     @FXML
     private ScrollPane container;
-
-    public ChatBoxViewController() throws IOException {
-    }
 
     void postMessage(String message) {
         // HBox to hold messages
@@ -49,11 +47,11 @@ public class ChatBoxViewController {
         Label textLabel = new Label(message);
         textLabel.setPrefWidth(175);
         textLabel.setWrapText(true);
-        textLabel.setPadding(new Insets(0, 2, 0,0));
+        textLabel.setPadding(new Insets(0, 5, 0, 0));
         messageBox.getChildren().add(textLabel);
         messages.add(textLabel);
 
-        if (!message.startsWith(chatHost.getName() + ":")) {
+        if (!message.startsWith(chatClient.getName() + ":")) {
             messageBox.setStyle("-fx-background-color:#d7d7d7");
             messageBox.setAlignment(Pos.CENTER_LEFT);
             textLabel.setTextAlignment(TextAlignment.LEFT);
@@ -64,20 +62,19 @@ public class ChatBoxViewController {
             textLabel.setAlignment(Pos.CENTER_RIGHT);
         }
         chatBox.getChildren().add(messageBox);
-        index++;
     }
 
     // Listener applied to the TextArea that sends the message if the enter key is pressed
     // If enter is pressed while shift is held down a newline is appended instead.
     @FXML
-    void sendOnEnter(KeyEvent event) throws InterruptedException {
+    void sendOnEnter(KeyEvent event) {
         if (event.getCode() == KeyCode.getKeyCode("Enter")) {
-            if (!event.isShiftDown()) {
+            if (!area.getText().trim().isEmpty()) {
                 //postMessage(area.getText());
-                chatHost.sendMessage(area.getText());
+                chatClient.sendMessage(area.getText());
                 area.clear();
             } else {
-                area.appendText("\n");
+                area.clear();
             }
         }
     }
@@ -90,6 +87,7 @@ public class ChatBoxViewController {
         // Ensure scrollbar is always scrolled all the way down
         chatBox.heightProperty().addListener(observable -> container.setVvalue(1.0));
         container.setContent(chatBox);
+
         Timeline chatUpdater = new Timeline(
                 new KeyFrame(Duration.seconds(0.1),
                         new EventHandler<ActionEvent>() {
@@ -97,7 +95,7 @@ public class ChatBoxViewController {
                             @Override
                             public void handle(ActionEvent event) {
                                 try {
-                                    for(String message : chatHost.receiveMessages()){
+                                    for (String message : chatClient.receiveMessages()) {
                                         postMessage(message);
                                     }
                                 } catch (InterruptedException e) {

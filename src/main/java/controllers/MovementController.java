@@ -24,7 +24,7 @@ public class MovementController {
     private final Game game;
     private final Rectangle tractor;
 
-    private Long lastBroadcast = null;
+    private Long lastBroadcast;
 
     public MovementController(Game game) {
         this.game = game;
@@ -35,6 +35,8 @@ public class MovementController {
             if (!aBoolean) timer.start();
             else timer.stop();
         }));
+        new Thread(new Broadcaster(game)).start();
+        lastBroadcast = System.currentTimeMillis();
     }
 
     private boolean isCollision() {
@@ -104,10 +106,6 @@ public class MovementController {
 
     private long getLastBroadcastTime() {
         long time = System.currentTimeMillis();
-        if (lastBroadcast == null) {
-            lastBroadcast = time;
-            return 0;
-        }
         long timeDiff = time - lastBroadcast;
         return timeDiff;
     }

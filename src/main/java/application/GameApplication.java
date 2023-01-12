@@ -2,15 +2,12 @@ package application;
 
 import controllers.LobbySceneController;
 import datatypes.HashSetIntArray;
-import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import controllers.ChatBoxViewController;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jspace.*;
@@ -22,33 +19,37 @@ import java.util.Arrays;
 
 public class GameApplication {
 
-    private Scene roomScene;
-    private Scene startScene;
-    private Scene lobbyScene;
-    private static final int WINDOW_WIDTH = 960;
-    private static final int WINDOW_HEIGHT = 540;
-    public static final String HOST_IP = "10.209.82.248";
+    public static final String HOST_IP = "10.209.120.222";
+    public static final String PORT = ":9001";
+    public static final String PROTOCOL = "tcp://";
     private static final int GAME_ID = 1535;
+    public static final int WINDOW_WIDTH = 960;
+    public static final int WINDOW_HEIGHT = 540;
+
+    private Scene startScene;
+    public Scene lobbyScene;
+    public String name = "defaultName";
 
     SpaceRepository repository;
     SequentialSpace serverLobby;
-    RemoteSpace clientLobby;
+    SequentialSpace serverRoom;
     SequentialSpace serverGameSpace;
+    RemoteSpace clientLobby;
+    RemoteSpace clientRoom;
     RemoteSpace clientGameSpace;
 
     public GameApplication(Stage stage) {
         try {
             makeStartScene(stage);
-            makeRoomScene(stage);
             makeLobbyScene(stage);
 
             repository = new SpaceRepository();
             serverLobby = new SequentialSpace();
             repository.add("lobby", serverLobby);
-            String serverUri = "tcp://" + HOST_IP + ":9001/?keep";
+            String serverUri = PROTOCOL + HOST_IP + PORT + "/?keep";
             repository.addGate(serverUri);
 
-            String clientUri = "tcp://" + HOST_IP + ":9001/lobby?keep";
+            String clientUri = PROTOCOL + HOST_IP + PORT + "/lobby?keep";
             clientLobby = new RemoteSpace(clientUri);
 
             if (isHost())
@@ -75,9 +76,9 @@ public class GameApplication {
         Button lobbyButton = new Button("Start lobby");
         lobbyButton.setPrefSize(150, 30);
         lobbyButton.setOnAction(e -> stage.setScene(lobbyScene));
-        Button chatButton = new Button("Start chat");
-        chatButton.setPrefSize(150, 30);
-        chatButton.setOnAction(e -> stage.setScene(roomScene));
+        Button roomButton = new Button("Start room");
+        roomButton.setPrefSize(150, 30);
+        roomButton.setOnAction(e -> launchRoom(stage));
         Button gameButton = new Button("Start game");
         gameButton.setPrefSize(150, 30);
         gameButton.setOnAction(e -> launchGame(stage));
@@ -87,12 +88,47 @@ public class GameApplication {
 
         // Make layout and insert buttons
         VBox startLayout = new VBox(20);
-        startLayout.getChildren().addAll(gameTitle, lobbyButton, chatButton, gameButton, exitButton);
+        startLayout.getChildren().addAll(gameTitle, lobbyButton, roomButton, gameButton, exitButton);
         startLayout.setAlignment(Pos.CENTER);
         startScene = new Scene(startLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
 
-    private void launchGame(Stage stage) {
+    private void launchRoom(Stage stage) {
+        try {
+            if (isHost()) {
+                // temp name
+                name = "bob";
+                System.out.println("Host is creating a new room");
+                serverRoom = new SequentialSpace();
+
+                repository.add("room", serverRoom);
+                String uri = PROTOCOL + HOST_IP + PORT + "/?keep";
+                String clientUri = PROTOCOL + HOST_IP + PORT + "/room?keep";
+                repository.addGate(uri);
+
+                serverRoom.put("turn", 1);
+                serverRoom.put("players", 1);
+                serverRoom.put("readers", 0);
+
+                serverRoom.put("clientUri", clientUri);
+                serverRoom.put("name", name);
+                new Room(stage, this, serverRoom);
+            } else {
+                // temp name
+                name = "charlie";
+                System.out.println("Client joining room");
+                String uri = PROTOCOL + HOST_IP + PORT + "/room?keep";
+                clientRoom = new RemoteSpace(uri);
+                clientRoom.put("name", name);
+                new Room(stage, this, clientRoom);
+            }
+
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void launchGame(Stage stage) {
         try {
             ArrayList<Integer> playerIDs = new ArrayList<>(Arrays.asList(0, 1, 2, 3)); // assumed this is given from the room
 
@@ -110,10 +146,9 @@ public class GameApplication {
                 game.initializeGrid();
                 game.spawnPlayers();
                 game.gameSpace.put("connected squares", game.grid.connectedSquares);
-            }
-            else {
+            } else {
                 System.out.println("Client is getting existing game...");
-                String clientUri = "tcp://" + HOST_IP + ":9001/gameSpace" + GAME_ID + "?keep";
+                String clientUri = PROTOCOL + HOST_IP + PORT + "/gameSpace" + GAME_ID + "?keep";
                 clientGameSpace = new RemoteSpace(clientUri);
 
                 game = new Game(stage, clientGameSpace, playerIDs, playerID);
@@ -130,33 +165,17 @@ public class GameApplication {
         }
     }
 
-    private boolean isHost() {
+    public boolean isHost() {
         String ip;
 
-        try(final DatagramSocket socket = new DatagramSocket()){
+        try (final DatagramSocket socket = new DatagramSocket()) {
             socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
             ip = socket.getLocalAddress().getHostAddress();
         } catch (SocketException | UnknownHostException e) {
             throw new RuntimeException(e);
         }
 
-        return ip.equals(HOST_IP);
-    }
-
-    private void makeRoomScene(Stage stage) {
-        BorderPane roomLayout = new BorderPane();
-
-        // Chatbox resource file name
-        String fileName = "/ChatboxView.fxml";
-        try {
-            FXMLLoader chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(fileName));
-            BorderPane chatbox = chatboxLoader.load();
-            chatbox.setMargin(chatbox, new Insets(0,2, 0,0));
-            roomLayout.setRight(chatbox);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        roomScene = new Scene(roomLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
+        return !ip.equals(HOST_IP);
     }
 
     private void makeLobbyScene(Stage stage) {
