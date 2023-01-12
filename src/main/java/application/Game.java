@@ -110,7 +110,6 @@ class MovementListener implements Runnable {
                 double tractorX = (double) obj[3];
                 double tractorY = (double) obj[4];
                 double tractorRot = (double) obj[5];
-//                System.out.println("Player " + game.MY_PLAYER_ID + " has received position (" + tractorX + ", " + tractorY + ") from " + playerID);
 
                 Rectangle tractor = game.tractors.get(playerID);
 
