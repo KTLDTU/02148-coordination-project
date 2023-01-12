@@ -29,7 +29,6 @@ public class Game {
     public Rectangle myTractor;
     public ArrayList<Integer> playerIDs;
     public final int MY_PLAYER_ID;
-    private MovementController movementController;
 
     public Game(Stage stage, Space gameSpace, ArrayList<Integer> playerIDs, int MY_PLAYER_ID) {
         try {
@@ -67,7 +66,7 @@ public class Game {
         }
 
         myTractor = tractors.get(MY_PLAYER_ID);
-        movementController = new MovementController(this);
+        new MovementController(this);
 
         Thread movementListener = new Thread(new MovementListener(this));
         movementListener.setDaemon(true);
