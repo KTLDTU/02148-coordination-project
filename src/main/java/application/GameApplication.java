@@ -16,15 +16,16 @@ import java.util.Arrays;
 
 public class GameApplication {
 
-
     //public static final String HOST_IP = "10.209.96.93";
     private static String HOST_IP;
+
     public static final String PORT = ":9001";
     public static final String PROTOCOL = "tcp://";
     private static final int GAME_ID = 1535;
     public static final int WINDOW_WIDTH = 960;
     public static final int WINDOW_HEIGHT = 540;
 
+    private Scene nameInputScene;
     private Scene startScene;
     public String name = "defaultName";
 
@@ -37,9 +38,10 @@ public class GameApplication {
     RemoteSpace clientRoom;
     RemoteSpace clientGameSpace;
 
-    public GameApplication(Stage stage, String HOST_IP, boolean createLobby) {
+    public GameApplication(Stage stage, String HOST_IP, boolean createLobby, String name) {
         this.HOST_IP = HOST_IP;
         this.createLobby = createLobby;
+        this.name = name;
         try {
             makeStartScene(stage);
 
@@ -106,8 +108,6 @@ public class GameApplication {
     private void launchRoom(Stage stage) {
         try {
             if (isHost()) {
-                // temp name
-                name = "bob";
                 System.out.println("Host is creating a new room");
                 serverRoom = new SequentialSpace();
 
@@ -124,8 +124,6 @@ public class GameApplication {
                 serverRoom.put("name", name);
                 new Room(stage, this, serverRoom);
             } else {
-                // temp name
-                name = "charlie";
                 System.out.println("Client joining room");
                 String uri = PROTOCOL + HOST_IP + PORT + "/room?keep";
                 clientRoom = new RemoteSpace(uri);
@@ -187,4 +185,5 @@ public class GameApplication {
 
         return ip.equals(HOST_IP);
     }
+
 }
