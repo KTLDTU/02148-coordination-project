@@ -175,7 +175,7 @@ public class GameApplication {
             throw new RuntimeException(e);
         }
 
-        return !ip.equals(HOST_IP);
+        return ip.equals(HOST_IP);
     }
 
     private void makeLobbyScene(Stage stage) {
