@@ -4,6 +4,7 @@ import datatypes.HashSetIntArray;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
@@ -145,5 +146,34 @@ public class Grid {
             horizontalWalls.add(wall);
         else
             verticalWalls.add(wall);
+    }
+
+    public boolean isWallCollision(Shape shape) {
+        return isWallCollisionHorizontal(shape) || isWallCollisionVertical(shape);
+    }
+
+    public boolean isWallCollisionHorizontal(Shape shape) {
+        for (var wall : horizontalWalls) {
+            Shape intersect = Shape.intersect(shape, wall);
+
+            if (intersect.getBoundsInParent().getWidth() > 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    public boolean isWallCollisionVertical(Shape shape) {
+        for (var wall : verticalWalls) {
+            Shape intersect = Shape.intersect(shape, wall);
+
+            if (intersect.getBoundsInParent().getWidth() > 0)
+                return true;
+        }
+        return false;
+    }
+
+    public boolean isCollision(Shape s1, Shape s2) {
+        return Shape.intersect(s1, s2).getBoundsInParent().getWidth() > 0;
     }
 }
