@@ -20,7 +20,7 @@ import java.util.Arrays;
 
 public class GameApplication {
 
-    public static final String HOST_IP = "10.209.82.248";
+    public static final String HOST_IP = "192.168.72.144";
     public static final String PORT = ":9001";
     public static final String PROTOCOL = "tcp://";
     private static final int GAME_ID = 1535;

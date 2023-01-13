@@ -109,7 +109,7 @@ class MovementListener implements Runnable {
     public void run() {
         try {
             while (true) {
-                Object[] obj = game.gameSpace.get(new ActualField("position"), new FormalField(Integer.class), new ActualField(game.MY_PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
+                Object[] obj = game.gameSpace.get(new ActualField("player position"), new FormalField(Integer.class), new ActualField(game.MY_PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
                 int playerID = (int) obj[1];
                 double tractorX = (double) obj[3];
                 double tractorY = (double) obj[4];
