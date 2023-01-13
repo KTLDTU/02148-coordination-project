@@ -148,15 +148,13 @@ public class Grid {
             verticalWalls.add(wall);
     }
 
-    public boolean isWallCollision(Shape shape) {
-        return isWallCollisionHorizontal(shape) || isWallCollisionVertical(shape);
+    public boolean isCollision(Shape s1, Shape s2) {
+        return Shape.intersect(s1, s2).getBoundsInParent().getWidth() > 0;
     }
 
     public boolean isWallCollisionHorizontal(Shape shape) {
         for (var wall : horizontalWalls) {
-            Shape intersect = Shape.intersect(shape, wall);
-
-            if (intersect.getBoundsInParent().getWidth() > 0)
+            if (isCollision(shape, wall))
                 return true;
         }
 
@@ -165,15 +163,14 @@ public class Grid {
 
     public boolean isWallCollisionVertical(Shape shape) {
         for (var wall : verticalWalls) {
-            Shape intersect = Shape.intersect(shape, wall);
-
-            if (intersect.getBoundsInParent().getWidth() > 0)
+            if (isCollision(shape, wall))
                 return true;
         }
+
         return false;
     }
 
-    public boolean isCollision(Shape s1, Shape s2) {
-        return Shape.intersect(s1, s2).getBoundsInParent().getWidth() > 0;
+    public boolean isWallCollision(Shape shape) {
+        return isWallCollisionHorizontal(shape) || isWallCollisionVertical(shape);
     }
 }
