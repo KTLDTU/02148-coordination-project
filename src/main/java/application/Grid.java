@@ -4,6 +4,7 @@ import datatypes.HashSetIntArray;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
@@ -12,7 +13,8 @@ public class Grid {
     public final int ROWS = 9, COLS = 9;
     private final int WALLS_TO_REMOVE = 5;
     private final boolean[][] visited = new boolean[ROWS][COLS];
-    public ArrayList<Rectangle> walls = new ArrayList<>();
+    public ArrayList<Rectangle> horizontalWalls = new ArrayList<>();
+    public ArrayList<Rectangle> verticalWalls = new ArrayList<>();
 
     // iff two squares are connected, there is no wall between them
     public HashSetIntArray connectedSquares = new HashSetIntArray(); // {row1, col1, row2, col2}
@@ -112,7 +114,7 @@ public class Grid {
                     if (notConnected(p1, p2)) {
                         double x = paneWidth * col / COLS;
                         double y = paneHeight * (row + 1) / ROWS;
-                        addInnerWall(new Rectangle(x, y, wallWidth, wallThickness));
+                        addInnerWall(new Rectangle(x, y, wallWidth, wallThickness), "horizontal");
                     }
                 }
 
@@ -124,21 +126,51 @@ public class Grid {
                     if (notConnected(p1, p2)) {
                         double x = paneWidth * (col + 1) / COLS;
                         double y = paneHeight * row / ROWS;
-                        addInnerWall(new Rectangle(x, y, wallThickness, wallHeight));
+                        addInnerWall(new Rectangle(x, y, wallThickness, wallHeight), "vertical");
                     }
                 }
             }
         }
 
         // outer walls
-        walls.add(new Rectangle(0, 0, paneWidth, wallThickness));
-        walls.add(new Rectangle(0, paneHeight, paneWidth + wallThickness, wallThickness));
-        walls.add(new Rectangle(0, 0, wallThickness, paneHeight));
-        walls.add(new Rectangle(paneWidth, 0, wallThickness, paneHeight + wallThickness));
+        horizontalWalls.add(new Rectangle(0, 0, paneWidth, wallThickness));
+        horizontalWalls.add(new Rectangle(0, paneHeight, paneWidth + wallThickness, wallThickness));
+        verticalWalls.add(new Rectangle(0, 0, wallThickness, paneHeight));
+        verticalWalls.add(new Rectangle(paneWidth, 0, wallThickness, paneHeight + wallThickness));
     }
 
-    private void addInnerWall(Rectangle wall) {
+    private void addInnerWall(Rectangle wall, String orientation) {
         wall.setFill(Color.DIMGRAY);
-        walls.add(wall);
+
+        if (orientation.equals("horizontal"))
+            horizontalWalls.add(wall);
+        else
+            verticalWalls.add(wall);
+    }
+
+    public boolean isCollision(Shape s1, Shape s2) {
+        return Shape.intersect(s1, s2).getBoundsInParent().getWidth() > 0;
+    }
+
+    public boolean isWallCollisionHorizontal(Shape shape) {
+        for (var wall : horizontalWalls) {
+            if (isCollision(shape, wall))
+                return true;
+        }
+
+        return false;
+    }
+
+    public boolean isWallCollisionVertical(Shape shape) {
+        for (var wall : verticalWalls) {
+            if (isCollision(shape, wall))
+                return true;
+        }
+
+        return false;
+    }
+
+    public boolean isWallCollision(Shape shape) {
+        return isWallCollisionHorizontal(shape) || isWallCollisionVertical(shape);
     }
 }
