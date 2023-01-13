@@ -42,26 +42,36 @@ public class ShotController {
         public void handle(long timestamp) {
             if (spacePressed.get()) {
                 spacePressed.set(false);
-                shoot();
+
+                if (shots.size() < MAX_ACTIVE_SHOTS)
+                    shoot();
             }
         }
     };
 
     public void shoot() {
-        if (shots.size() >= MAX_ACTIVE_SHOTS) {
-            return;
-        }
-
         Shot shot = new Shot(SHOT_RADIUS);
-        shots.add(shot);
 
-        // Place shot at the center of the tractor
+        // Place shot in front of tractor
         Bounds bounds = tractor.getBoundsInParent();
-        shot.setLayoutX(bounds.getCenterX());
-        shot.setLayoutY(bounds.getCenterY());
+
+        double distanceFromCenter = Game.PLAYER_WIDTH / 2 + SHOT_RADIUS;
+        double angle = tractor.getRotate() * Math.PI / 180;
+        double x = bounds.getCenterX() + Math.cos(angle) * distanceFromCenter;
+        double y = bounds.getCenterY() + Math.sin(angle) * distanceFromCenter;
+
+        shot.setLayoutX(x);
+        shot.setLayoutY(y);
         shot.setRotate(tractor.getRotate());
         gamePane.getChildren().add(shot);
 
+        // if the player shoots directly into a wall, they die immediately
+        if (game.grid.isWallCollision(shot)) {
+            gamePane.getChildren().remove(shot); // TODO: Remove tractor too.
+            return;
+        }
+
+        shots.add(shot);
         shot.setTimer(updateShotTimer(shot));
         shot.getTimer().start();
 
@@ -92,24 +102,15 @@ public class ShotController {
         shot.setLayoutX(shot.getLayoutX() + dX);
         shot.setLayoutY(shot.getLayoutY() + dY);
 
-        // If shot leaves the area of the tractor it is active
-        if (!shot.isActive() && !game.grid.isCollision(shot, tractor)) {
-            shot.setActive(true);
-        }
-
-        // If shot hits a wall it is active
-        if (game.grid.isWallCollisionHorizontal(shot)) {
-            shot.setActive(true);
+        // If shot hits a wall change rotation
+        if (game.grid.isWallCollisionHorizontal(shot))
             shot.setRotate(invertAngleHorizontal(shot.getRotate()));
-        }
-        if (game.grid.isWallCollisionVertical(shot)) {
-            shot.setActive(true);
+        if (game.grid.isWallCollisionVertical(shot))
             shot.setRotate(invertAngleVertical(shot.getRotate()));
-        }
 
         // If a shot is active and it hits a tractor, ded
         // TODO: Need some form of list of all tractors, so shot can hit all players, not just the shooter.
-        if (game.grid.isCollision(shot, tractor) && shot.isActive()) {
+        if (game.grid.isCollision(shot, tractor)) {
             shot.getDelay().stop();
             // TODO: Remove tractor too.
             gamePane.getChildren().remove(shot);
