@@ -1,7 +1,9 @@
 package controllers;
 
 import application.Game;
+import application.PlayerPositionBroadcaster;
 import application.Shot;
+import application.ShotBroadcaster;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.BooleanProperty;
@@ -50,8 +52,11 @@ public class ShotController {
                 double x = bounds.getCenterX() + Math.cos(angleInRadians) * DISTANCE_FROM_CENTER;
                 double y = bounds.getCenterY() + Math.sin(angleInRadians) * DISTANCE_FROM_CENTER;
 
-                if (shots.size() < MAX_ACTIVE_SHOTS)
-                    shoot(x, y, game.myTractor.getRotate());
+                if (shots.size() < MAX_ACTIVE_SHOTS) {
+                    double angleInDegrees = game.myTractor.getRotate();
+                    new Thread(new ShotBroadcaster(game, x, y, angleInDegrees)).start();
+                    shoot(x, y, angleInDegrees);
+                }
             }
         }
     };

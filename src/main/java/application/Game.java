@@ -32,6 +32,7 @@ public class Game {
     public Rectangle myTractor;
     public ArrayList<Integer> playerIDs;
     public final int MY_PLAYER_ID;
+    public ShotController shotController;
 
     public Game(Stage stage, Space gameSpace, ArrayList<Integer> playerIDs, int MY_PLAYER_ID) {
         try {
@@ -70,12 +71,16 @@ public class Game {
 
         myTractor = tractors.get(MY_PLAYER_ID);
         MovementController movementController = new MovementController(this);
-        ShotController shotController = new ShotController(this);
+        shotController = new ShotController(this);
         new InputListener(this, movementController, shotController);
 
         Thread movementListener = new Thread(new MovementListener(this));
         movementListener.setDaemon(true);
         movementListener.start();
+
+        Thread shotListener = new Thread((new ShotListener(this)));
+        shotListener.setDaemon(true);
+        shotListener.start();
     }
 
     private Rectangle randomSpawn() {
@@ -122,6 +127,30 @@ class MovementListener implements Runnable {
                     tractor.setLayoutY(tractorY);
                     tractor.setRotate(tractorRot);
                 });
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
+class ShotListener implements Runnable {
+    private Game game;
+
+    public ShotListener(Game game) {
+        this.game = game;
+    }
+
+    @Override
+    public void run() {
+        try {
+            while (true) {
+                Object[] obj = game.gameSpace.get(new ActualField("new shot"), new ActualField(game.MY_PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
+                double shotX = (double) obj[2];
+                double shotY = (double) obj[3];
+                double shotRot = (double) obj[4];
+
+                Platform.runLater(() -> game.shotController.shoot(shotX, shotY, shotRot));
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
