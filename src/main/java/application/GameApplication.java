@@ -49,15 +49,28 @@ public class GameApplication {
 
             repository = new SpaceRepository();
             serverLobby = new SequentialSpace();
+            serverRoom = new SequentialSpace();
+
             repository.add("lobby", serverLobby);
+            repository.add("room", serverRoom);
             String serverUri = PROTOCOL + HOST_IP + PORT + "/?keep";
             repository.addGate(serverUri);
 
-            String clientUri = PROTOCOL + HOST_IP + PORT + "/lobby?keep";
-            clientLobby = new RemoteSpace(clientUri);
+            String clientLobbyUri = PROTOCOL + HOST_IP + PORT + "/lobby?keep";
+            String clientRoomUri = PROTOCOL + HOST_IP + PORT + "/room?keep";
 
-            if (isHost())
+
+            clientLobby = new RemoteSpace(clientLobbyUri);
+            clientRoom = new RemoteSpace(clientRoomUri);
+            if (isHost()) {
                 serverLobby.put("player id", 0);
+
+
+                serverRoom.put("clientUri", clientRoomUri);
+                serverRoom.put("turn", 1);
+                serverRoom.put("players", 1);
+                serverRoom.put("readers", 0);
+            }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -101,31 +114,17 @@ public class GameApplication {
         try {
             if (isHost()) {
                 System.out.println("Host is creating a new room");
-                serverRoom = new SequentialSpace();
-
-                repository.add("room", serverRoom);
-                String uri = PROTOCOL + HOST_IP + PORT + "/?keep";
-                String clientUri = PROTOCOL + HOST_IP + PORT + "/room?keep";
-                repository.addGate(uri);
-
-                serverRoom.put("turn", 1);
-                serverRoom.put("players", 1);
-                serverRoom.put("readers", 0);
-
-                serverRoom.put("clientUri", clientUri);
                 serverRoom.put("name", name);
                 new Room(stage, this, serverRoom);
             } else {
-                System.out.println("Client joining room");
-                String uri = PROTOCOL + HOST_IP + PORT + "/room?keep";
-                clientRoom = new RemoteSpace(uri);
                 clientRoom.put("name", name);
+                System.out.println("Client joining room");
                 new Room(stage, this, clientRoom);
             }
-
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
     }
 
     public void launchGame(Stage stage) {
