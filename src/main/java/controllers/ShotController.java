@@ -11,6 +11,8 @@ import javafx.geometry.Bounds;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import org.jspace.ActualField;
+import org.jspace.FormalField;
 
 import java.util.LinkedList;
 import java.util.Map;
@@ -23,14 +25,14 @@ public class ShotController {
     private static final double SHOT_DISTANCE_FROM_TRACTOR_CENTER = Game.PLAYER_WIDTH / 2 + SHOT_RADIUS;
     private static final int MAX_ACTIVE_SHOTS = 6;
     private static final int SHOT_SPEED = 3;
+    private int shots;
     private Pane gamePane;
-    private Queue<Shot> shots;
     private Game game;
 
     public ShotController(Game game) {
         this.game = game;
         gamePane = game.gamePane;
-        shots = new LinkedList<>();
+        shots = 0;
 
         spacePressed.addListener((((observableValue, aBoolean, t1) -> {
             if (!aBoolean) timer.start();
@@ -41,7 +43,8 @@ public class ShotController {
     AnimationTimer timer = new AnimationTimer() {
         @Override
         public void handle(long timestamp) {
-            if (spacePressed.get() && shots.size() < MAX_ACTIVE_SHOTS) {
+            if (spacePressed.get() && shots < MAX_ACTIVE_SHOTS) {
+                shots++; // TODO: counter will not be correct, since it's decremented every time ANY shot disappears
                 spacePressed.set(false);
 
                 // Place shot in front of tractor
@@ -52,37 +55,45 @@ public class ShotController {
                 double x = bounds.getCenterX() + Math.cos(angleInRadians) * SHOT_DISTANCE_FROM_TRACTOR_CENTER;
                 double y = bounds.getCenterY() + Math.sin(angleInRadians) * SHOT_DISTANCE_FROM_TRACTOR_CENTER;
 
-                new Thread(new ShotBroadcaster(game, x, y, angleInDegrees)).start();
-                shoot(x, y, angleInDegrees);
+                int shotID;
+
+                try {
+                    shotID = (int) game.gameSpace.get(new ActualField("shot id"), new FormalField(Integer.class))[1];
+                    game.gameSpace.put("shot id", shotID + 1);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                new Thread(new ShotBroadcaster(game, game.MY_PLAYER_ID, shotID, x, y, angleInDegrees)).start();
             }
         }
     };
 
-    public void shoot(double x, double y, double angleInDegrees) {
+    public Shot shoot(double x, double y, double angleInDegrees) {
         Shot shot = new Shot(SHOT_RADIUS);
         shot.setLayoutX(x);
         shot.setLayoutY(y);
         shot.setRotate(angleInDegrees);
         gamePane.getChildren().add(shot);
 
-        // if the player shoots directly into a wall, they die immediately
-        if (game.grid.isWallCollision(shot)) {
-            gamePane.getChildren().remove(shot); // TODO: Remove tractor too.
-            return;
-        }
-
-        shots.add(shot);
         shot.setTimer(updateShotTimer(shot));
         shot.getTimer().start();
 
         // Remove shot after 5s delay
         shot.setDelay(new PauseTransition(Duration.seconds(5)));
         shot.getDelay().setOnFinished(e -> {
-            gamePane.getChildren().remove(shot);
-            shot.getTimer().stop();
-            shots.remove();
+            removeShot(shot);
         });
         shot.getDelay().play();
+
+        return shot;
+    }
+
+    public void removeShot(Shot shot) {
+        shot.getDelay().stop();
+        gamePane.getChildren().remove(shot);
+        shot.getTimer().stop();
+        shots--;
     }
 
     private AnimationTimer updateShotTimer(Shot shot) {
@@ -118,7 +129,7 @@ public class ShotController {
                 gamePane.getChildren().remove(shot); // TODO: Remove tractor too.
 //            gamePane.getChildren().remove(movementController.tractor);
                 shot.getTimer().stop();
-                shots.remove(shot);
+                shots--;
             }
         }
     }

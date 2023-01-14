@@ -33,6 +33,7 @@ public class Game {
     public Map<Integer, String> playersIdNameMap;
     public final int MY_PLAYER_ID;
     public ShotController shotController;
+    public HashMap<Integer, Shot> shots;
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
         try {
@@ -46,6 +47,7 @@ public class Game {
             gameScene = new Scene(scene);
             stage.setScene(gameScene);
             tractors = new HashMap<>();
+            shots = new HashMap<>();
             gamePane = gameController.gamePane;
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -82,6 +84,18 @@ public class Game {
         shotListener.setDaemon(true);
         shotListener.start();
 
+        Thread killListener = new Thread((new KillListener(this)));
+        killListener.setDaemon(true);
+        killListener.start();
+
+        if (GameApplication.isHost) {
+            try {
+                gameSpace.put("shot id", 0);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         gameController.initializePlayerNames(playersIdNameMap.values());
     }
 
@@ -102,7 +116,6 @@ public class Game {
         tractor.setFill(Color.ROYALBLUE); // color to distinguish from other tractors (temporary - all should have different colors)
         return tractor;
     }
-
 }
 
 class MovementListener implements Runnable {
@@ -147,12 +160,49 @@ class ShotListener implements Runnable {
     public void run() {
         try {
             while (true) {
-                Object[] obj = game.gameSpace.get(new ActualField("new shot"), new ActualField(game.MY_PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
-                double shotX = (double) obj[2];
-                double shotY = (double) obj[3];
-                double shotRot = (double) obj[4];
+                Object[] obj = game.gameSpace.get(new ActualField("new shot"), new FormalField(Integer.class), new ActualField(game.MY_PLAYER_ID), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
+//                System.out.println("got new shot");
+                int playerID = (int) obj[1];
+                int shotID = (int) obj[3];
+                double shotX = (double) obj[4];
+                double shotY = (double) obj[5];
+                double shotRot = (double) obj[6];
 
-                Platform.runLater(() -> game.shotController.shoot(shotX, shotY, shotRot));
+                Platform.runLater(() -> {
+                    Shot shot = game.shotController.shoot(shotX, shotY, shotRot);
+                    game.shots.put(shotID, shot);
+
+                    // if a player shoots directly into a wall, they die immediately
+                    if (GameApplication.isHost && game.grid.isWallCollision(shot)) {
+                        new Thread(new KillBroadcaster(game, playerID, shotID)).start();
+                    }
+                });
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
+class KillListener implements Runnable {
+    private Game game;
+
+    public KillListener(Game game) {
+        this.game = game;
+    }
+
+    @Override
+    public void run() {
+        try {
+            while (true) {
+                Object[] obj = game.gameSpace.get(new ActualField("kill"), new ActualField(game.MY_PLAYER_ID), new FormalField(Integer.class), new FormalField(Integer.class));
+                int playerID = (int) obj[2];
+                int shotID = (int) obj[3];
+
+                Platform.runLater(() -> {
+                    game.shotController.removeShot(game.shots.get(shotID));
+                    game.gamePane.getChildren().remove(game.tractors.get(playerID));
+                });
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

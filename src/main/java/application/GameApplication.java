@@ -33,7 +33,7 @@ public class GameApplication {
     private Scene startScene;
     public String name;
 
-    public boolean isHost;
+    public static boolean isHost;
     SpaceRepository repository;
     SequentialSpace serverLobby;
     SequentialSpace serverRoom;
@@ -45,7 +45,7 @@ public class GameApplication {
 
     public GameApplication(Stage stage, String HOST_IP, boolean isHost, String name) {
         GameApplication.HOST_IP = HOST_IP;
-        this.isHost = isHost;
+        GameApplication.isHost = isHost;
         this.name = name;
 
         try {
@@ -91,7 +91,6 @@ public class GameApplication {
 
     private void showStartScene(Stage stage) {
         stage.setScene(startScene);
-        stage.centerOnScreen();
     }
 
     private void makeStartScene(Stage stage) {
