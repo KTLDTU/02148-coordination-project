@@ -42,7 +42,7 @@ public class LobbyConnector {
         createRoomButton.setOnAction(e -> {
             try {
                 createRoom("uri");
-                application.hostRoom(stage, finalIp);
+                application.launchRoom(stage);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -66,7 +66,7 @@ public class LobbyConnector {
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
-                application.joinRoom(stage, finalIp);
+                application.launchRoom(stage);
             }
         });
         stage.setScene(new Scene(lobby, GameApplication.WINDOW_WIDTH, GameApplication.WINDOW_HEIGHT));

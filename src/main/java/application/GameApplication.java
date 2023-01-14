@@ -20,7 +20,7 @@ import java.util.Arrays;
 
 public class GameApplication {
 
-    public static final String HOST_IP = "10.209.82.248";
+    public static final String HOST_IP = "192.168.1.7";
     public static final String PORT = ":9001";
     public static final String PROTOCOL = "tcp://";
     private static final int GAME_ID = 1535;
@@ -42,6 +42,7 @@ public class GameApplication {
 
     public GameApplication(Stage stage) {
         try {
+            Lobby lobby = new Lobby("192.168.1.7");
             makeNameInputScene(stage);
             makeStartScene(stage);
             makeLobbyScene(stage);
@@ -57,7 +58,7 @@ public class GameApplication {
 
             if (isHost())
                 serverLobby.put("player id", 0);
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
@@ -78,7 +79,7 @@ public class GameApplication {
         // Make buttons
         Button lobbyButton = new Button("Start lobby");
         lobbyButton.setPrefSize(150, 30);
-        lobbyButton.setOnAction(e -> stage.setScene(lobbyScene));
+        lobbyButton.setOnAction(e -> makeLobbyScene(stage));
         Button roomButton = new Button("Start room");
         roomButton.setPrefSize(150, 30);
         roomButton.setOnAction(e -> launchRoom(stage));
@@ -96,7 +97,7 @@ public class GameApplication {
         startScene = new Scene(startLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
 
-    private void launchRoom(Stage stage) {
+    public void launchRoom(Stage stage) {
         try {
             if (isHost()) {
                 System.out.println("Host is creating a new room");
@@ -111,7 +112,7 @@ public class GameApplication {
                 serverRoom.put("players", 1);
                 serverRoom.put("readers", 0);
 
-                serverRoom.put("clientUri", clientUri);
+                serverRoom.put("clientIp", HOST_IP);
                 serverRoom.put("name", name);
                 new Room(stage, this, serverRoom);
             } else {
@@ -179,7 +180,7 @@ public class GameApplication {
 
     private void makeLobbyScene(Stage stage) {
         try {
-            new LobbyConnector(stage, this, "192.168.1.107", name);
+            new LobbyConnector(stage, this, "192.168.1.7", name);
         } catch (IOException | URISyntaxException | InterruptedException e) {
             throw new RuntimeException(e);
         }
