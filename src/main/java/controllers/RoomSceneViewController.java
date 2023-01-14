@@ -1,5 +1,6 @@
 package controllers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -41,6 +42,6 @@ public class RoomSceneViewController {
 
     public void updatePlayerList(ArrayList<String> newPlayerNames) {
         ObservableList<String> observableList = FXCollections.observableArrayList(newPlayerNames);
-        playerList.getItems().setAll(observableList);
+        Platform.runLater(() -> playerList.getItems().setAll(observableList));
     }
 }
