@@ -179,11 +179,8 @@ public class GameApplication {
 
     private void makeLobbyScene(Stage stage) {
         try {
-            FXMLLoader lobbyLoader = new FXMLLoader(LobbySceneController.class.getResource("/lobbyScene.fxml"));
-            AnchorPane scene = lobbyLoader.load();
-            LobbySceneController lobbyController = lobbyLoader.getController();
-            lobbyScene = new Scene(scene);
-        } catch (IOException e) {
+            new LobbyConnector(stage, this, "192.168.1.107", name);
+        } catch (IOException | URISyntaxException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
