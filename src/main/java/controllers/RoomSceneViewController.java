@@ -3,7 +3,6 @@ package controllers;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -35,13 +34,12 @@ public class RoomSceneViewController {
         playerList.setFocusTraversable(false);
     }
 
-    public void addPlayerToList(String name) {
-        playerList.getItems().add(name);
-    }
-
-
     public void updatePlayerList(ArrayList<String> newPlayerNames) {
         ObservableList<String> observableList = FXCollections.observableArrayList(newPlayerNames);
         Platform.runLater(() -> playerList.getItems().setAll(observableList));
+    }
+
+    public void setRoomNameText(String name) {
+        roomNameText.setText(name + "'s room");
     }
 }
