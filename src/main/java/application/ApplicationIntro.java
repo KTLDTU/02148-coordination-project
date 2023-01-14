@@ -16,9 +16,7 @@ public class ApplicationIntro {
     public static Scene createOrJoinScene;
     public static Scene lobbyScene;
 
-    private boolean createLobby;
     public String HOST_IP;
-    private Scene startScene;
     private Scene nameInputScene;
     private String name;
 
@@ -46,14 +44,12 @@ public class ApplicationIntro {
             a.btnCreate.setOnAction(e -> {
                 stage.setScene(lobbyScene);
                 HOST_IP = a.textField.getText();
-                createLobby = true;
-                new GameApplication(stage, HOST_IP, createLobby, name).startGame(stage);
+                new GameApplication(stage, HOST_IP, true, name).startGame(stage);
             });
             a.btnJoin.setOnAction(e -> {
                 stage.setScene(lobbyScene);
                 HOST_IP = a.textField.getText();
-                createLobby = false;
-                new GameApplication(stage, HOST_IP, createLobby, name).startGame(stage);
+                new GameApplication(stage, HOST_IP, false, name).startGame(stage);
             });
             createOrJoinScene = new Scene(scene, GameApplication.WINDOW_WIDTH, GameApplication.WINDOW_HEIGHT);
         } catch (IOException e) {

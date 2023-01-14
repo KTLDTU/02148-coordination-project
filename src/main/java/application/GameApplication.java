@@ -10,13 +10,11 @@ import javafx.stage.Stage;
 import org.jspace.*;
 
 import java.io.IOException;
-import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class GameApplication {
 
-    //public static final String HOST_IP = "10.209.96.93";
     private static String HOST_IP;
 
     public static final String PORT = ":9001";
@@ -25,11 +23,10 @@ public class GameApplication {
     public static final int WINDOW_WIDTH = 960;
     public static final int WINDOW_HEIGHT = 540;
 
-    private Scene nameInputScene;
     private Scene startScene;
-    public String name = "defaultName";
+    public String name;
 
-    private boolean createLobby;
+    public boolean isHost;
     SpaceRepository repository;
     SequentialSpace serverLobby;
     SequentialSpace serverRoom;
@@ -38,13 +35,13 @@ public class GameApplication {
     RemoteSpace clientRoom;
     RemoteSpace clientGameSpace;
 
-    public GameApplication(Stage stage, String HOST_IP, boolean createLobby, String name) {
-        this.HOST_IP = HOST_IP;
-        this.createLobby = createLobby;
+    public GameApplication(Stage stage, String HOST_IP, boolean isHost, String name) {
+        GameApplication.HOST_IP = HOST_IP;
+        this.isHost = isHost;
         this.name = name;
+
         try {
             makeStartScene(stage);
-
 
             repository = new SpaceRepository();
             serverLobby = new SequentialSpace();
@@ -55,7 +52,7 @@ public class GameApplication {
             String clientUri = PROTOCOL + HOST_IP + PORT + "/lobby?keep";
             clientLobby = new RemoteSpace(clientUri);
 
-            if (isHost())
+            if (isHost)
                 serverLobby.put("player id", 0);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -107,7 +104,7 @@ public class GameApplication {
 
     private void launchRoom(Stage stage) {
         try {
-            if (isHost()) {
+            if (isHost) {
                 System.out.println("Host is creating a new room");
                 serverRoom = new SequentialSpace();
 
@@ -145,7 +142,7 @@ public class GameApplication {
             System.out.println("Player id: " + playerID);
             Game game;
 
-            if (isHost()) {
+            if (isHost) {
                 System.out.println("Host is creating a new game...");
                 serverGameSpace = new SequentialSpace();
                 repository.add("gameSpace" + GAME_ID, serverGameSpace);
@@ -172,18 +169,4 @@ public class GameApplication {
             throw new RuntimeException(e);
         }
     }
-
-    public boolean isHost() {
-        String ip;
-
-        try (final DatagramSocket socket = new DatagramSocket()) {
-            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
-            ip = socket.getLocalAddress().getHostAddress();
-        } catch (SocketException | UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-
-        return ip.equals(HOST_IP);
-    }
-
 }
