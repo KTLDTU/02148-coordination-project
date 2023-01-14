@@ -17,6 +17,7 @@ import org.jspace.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -74,6 +75,10 @@ public class GameApplication {
                 serverRoom.put("players", 1);
                 serverRoom.put("readers", 0);
             }
+            playerID = (int) clientLobby.get(new ActualField("player id"), new FormalField(Integer.class))[1];
+            clientLobby.put("player id", playerID + 1);
+            System.out.println("Player id: " + playerID);
+
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -115,9 +120,6 @@ public class GameApplication {
 
     private void launchRoom(Stage stage) {
         try {
-            playerID = (int) clientLobby.get(new ActualField("player id"), new FormalField(Integer.class))[1];
-            clientLobby.put("player id", playerID + 1);
-            System.out.println("Player id: " + playerID);
 
             clientRoom.put("name", name);
             clientRoom.put("player id", playerID);
@@ -137,6 +139,8 @@ public class GameApplication {
     public void launchGame(Stage stage) {
         try {
             Game game;
+            /*
+
             // Query the list of player names and id provided by room
             ArrayList<String> playerNameList = (ArrayList<String>) clientRoom.query(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
             System.out.println("clientRoom playernamelist: " + playerNameList.toString());
@@ -145,6 +149,23 @@ public class GameApplication {
 
             // Collect the two lists to a map with id as keys and names as values
             Map<Integer, String> playersIdNameMap = IntStream.range(0, playerNameList.size()).boxed().collect(Collectors.toMap(i -> playerIdList.get(i), i -> playerNameList.get(i)));
+             */
+
+            // Temporary setup so the "start game" button doesnt break. Should be placed with commented code above
+            Map<Integer, String> playersIdNameMap = new HashMap<>();
+            playersIdNameMap.put(0, "Alice");
+            playersIdNameMap.put(1, "Bob");
+            playersIdNameMap.put(2, "Charlie");
+            playersIdNameMap.put(3, "Frank");
+
+            Object[] playerNameLists = clientRoom.queryp(new ActualField("playerNameList"), new FormalField(ArrayList.class));
+            Object[] playerIdLists = clientRoom.queryp(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
+            if (playerNameLists != null && playerIdLists != null) {
+                ArrayList<String> playerNameList = (ArrayList<String>) playerNameLists[1];
+                ArrayListInt playerIdList = (ArrayListInt) playerIdLists[1];
+                playersIdNameMap = IntStream.range(0, playerNameList.size()).boxed().collect(Collectors.toMap(i -> playerIdList.get(i), i -> playerNameList.get(i)));
+            }
+
             if (isHost()) {
                 System.out.println("Host is creating a new game...");
                 serverGameSpace = new SequentialSpace();
@@ -183,7 +204,7 @@ public class GameApplication {
             throw new RuntimeException(e);
         }
 
-        return ip.equals(HOST_IP);
+        return !ip.equals(HOST_IP);
     }
 
     private void makeLobbyScene(Stage stage) {
