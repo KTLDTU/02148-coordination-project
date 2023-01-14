@@ -35,26 +35,25 @@ public class Room {
     private String uri;
     private int playerId;
     private int players = 0;
+    private String hostName;
     private ArrayList<String> playerNames;
     private ArrayListInt playerIds;
-    private String hostName;
 
     public Room(Stage stage, GameApplication application, Space space) {
         this.space = space;
-        playerNames = new ArrayList();
-        playerIds = new ArrayListInt();
+        this.playerNames = new ArrayList<>();
+        this.playerIds = new ArrayListInt();
         try {
             uri = (String) space.query(new ActualField("clientUri"), new FormalField(String.class))[1];
             hostName = (String) space.query(new ActualField("host name"), new FormalField(String.class))[1];
             name = (String) space.get(new ActualField("name"), new FormalField(String.class))[1];
             playerId = (int) space.get(new ActualField("player id"), new FormalField(Integer.class))[1];
 
-            initializePlayerNames(space);
-
-            initializePlayerIds(space);
-
             roomLoader = new FXMLLoader(RoomSceneViewController.class.getResource(roomFileName));
             chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(chatFileName));
+
+            initializePlayerNames(space);
+            initializePlayerIds(space);
 
             populateChatBoxConstructor(uri, playerNames.size(), name);
 
@@ -98,6 +97,12 @@ public class Room {
                 ArrayList<String> playerNames = (ArrayList<String>) space.get(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
                 playerNames.remove(name);
                 space.put("playerNameList", playerNames);
+
+                ArrayListInt playerIds = (ArrayListInt) space.get(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
+                playerIds.remove(Integer.valueOf(playerId));
+                space.put("playerIdList", playerIds);
+
+
                 // TODO: switch to lobby scene
                 stage.setScene(GameApplication.startScene);
             } catch (InterruptedException ex) {
@@ -142,6 +147,7 @@ class RoomListener implements Runnable {
     Space space;
     RoomSceneViewController roomController;
     ArrayList<String> playerNames = new ArrayList<>();
+    ArrayListInt playerIds = new ArrayListInt();
 
     public RoomListener(Space space, RoomSceneViewController roomController) {
         this.space = space;
@@ -160,6 +166,13 @@ class RoomListener implements Runnable {
                     Platform.runLater(() -> {
                         roomController.updatePlayerList(newPlayerNames);
                     });
+                }
+                ArrayListInt newPlayerIds = (ArrayListInt) space.query(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
+
+                if (!playerIds.equals(newPlayerIds)) {
+                    space.get(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
+                    playerIds = newPlayerIds;
+                    space.put("playerIdList", playerIds);
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
