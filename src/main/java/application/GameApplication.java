@@ -125,6 +125,7 @@ public class GameApplication {
             clientRoom.put("player id", playerID);
             if (isHost()) {
                 System.out.println("Host is creating a new room");
+                serverRoom.put("host name", name);
                 new Room(stage, this, serverRoom);
             } else {
                 System.out.println("Client joining room");
@@ -204,7 +205,7 @@ public class GameApplication {
             throw new RuntimeException(e);
         }
 
-        return !ip.equals(HOST_IP);
+        return ip.equals(HOST_IP);
     }
 
     private void makeLobbyScene(Stage stage) {

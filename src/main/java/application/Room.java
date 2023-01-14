@@ -36,12 +36,14 @@ public class Room {
     private int players = 0;
     private ArrayList<String> playerNames;
     private ArrayListInt playerIds;
+    private String hostName;
     public Room(Stage stage, GameApplication application, Space space) {
         this.space = space;
         playerNames = new ArrayList();
         playerIds = new ArrayListInt();
         try {
             uri = (String) space.query(new ActualField("clientUri"), new FormalField(String.class))[1];
+            hostName = (String) space.query(new ActualField("host name"), new FormalField(String.class))[1];
             name = (String) space.get(new ActualField("name"), new FormalField(String.class))[1];
             playerId = (int) space.get(new ActualField("player id"), new FormalField(Integer.class))[1];
 
@@ -91,6 +93,7 @@ public class Room {
         Button startGameButton = (Button) roomLayout.lookup("#startGameButton");
         lobbyButton.setOnAction(e -> stage.setScene(application.lobbyScene));
         startGameButton.setOnAction(e -> application.launchGame(stage));
+        roomController.setRoomNameText(hostName);
 
         roomLayout.setRight(chatbox);
         roomScene = new Scene(roomLayout, application.WINDOW_WIDTH, application.WINDOW_HEIGHT);

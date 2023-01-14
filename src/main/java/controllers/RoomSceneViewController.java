@@ -33,13 +33,12 @@ public class RoomSceneViewController {
         playerList.setFocusTraversable(false);
     }
 
-    public void addPlayerToList(String name) {
-        playerList.getItems().add(name);
-    }
-
-
     public void updatePlayerList(ArrayList<String> newPlayerNames) {
         ObservableList<String> observableList = FXCollections.observableArrayList(newPlayerNames);
         playerList.getItems().setAll(observableList);
+    }
+
+    public void setRoomNameText(String name) {
+        roomNameText.setText(name + "'s room");
     }
 }
