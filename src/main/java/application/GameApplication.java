@@ -16,7 +16,6 @@ import java.util.Arrays;
 public class GameApplication {
 
     private static String HOST_IP;
-
     public static final String PORT = ":9001";
     public static final String PROTOCOL = "tcp://";
     private static final int GAME_ID = 1535;
