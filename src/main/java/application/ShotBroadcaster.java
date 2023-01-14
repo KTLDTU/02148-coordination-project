@@ -14,7 +14,7 @@ public class ShotBroadcaster implements Runnable {
     @Override
     public void run() {
         try {
-            for (int playerID : game.playerIDs)
+            for (int playerID : game.playersIdNameMap.keySet())
                 if (playerID != game.MY_PLAYER_ID)
                     game.gameSpace.put("new shot", playerID, x, y, rot);
         } catch (InterruptedException e) {
