@@ -17,8 +17,8 @@ import org.jspace.FormalField;
 import org.jspace.Space;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class Game {
@@ -30,15 +30,15 @@ public class Game {
     public Space gameSpace;
     public HashMap<Integer, Rectangle> tractors;
     public Rectangle myTractor;
-    public ArrayList<Integer> playerIDs;
+    public Map<Integer, String> playersIdNameMap;
     public final int MY_PLAYER_ID;
     public ShotController shotController;
 
-    public Game(Stage stage, Space gameSpace, ArrayList<Integer> playerIDs, int MY_PLAYER_ID) {
+    public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
         try {
             this.gameSpace = gameSpace;
-            this.playerIDs = playerIDs;
             this.MY_PLAYER_ID = MY_PLAYER_ID;
+            this.playersIdNameMap = playersIdNameMap;
 
             FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("/game-scene-view.fxml"));
             BorderPane scene = gameLoader.load();
@@ -63,7 +63,7 @@ public class Game {
     }
 
     public void spawnPlayers() {
-        for (Integer playerID : playerIDs) {
+        for (Integer playerID : playersIdNameMap.keySet()) {
             Rectangle newTractor = (playerID == MY_PLAYER_ID ? randomSpawn() : new Rectangle(PLAYER_WIDTH, PLAYER_HEIGHT));
             tractors.put(playerID, newTractor);
             gamePane.getChildren().add(tractors.get(playerID));
@@ -81,6 +81,8 @@ public class Game {
         Thread shotListener = new Thread((new ShotListener(this)));
         shotListener.setDaemon(true);
         shotListener.start();
+
+        gameController.initializePlayerNames(playersIdNameMap.values());
     }
 
     private Rectangle randomSpawn() {
