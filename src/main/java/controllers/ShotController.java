@@ -2,6 +2,7 @@ package controllers;
 
 import application.Game;
 import application.Shot;
+import application.ShotBroadcaster;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.BooleanProperty;
@@ -12,22 +13,22 @@ import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 
 public class ShotController {
 
     public final BooleanProperty spacePressed = new SimpleBooleanProperty();
     private static final double SHOT_RADIUS = 4.;
+    private static final double SHOT_DISTANCE_FROM_TRACTOR_CENTER = Game.PLAYER_WIDTH / 2 + SHOT_RADIUS;
     private static final int MAX_ACTIVE_SHOTS = 6;
-    private final int SHOT_SPEED = 3;
+    private static final int SHOT_SPEED = 3;
     private Pane gamePane;
     private Queue<Shot> shots;
-    private Rectangle tractor;
     private Game game;
 
     public ShotController(Game game) {
         this.game = game;
-        tractor = game.myTractor;
         gamePane = game.gamePane;
         shots = new LinkedList<>();
 
@@ -40,28 +41,37 @@ public class ShotController {
     AnimationTimer timer = new AnimationTimer() {
         @Override
         public void handle(long timestamp) {
-            if (spacePressed.get()) {
+            if (spacePressed.get() && shots.size() < MAX_ACTIVE_SHOTS) {
                 spacePressed.set(false);
-                shoot();
+
+                // Place shot in front of tractor
+                Bounds bounds = game.myTractor.getBoundsInParent();
+
+                double angleInDegrees = game.myTractor.getRotate();
+                double angleInRadians = angleInDegrees * Math.PI / 180;
+                double x = bounds.getCenterX() + Math.cos(angleInRadians) * SHOT_DISTANCE_FROM_TRACTOR_CENTER;
+                double y = bounds.getCenterY() + Math.sin(angleInRadians) * SHOT_DISTANCE_FROM_TRACTOR_CENTER;
+
+                new Thread(new ShotBroadcaster(game, x, y, angleInDegrees)).start();
+                shoot(x, y, angleInDegrees);
             }
         }
     };
 
-    public void shoot() {
-        if (shots.size() >= MAX_ACTIVE_SHOTS) {
+    public void shoot(double x, double y, double angleInDegrees) {
+        Shot shot = new Shot(SHOT_RADIUS);
+        shot.setLayoutX(x);
+        shot.setLayoutY(y);
+        shot.setRotate(angleInDegrees);
+        gamePane.getChildren().add(shot);
+
+        // if the player shoots directly into a wall, they die immediately
+        if (game.grid.isWallCollision(shot)) {
+            gamePane.getChildren().remove(shot); // TODO: Remove tractor too.
             return;
         }
 
-        Shot shot = new Shot(SHOT_RADIUS);
         shots.add(shot);
-
-        // Place shot at the center of the tractor
-        Bounds bounds = tractor.getBoundsInParent();
-        shot.setLayoutX(bounds.getCenterX());
-        shot.setLayoutY(bounds.getCenterY());
-        shot.setRotate(tractor.getRotate());
-        gamePane.getChildren().add(shot);
-
         shot.setTimer(updateShotTimer(shot));
         shot.getTimer().start();
 
@@ -92,30 +102,24 @@ public class ShotController {
         shot.setLayoutX(shot.getLayoutX() + dX);
         shot.setLayoutY(shot.getLayoutY() + dY);
 
-        // If shot leaves the area of the tractor it is active
-        if (!shot.isActive() && !game.grid.isCollision(shot, tractor)) {
-            shot.setActive(true);
-        }
-
-        // If shot hits a wall it is active
-        if (game.grid.isWallCollisionHorizontal(shot)) {
-            shot.setActive(true);
+        // If shot hits a wall change rotation
+        if (game.grid.isWallCollisionHorizontal(shot))
             shot.setRotate(invertAngleHorizontal(shot.getRotate()));
-        }
-        if (game.grid.isWallCollisionVertical(shot)) {
-            shot.setActive(true);
+        if (game.grid.isWallCollisionVertical(shot))
             shot.setRotate(invertAngleVertical(shot.getRotate()));
-        }
 
         // If a shot is active and it hits a tractor, ded
-        // TODO: Need some form of list of all tractors, so shot can hit all players, not just the shooter.
-        if (game.grid.isCollision(shot, tractor) && shot.isActive()) {
-            shot.getDelay().stop();
-            // TODO: Remove tractor too.
-            gamePane.getChildren().remove(shot);
+        // TODO: this should be in Game.java, but only used for host, who controls who dies (since every shot and player might not be synchronized perfectly)
+        for (Map.Entry<Integer, Rectangle> entry : game.tractors.entrySet()) {
+            Rectangle tractor = entry.getValue();
+
+            if (game.grid.isCollision(shot, tractor)) {
+                shot.getDelay().stop();
+                gamePane.getChildren().remove(shot); // TODO: Remove tractor too.
 //            gamePane.getChildren().remove(movementController.tractor);
-            shot.getTimer().stop();
-            shots.remove(shot);
+                shot.getTimer().stop();
+                shots.remove(shot);
+            }
         }
     }
 

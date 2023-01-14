@@ -1,6 +1,6 @@
 package controllers;
 
-import application.Broadcaster;
+import application.PlayerPositionBroadcaster;
 import application.Game;
 import javafx.animation.AnimationTimer;
 import javafx.beans.binding.BooleanBinding;
@@ -31,7 +31,7 @@ public class MovementController {
             else timer.stop();
         }));
 
-        new Thread(new Broadcaster(game)).start();
+        new Thread(new PlayerPositionBroadcaster(game)).start();
         lastBroadcast = System.currentTimeMillis();
     }
 
@@ -59,7 +59,7 @@ public class MovementController {
             tractor.setLayoutY(tractor.getLayoutY() - dY);
         } else if (getLastBroadcastTime() > MAX_DELAY) {
             lastBroadcast = System.currentTimeMillis();
-            new Thread(new Broadcaster(game)).start();
+            new Thread(new PlayerPositionBroadcaster(game)).start();
         }
     }
 
@@ -71,7 +71,7 @@ public class MovementController {
             tractor.setRotate(tractor.getRotate() - dAngle); // undo rotation
         } else if (getLastBroadcastTime() > MAX_DELAY) {
             lastBroadcast = System.currentTimeMillis();
-            new Thread(new Broadcaster(game)).start();
+            new Thread(new PlayerPositionBroadcaster(game)).start();
         }
     }
 
