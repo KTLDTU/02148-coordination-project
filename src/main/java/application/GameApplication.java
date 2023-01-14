@@ -20,13 +20,15 @@ import java.util.Arrays;
 
 public class GameApplication {
 
-    public static final String HOST_IP = "192.168.1.7";
+
+    public static final String HOST_IP = "192.168.72.144";
+
     public static final String PORT = ":9001";
     public static final String PROTOCOL = "tcp://";
     private static final int GAME_ID = 1535;
     public static final int WINDOW_WIDTH = 960;
     public static final int WINDOW_HEIGHT = 540;
-
+    
     private Scene nameInputScene;
     private Scene startScene;
     public Scene lobbyScene;
