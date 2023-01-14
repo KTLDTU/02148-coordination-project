@@ -28,7 +28,8 @@ public class GameApplication {
     RemoteSpace clientLobby;
     RemoteSpace clientRoom;
 
-    public GameApplication(Stage stage) {
+    public GameApplication(Stage stage) throws URISyntaxException, InterruptedException {
+        Lobby lobby = new Lobby("192.168.1.107");
         makeStartScene(stage);
         makeLobbyScene(stage);
     }
