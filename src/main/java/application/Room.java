@@ -2,6 +2,7 @@ package application;
 
 import controllers.ChatBoxViewController;
 import controllers.RoomSceneViewController;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -14,6 +15,7 @@ import javafx.util.Callback;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 import org.jspace.Space;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -133,10 +135,13 @@ class RoomListener implements Runnable {
         while (true) {
             try {
                 ArrayList<String> newPlayerNames = (ArrayList<String>) space.query(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
+
                 // Update list of player names if the two lists are different
                 if (!playerNames.equals(newPlayerNames)) {
                     playerNames = newPlayerNames;
-                    roomController.updatePlayerList(newPlayerNames);
+                    Platform.runLater(() -> {
+                        roomController.updatePlayerList(newPlayerNames);
+                    });
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
