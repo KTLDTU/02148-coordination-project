@@ -5,15 +5,13 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.JoinOrCreate">
    <children>
-      <AnchorPane prefHeight="400.0" prefWidth="600.0">
+      <AnchorPane layoutY="7.0" prefHeight="540.0" prefWidth="960.0">
          <children>
-            <Button layoutX="317.0" layoutY="170.0" mnemonicParsing="false" text="Create" />
-            <Button layoutX="317.0" layoutY="239.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="51.0" text="Join" />
-            <TextField layoutX="87.0" layoutY="233.0" prefHeight="37.0" prefWidth="200.0" promptText="Provide the IP address" />
-            <TextField layoutX="86.0" layoutY="164.0" prefHeight="37.0" prefWidth="200.0" promptText="Provide the IP address" />
-            <Label layoutX="86.0" layoutY="131.0" prefHeight="25.0" prefWidth="200.0" text="Create a new game" />
-            <Label layoutX="87.0" layoutY="209.0" prefHeight="17.0" prefWidth="200.0" text="Join an existing game" />
-            <Label layoutX="226.0" layoutY="14.0" prefHeight="25.0" prefWidth="123.0" text="Welcome to AZ tractor" />
+            <Button fx:id="btnCreate" layoutX="412.0" layoutY="217.0" mnemonicParsing="false" text="Create" />
+            <Button fx:id="btnJoin" layoutX="491.0" layoutY="217.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="51.0" text="Join" />
+            <TextField fx:id="textField" layoutX="381.0" layoutY="152.0" prefHeight="37.0" prefWidth="200.0" promptText="Provide the IP address" />
+            <Label layoutX="381.0" layoutY="107.0" prefHeight="25.0" prefWidth="200.0" text="Create a lobby or join an existing one" />
+            <Label layoutX="419.0" layoutY="14.0" prefHeight="25.0" prefWidth="123.0" text="Welcome to AZ tractor" />
          </children>
       </AnchorPane>
    </children>

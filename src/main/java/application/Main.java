@@ -14,8 +14,8 @@ public class Main extends Application {
     public void start(Stage stage) throws URISyntaxException, InterruptedException {
         stage.setTitle("AZ Tractor game");
         stage.setResizable(false);
-        GameApplication gameApplication = new GameApplication(stage);
-        gameApplication.startGame(stage);
+        ApplicationIntro applicationIntro = new ApplicationIntro(stage);
+        applicationIntro.startIntro(stage);
     }
 
     @Override

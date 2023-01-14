@@ -11,15 +11,6 @@ public class Shot extends Circle {
 
     public Shot(double v) {
         super(v);
-        isActive = false;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public boolean isActive() {
-        return isActive;
     }
 
     public AnimationTimer getTimer() {
