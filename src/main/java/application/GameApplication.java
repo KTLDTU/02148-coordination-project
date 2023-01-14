@@ -1,10 +1,13 @@
 package application;
 
+import controllers.LobbySceneController;
 import datatypes.HashSetIntArray;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jspace.*;
@@ -22,6 +25,7 @@ public class GameApplication {
     public static final int WINDOW_WIDTH = 960;
     public static final int WINDOW_HEIGHT = 540;
 
+    public static Scene lobbyScene;
     private Scene startScene;
     public String name;
 
@@ -41,6 +45,7 @@ public class GameApplication {
 
         try {
             makeStartScene(stage);
+            makeLobbyScene(stage);
 
             repository = new SpaceRepository();
             serverLobby = new SequentialSpace();
@@ -74,7 +79,7 @@ public class GameApplication {
         // Make buttons
         Button lobbyButton = new Button("Start lobby");
         lobbyButton.setPrefSize(150, 30);
-        lobbyButton.setOnAction(e -> stage.setScene(ApplicationIntro.lobbyScene));
+        lobbyButton.setOnAction(e -> stage.setScene(lobbyScene));
 
         Button roomButton = new Button("Start room");
         roomButton.setPrefSize(150, 30);
@@ -94,11 +99,20 @@ public class GameApplication {
 
         // Make layout and insert buttons
         VBox startLayout = new VBox(20);
-
-        startLayout.getChildren().addAll(gameTitle, lobbyButton, roomButton, gameButton, exitButton,startButton);
-
+        startLayout.getChildren().addAll(gameTitle, lobbyButton, roomButton, gameButton, exitButton, startButton);
         startLayout.setAlignment(Pos.CENTER);
         startScene = new Scene(startLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
+    }
+
+    private void makeLobbyScene(Stage stage) {
+        try {
+            FXMLLoader lobbyLoader = new FXMLLoader(LobbySceneController.class.getResource("/lobbyScene.fxml"));
+            AnchorPane scene = lobbyLoader.load();
+            LobbySceneController lobbyController = lobbyLoader.getController();
+            lobbyScene = new Scene(scene);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void launchRoom(Stage stage) {
