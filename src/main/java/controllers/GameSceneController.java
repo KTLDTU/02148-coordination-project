@@ -9,7 +9,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 
-import java.util.ArrayList;
+import java.util.Collection;
 
 public class GameSceneController {
 
@@ -37,7 +37,7 @@ public class GameSceneController {
             gamePane.getChildren().add(wall);
     }
 
-    public void initializePlayerNames(ArrayList<String> playerNames) {
+    public void initializePlayerNames(Collection<String> playerNames) {
         for (String name : playerNames) {
             HBox nameContainer = new HBox(5);
             Text nameText = new Text(name + ":");

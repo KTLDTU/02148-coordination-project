@@ -30,16 +30,14 @@ public class Game {
     public Space gameSpace;
     public HashMap<Integer, Rectangle> tractors;
     public Rectangle myTractor;
-    public ArrayList<Integer> playerIDs;
-    private ArrayList<String> playerNames;
+    public HashMap<Integer, String> playersIdNameMap;
     public final int MY_PLAYER_ID;
 
-    public Game(Stage stage, Space gameSpace, ArrayList<Integer> playerIDs, int MY_PLAYER_ID, ArrayList<String> playerNames) {
+    public Game(Stage stage, Space gameSpace, HashMap<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
         try {
             this.gameSpace = gameSpace;
-            this.playerIDs = playerIDs;
             this.MY_PLAYER_ID = MY_PLAYER_ID;
-            this.playerNames = playerNames;
+            this.playersIdNameMap = playersIdNameMap;
 
             FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("/game-scene-view.fxml"));
             BorderPane scene = gameLoader.load();
@@ -64,7 +62,7 @@ public class Game {
     }
 
     public void spawnPlayers() {
-        for (Integer playerID : playerIDs) {
+        for (Integer playerID : playersIdNameMap.keySet()) {
             Rectangle newTractor = (playerID == MY_PLAYER_ID ? randomSpawn() : new Rectangle(PLAYER_WIDTH, PLAYER_HEIGHT));
             tractors.put(playerID, newTractor);
             gamePane.getChildren().add(tractors.get(playerID));
@@ -79,7 +77,7 @@ public class Game {
         movementListener.setDaemon(true);
         movementListener.start();
 
-        gameController.initializePlayerNames(playerNames);
+        gameController.initializePlayerNames(playersIdNameMap.values());
     }
 
     private Rectangle randomSpawn() {

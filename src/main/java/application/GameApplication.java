@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class GameApplication {
 
@@ -129,8 +130,11 @@ public class GameApplication {
 
     public void launchGame(Stage stage) {
         try {
-            ArrayList<Integer> playerIDs = new ArrayList<>(Arrays.asList(0, 1, 2, 3)); // assumed this is given from the room
-            ArrayList<String> playerNames = new ArrayList<>(Arrays.asList("Alice", "Bob", "Charlie", "Frank")); // assumed this is given from the room
+            HashMap<Integer, String> playersIdNameMap = new HashMap<>();
+            playersIdNameMap.put(0, "Alice");
+            playersIdNameMap.put(1, "Bob");
+            playersIdNameMap.put(2, "Charlie");
+            playersIdNameMap.put(3, "Frank");
 
             int playerID = (int) clientLobby.get(new ActualField("player id"), new FormalField(Integer.class))[1];
             clientLobby.put("player id", playerID + 1);
@@ -142,7 +146,7 @@ public class GameApplication {
                 serverGameSpace = new SequentialSpace();
                 repository.add("gameSpace" + GAME_ID, serverGameSpace);
 
-                game = new Game(stage, serverGameSpace, playerIDs, playerID, playerNames);
+                game = new Game(stage, serverGameSpace, playersIdNameMap, playerID);
                 game.initializeGrid();
                 game.spawnPlayers();
                 game.gameSpace.put("connected squares", game.grid.connectedSquares);
@@ -151,7 +155,7 @@ public class GameApplication {
                 String clientUri = PROTOCOL + HOST_IP + PORT + "/gameSpace" + GAME_ID + "?keep";
                 clientGameSpace = new RemoteSpace(clientUri);
 
-                game = new Game(stage, clientGameSpace, playerIDs, playerID, playerNames);
+                game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);
 
                 HashSetIntArray connectedSquares = (HashSetIntArray) clientGameSpace.query(new ActualField("connected squares"), new FormalField(HashSetIntArray.class))[1];
                 game.setGrid(connectedSquares);
