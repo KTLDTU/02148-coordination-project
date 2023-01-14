@@ -17,9 +17,7 @@ import org.jspace.FormalField;
 import org.jspace.Space;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class Game {
     public static final double PLAYER_WIDTH = 20, PLAYER_HEIGHT = 15;
@@ -33,6 +31,7 @@ public class Game {
     public Map<Integer, String> playersIdNameMap;
     public final int MY_PLAYER_ID;
     public ShotController shotController;
+    private List<Color> colors = new ArrayList<>(Arrays.asList(Color.ROYALBLUE, Color.MAGENTA, Color.RED, Color.GREEN));
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
         try {
@@ -66,6 +65,7 @@ public class Game {
         for (Integer playerID : playersIdNameMap.keySet()) {
             Rectangle newTractor = (playerID == MY_PLAYER_ID ? randomSpawn() : new Rectangle(PLAYER_WIDTH, PLAYER_HEIGHT));
             tractors.put(playerID, newTractor);
+            newTractor.setFill(colors.get(playerID));
             gamePane.getChildren().add(tractors.get(playerID));
         }
 
@@ -99,7 +99,6 @@ public class Game {
         tractor.setLayoutX(x);
         tractor.setLayoutY(y);
         tractor.setRotate(rotation);
-        tractor.setFill(Color.ROYALBLUE); // color to distinguish from other tractors (temporary - all should have different colors)
         return tractor;
     }
 
