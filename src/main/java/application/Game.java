@@ -31,13 +31,15 @@ public class Game {
     public HashMap<Integer, Rectangle> tractors;
     public Rectangle myTractor;
     public ArrayList<Integer> playerIDs;
+    private ArrayList<String> playerNames;
     public final int MY_PLAYER_ID;
 
-    public Game(Stage stage, Space gameSpace, ArrayList<Integer> playerIDs, int MY_PLAYER_ID) {
+    public Game(Stage stage, Space gameSpace, ArrayList<Integer> playerIDs, int MY_PLAYER_ID, ArrayList<String> playerNames) {
         try {
             this.gameSpace = gameSpace;
             this.playerIDs = playerIDs;
             this.MY_PLAYER_ID = MY_PLAYER_ID;
+            this.playerNames = playerNames;
 
             FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("/game-scene-view.fxml"));
             BorderPane scene = gameLoader.load();
@@ -76,6 +78,8 @@ public class Game {
         Thread movementListener = new Thread(new MovementListener(this));
         movementListener.setDaemon(true);
         movementListener.start();
+
+        gameController.initializePlayerNames(playerNames);
     }
 
     private Rectangle randomSpawn() {

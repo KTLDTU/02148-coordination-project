@@ -20,7 +20,7 @@ import java.util.Arrays;
 
 public class GameApplication {
 
-    public static final String HOST_IP = "10.209.82.248";
+    public static final String HOST_IP = "192.168.0.167";
     public static final String PORT = ":9001";
     public static final String PROTOCOL = "tcp://";
     private static final int GAME_ID = 1535;
@@ -130,6 +130,7 @@ public class GameApplication {
     public void launchGame(Stage stage) {
         try {
             ArrayList<Integer> playerIDs = new ArrayList<>(Arrays.asList(0, 1, 2, 3)); // assumed this is given from the room
+            ArrayList<String> playerNames = new ArrayList<>(Arrays.asList("Alice", "Bob", "Charlie", "Frank")); // assumed this is given from the room
 
             int playerID = (int) clientLobby.get(new ActualField("player id"), new FormalField(Integer.class))[1];
             clientLobby.put("player id", playerID + 1);
@@ -141,7 +142,7 @@ public class GameApplication {
                 serverGameSpace = new SequentialSpace();
                 repository.add("gameSpace" + GAME_ID, serverGameSpace);
 
-                game = new Game(stage, serverGameSpace, playerIDs, playerID);
+                game = new Game(stage, serverGameSpace, playerIDs, playerID, playerNames);
                 game.initializeGrid();
                 game.spawnPlayers();
                 game.gameSpace.put("connected squares", game.grid.connectedSquares);
@@ -150,7 +151,7 @@ public class GameApplication {
                 String clientUri = PROTOCOL + HOST_IP + PORT + "/gameSpace" + GAME_ID + "?keep";
                 clientGameSpace = new RemoteSpace(clientUri);
 
-                game = new Game(stage, clientGameSpace, playerIDs, playerID);
+                game = new Game(stage, clientGameSpace, playerIDs, playerID, playerNames);
 
                 HashSetIntArray connectedSquares = (HashSetIntArray) clientGameSpace.query(new ActualField("connected squares"), new FormalField(HashSetIntArray.class))[1];
                 game.setGrid(connectedSquares);
