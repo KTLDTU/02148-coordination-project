@@ -29,7 +29,7 @@ public class Room {
     private RoomSceneViewController roomController;
     private Space space;
     private String name;
-    private String uri;
+    private String ip;
     private int players = 0;
     private ArrayList<String> playerNames;
 
@@ -37,17 +37,19 @@ public class Room {
         this.space = space;
         playerNames = new ArrayList();
         try {
-            uri = (String) space.query(new ActualField("clientUri"), new FormalField(String.class))[1];
+            ip = (String) space.query(new ActualField("clientIp"), new FormalField(String.class))[1];
             name = (String) space.get(new ActualField("name"), new FormalField(String.class))[1];
-
+            System.out.println("Gets here");
             updatePlayerNames(space);
+            System.out.println("Gets here too");
 
             updateNumberOfPlayers(space);
+            System.out.println("And also here");
 
             roomLoader = new FXMLLoader(RoomSceneViewController.class.getResource(roomFileName));
             chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(chatFileName));
 
-            populateChatBoxConstructor(uri, players, name);
+            populateChatBoxConstructor(ip, players, name);
 
             setupRoomLayout(stage, application);
         } catch (IOException | InterruptedException e) {

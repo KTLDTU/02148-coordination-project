@@ -26,7 +26,7 @@ public class LobbyConnector {
         this.stage = stage;
         this.name = name;
         if(ip == null) ip = "127.0.0.1";
-        URI lobbyUri = new URI("tcp://" + ip + ":9001/lobby?keep");
+        URI lobbyUri = new URI("tcp://" + ip + ":9002/lobby?keep");
         space = new RemoteSpace(lobbyUri);
         Object[] players = space.get(new ActualField("players"), new FormalField(Integer.class));
         space.put("players",(int)players[1]+1);
@@ -38,10 +38,11 @@ public class LobbyConnector {
 
         Button refresh = (Button)lobby.lookup("#refresh");
         ListView rooms = (ListView)lobby.lookup("#rooms");
+        String finalIp = ip;
         createRoomButton.setOnAction(e -> {
             try {
                 createRoom("uri");
-                application.launchRoom(stage);
+                application.hostRoom(stage, finalIp);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -65,7 +66,7 @@ public class LobbyConnector {
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
-                application.launchRoom(stage);
+                application.joinRoom(stage, finalIp);
             }
         });
         stage.setScene(new Scene(lobby, GameApplication.WINDOW_WIDTH, GameApplication.WINDOW_HEIGHT));

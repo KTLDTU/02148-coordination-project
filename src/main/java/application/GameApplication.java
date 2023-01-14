@@ -20,7 +20,7 @@ public class GameApplication {
     public Scene lobbyScene;
     public static final int WINDOW_WIDTH = 960;
     public static final int WINDOW_HEIGHT = 540;
-    public static final String HOST_IP = "10.209.120.222";
+    public static final String HOST_IP = "192.168.1.107";
     public String name = "defaultName";
     SpaceRepository repository;
     SequentialSpace serverLobby;
@@ -52,7 +52,7 @@ public class GameApplication {
         lobbyButton.setOnAction(e -> makeLobbyScene(stage));
         Button roomButton = new Button("Start room");
         roomButton.setPrefSize(150, 30);
-        roomButton.setOnAction(e -> launchRoom(stage));
+        roomButton.setOnAction(e -> hostRoom(stage, HOST_IP));
         Button gameButton = new Button("Start game");
         gameButton.setPrefSize(150, 30);
         gameButton.setOnAction(e -> launchGame(stage));
@@ -67,38 +67,38 @@ public class GameApplication {
         startScene = new Scene(startLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
 
-    public void launchRoom(Stage stage) {
-        try {
-            if (isHost()) {
-                // temp name
-                name = "bob";
-                System.out.println("Host is creating a new room");
-                repository = new SpaceRepository();
-                serverRoom = new SequentialSpace();
-
-                repository.add("room", serverRoom);
-                String uri = "tcp://" + HOST_IP + ":9001/?keep";
-                String clientUri = "tcp://" + HOST_IP + ":9001/room?keep";
-                repository.addGate(uri);
-
-                serverRoom.put("turn", 1);
-                serverRoom.put("players", 1);
-                serverRoom.put("readers", 0);
-
-                serverRoom.put("clientUri", clientUri);
-                serverRoom.put("name", name);
-                new Room(stage, this, serverRoom);
-            } else {
-                // temp name
-                name = "charlie";
-                System.out.println("Client joining room");
-                String uri = "tcp://" + HOST_IP + ":9001/room?keep";
-                clientRoom = new RemoteSpace(uri);
-                clientRoom.put("name", name);
-                new Room(stage, this, clientRoom);
-            }
-
+    public void joinRoom(Stage stage, String ip){
+        try{
+            System.out.println("Client joining room");
+            String uri = "tcp://" + ip + ":9001/room?keep";
+            clientRoom = new RemoteSpace(uri);
+            clientRoom.put("name", name);
+            new Room(stage, this, clientRoom);
         } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void hostRoom(Stage stage, String ip) {
+        try {
+            System.out.println("Host is creating a new room");
+            repository = new SpaceRepository();
+            serverRoom = new SequentialSpace();
+
+            repository.add("room", serverRoom);
+            String uri = "tcp://" + ip + ":9001/?keep";
+            String clientUri = "tcp://" + ip + ":9001/room?keep";
+            repository.addGate(uri);
+
+            serverRoom.put("turn", 1);
+            serverRoom.put("players", 1);
+            serverRoom.put("readers", 0);
+
+            serverRoom.put("clientIp", ip);
+            serverRoom.put(name, ip);
+            serverRoom.put("name",name);
+            new Room(stage, this, serverRoom);
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
@@ -151,7 +151,7 @@ public class GameApplication {
 
     private void makeLobbyScene(Stage stage) {
         try {
-            new LobbyConnector(stage, this, null, name);
+            new LobbyConnector(stage, this, "192.168.1.107", name);
         } catch (IOException | URISyntaxException | InterruptedException e) {
             throw new RuntimeException(e);
         }

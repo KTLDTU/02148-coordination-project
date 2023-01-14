@@ -12,9 +12,9 @@ public class Lobby {
 
     public Lobby(String ip) throws URISyntaxException, InterruptedException {
         if (ip == null) {
-            ip = "tcp://127.0.0.1:9001/?keep";
+            ip = "127.0.0.1";
         }
-        this.ip = new URI("tcp://" + ip + ":9001/?keep");
+        this.ip = new URI("tcp://" + ip + ":9002/?keep");
         String gateUri = "tcp://" + this.ip.getHost() + ":" + this.ip.getPort() + "?keep";
         spaceRepository.addGate(gateUri);
         spaceRepository.add("lobby",space);

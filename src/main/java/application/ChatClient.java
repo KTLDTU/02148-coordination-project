@@ -13,13 +13,14 @@ public class ChatClient {
     private Thread thread;
     private String name;
 
-    public ChatClient(String uri, int player, String name) {
+    public ChatClient(String ip, int player, String name) {
         try {
             this.name = name;
-            if (uri == null) {
-                uri = "tcp://127.0.0.1:9001/room?keep";
+            if (ip == null) {
+                ip = "127.0.0.1";
             }
-            chat = new RemoteSpace(uri);
+            System.out.println(ip);
+            chat = new RemoteSpace("tcp://" + ip + ":9001/room?keep");
             messages = new QueueSpace();
             receiver = new Receiver(chat, messages, player);
             thread = new Thread(receiver);
