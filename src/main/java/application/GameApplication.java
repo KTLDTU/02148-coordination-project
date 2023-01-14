@@ -33,7 +33,7 @@ public class GameApplication {
     private Scene startScene;
     public String name;
 
-    public boolean isHost;
+    public static boolean isHost;
     SpaceRepository repository;
     SequentialSpace serverLobby;
     SequentialSpace serverRoom;
