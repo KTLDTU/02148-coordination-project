@@ -91,7 +91,7 @@ public class Room {
 
         Button lobbyButton = (Button) roomLayout.lookup("#lobbyButton");
         Button startGameButton = (Button) roomLayout.lookup("#startGameButton");
-        lobbyButton.setOnAction(e -> stage.setScene(application.lobbyScene));
+        lobbyButton.setOnAction(e -> stage.setScene(GameApplication.lobbyScene));
         startGameButton.setOnAction(e -> application.launchGame(stage));
         roomController.setRoomNameText(hostName);
 
