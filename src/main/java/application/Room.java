@@ -2,11 +2,11 @@ package application;
 
 import controllers.ChatBoxViewController;
 import controllers.RoomSceneViewController;
+import datatypes.ArrayListInt;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
@@ -32,24 +32,27 @@ public class Room {
     private Space space;
     private String name;
     private String uri;
+    private int playerId;
     private int players = 0;
     private ArrayList<String> playerNames;
-
+    private ArrayListInt playerIds;
     public Room(Stage stage, GameApplication application, Space space) {
         this.space = space;
         playerNames = new ArrayList();
+        playerIds = new ArrayListInt();
         try {
             uri = (String) space.query(new ActualField("clientUri"), new FormalField(String.class))[1];
             name = (String) space.get(new ActualField("name"), new FormalField(String.class))[1];
+            playerId = (int) space.get(new ActualField("player id"), new FormalField(Integer.class))[1];
 
             updatePlayerNames(space);
 
-            updateNumberOfPlayers(space);
+            updatePlayerIds(space);
 
             roomLoader = new FXMLLoader(RoomSceneViewController.class.getResource(roomFileName));
             chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(chatFileName));
 
-            populateChatBoxConstructor(uri, players, name);
+            populateChatBoxConstructor(uri, playerNames.size(), name);
 
             setupRoomLayout(stage, application);
         } catch (IOException | InterruptedException e) {
@@ -59,13 +62,13 @@ public class Room {
 
     }
 
-    private void updateNumberOfPlayers(Space space) throws InterruptedException {
-        Object[] numberOfPlayers = space.getp(new ActualField("numberOfPlayer"), new FormalField(Integer.class));
-        if (numberOfPlayers != null) {
-            players = (int) numberOfPlayers[1];
+    private void updatePlayerIds(Space space) throws InterruptedException {
+        Object[] listOfPlayerIds = space.getp(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
+        if (listOfPlayerIds != null) {
+            playerIds = (ArrayListInt) listOfPlayerIds[1];
         }
-        players++;
-        space.put("numberOfPlayer", players);
+        playerIds.add(playerId);
+        space.put("playerIdList", playerIds);
     }
 
     private void updatePlayerNames(Space space) throws InterruptedException {

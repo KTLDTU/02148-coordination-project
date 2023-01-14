@@ -17,8 +17,8 @@ import org.jspace.FormalField;
 import org.jspace.Space;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class Game {
@@ -30,10 +30,10 @@ public class Game {
     public Space gameSpace;
     public HashMap<Integer, Rectangle> tractors;
     public Rectangle myTractor;
-    public HashMap<Integer, String> playersIdNameMap;
+    public Map<Integer, String> playersIdNameMap;
     public final int MY_PLAYER_ID;
 
-    public Game(Stage stage, Space gameSpace, HashMap<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
+    public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
         try {
             this.gameSpace = gameSpace;
             this.MY_PLAYER_ID = MY_PLAYER_ID;
