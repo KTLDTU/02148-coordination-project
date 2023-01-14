@@ -1,10 +1,11 @@
 package application;
 
 import controllers.LobbySceneController;
+import controllers.PlayerNameInputController;
 import datatypes.HashSetIntArray;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
@@ -13,23 +14,26 @@ import javafx.stage.Stage;
 import org.jspace.*;
 
 import java.io.IOException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class GameApplication {
 
-    private static String HOST_IP;
+
+    public static final String HOST_IP = "192.168.72.144";
+
     public static final String PORT = ":9001";
     public static final String PROTOCOL = "tcp://";
     private static final int GAME_ID = 1535;
     public static final int WINDOW_WIDTH = 960;
     public static final int WINDOW_HEIGHT = 540;
-
-    public static Scene lobbyScene;
+    
+    private Scene nameInputScene;
     private Scene startScene;
-    public String name;
+    public Scene lobbyScene;
+    public String name = "defaultName";
 
-    public boolean isHost;
     SpaceRepository repository;
     SequentialSpace serverLobby;
     SequentialSpace serverRoom;
@@ -38,12 +42,10 @@ public class GameApplication {
     RemoteSpace clientRoom;
     RemoteSpace clientGameSpace;
 
-    public GameApplication(Stage stage, String HOST_IP, boolean isHost, String name) {
-        GameApplication.HOST_IP = HOST_IP;
-        this.isHost = isHost;
-        this.name = name;
-
+    public GameApplication(Stage stage) {
         try {
+            Lobby lobby = new Lobby("192.168.1.7");
+            makeNameInputScene(stage);
             makeStartScene(stage);
             makeLobbyScene(stage);
 
@@ -56,9 +58,9 @@ public class GameApplication {
             String clientUri = PROTOCOL + HOST_IP + PORT + "/lobby?keep";
             clientLobby = new RemoteSpace(clientUri);
 
-            if (isHost)
+            if (isHost())
                 serverLobby.put("player id", 0);
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
@@ -69,7 +71,7 @@ public class GameApplication {
     }
 
     private void showStartScene(Stage stage) {
-        stage.setScene(startScene);
+        stage.setScene(nameInputScene);
         stage.centerOnScreen();
     }
 
@@ -79,45 +81,27 @@ public class GameApplication {
         // Make buttons
         Button lobbyButton = new Button("Start lobby");
         lobbyButton.setPrefSize(150, 30);
-        lobbyButton.setOnAction(e -> stage.setScene(lobbyScene));
-
+        lobbyButton.setOnAction(e -> makeLobbyScene(stage));
         Button roomButton = new Button("Start room");
         roomButton.setPrefSize(150, 30);
         roomButton.setOnAction(e -> launchRoom(stage));
-
         Button gameButton = new Button("Start game");
         gameButton.setPrefSize(150, 30);
         gameButton.setOnAction(e -> launchGame(stage));
-
         Button exitButton = new Button("Exit");
         exitButton.setPrefSize(150, 30);
         exitButton.setOnAction(e -> stage.close());
 
-        Button startButton = new Button("start main menu");
-        startButton.setPrefSize(150, 30);
-        startButton.setOnAction(e -> stage.setScene(ApplicationIntro.createOrJoinScene));
-
         // Make layout and insert buttons
         VBox startLayout = new VBox(20);
-        startLayout.getChildren().addAll(gameTitle, lobbyButton, roomButton, gameButton, exitButton, startButton);
+        startLayout.getChildren().addAll(gameTitle, lobbyButton, roomButton, gameButton, exitButton);
         startLayout.setAlignment(Pos.CENTER);
         startScene = new Scene(startLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
 
-    private void makeLobbyScene(Stage stage) {
+    public void launchRoom(Stage stage) {
         try {
-            FXMLLoader lobbyLoader = new FXMLLoader(LobbySceneController.class.getResource("/lobbyScene.fxml"));
-            AnchorPane scene = lobbyLoader.load();
-            LobbySceneController lobbyController = lobbyLoader.getController();
-            lobbyScene = new Scene(scene);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void launchRoom(Stage stage) {
-        try {
-            if (isHost) {
+            if (isHost()) {
                 System.out.println("Host is creating a new room");
                 serverRoom = new SequentialSpace();
 
@@ -130,7 +114,7 @@ public class GameApplication {
                 serverRoom.put("players", 1);
                 serverRoom.put("readers", 0);
 
-                serverRoom.put("clientUri", clientUri);
+                serverRoom.put("clientIp", HOST_IP);
                 serverRoom.put("name", name);
                 new Room(stage, this, serverRoom);
             } else {
@@ -155,7 +139,7 @@ public class GameApplication {
             System.out.println("Player id: " + playerID);
             Game game;
 
-            if (isHost) {
+            if (isHost()) {
                 System.out.println("Host is creating a new game...");
                 serverGameSpace = new SequentialSpace();
                 repository.add("gameSpace" + GAME_ID, serverGameSpace);
@@ -179,6 +163,45 @@ public class GameApplication {
             stage.setScene(game.gameScene);
             game.gameScene.getRoot().requestFocus();
         } catch (InterruptedException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean isHost() {
+        String ip;
+
+        try (final DatagramSocket socket = new DatagramSocket()) {
+            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+            ip = socket.getLocalAddress().getHostAddress();
+        } catch (SocketException | UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+
+        return ip.equals(HOST_IP);
+    }
+
+    private void makeLobbyScene(Stage stage) {
+        try {
+            new LobbyConnector(stage, this, "192.168.1.7", name);
+        } catch (IOException | URISyntaxException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void makeNameInputScene(Stage stage) {
+        try {
+            FXMLLoader playerInputLoader = new FXMLLoader(PlayerNameInputController.class.getResource("/player-name-input.fxml"));
+            VBox scene = playerInputLoader.load();
+            PlayerNameInputController playerNameInputController = playerInputLoader.getController();
+            playerNameInputController.continueButton.setOnAction(e -> {
+                String nameInput = playerNameInputController.inputNameField.getText().trim();
+                if (!nameInput.isEmpty()) {
+                    name = nameInput;
+                }
+                stage.setScene(startScene);
+            });
+            nameInputScene = new Scene(scene, WINDOW_WIDTH, WINDOW_HEIGHT);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
