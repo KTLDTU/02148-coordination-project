@@ -18,6 +18,7 @@ import org.jspace.Space;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Room {
 
@@ -37,6 +38,7 @@ public class Room {
     private ArrayList<String> playerNames;
     private ArrayListInt playerIds;
     private String hostName;
+
     public Room(Stage stage, GameApplication application, Space space) {
         this.space = space;
         playerNames = new ArrayList();
@@ -47,9 +49,9 @@ public class Room {
             name = (String) space.get(new ActualField("name"), new FormalField(String.class))[1];
             playerId = (int) space.get(new ActualField("player id"), new FormalField(Integer.class))[1];
 
-            updatePlayerNames(space);
+            initializePlayerNames(space);
 
-            updatePlayerIds(space);
+            initializePlayerIds(space);
 
             roomLoader = new FXMLLoader(RoomSceneViewController.class.getResource(roomFileName));
             chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(chatFileName));
@@ -64,7 +66,7 @@ public class Room {
 
     }
 
-    private void updatePlayerIds(Space space) throws InterruptedException {
+    private void initializePlayerIds(Space space) throws InterruptedException {
         Object[] listOfPlayerIds = space.getp(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
         if (listOfPlayerIds != null) {
             playerIds = (ArrayListInt) listOfPlayerIds[1];
@@ -73,7 +75,7 @@ public class Room {
         space.put("playerIdList", playerIds);
     }
 
-    private void updatePlayerNames(Space space) throws InterruptedException {
+    private void initializePlayerNames(Space space) throws InterruptedException {
         Object[] playerNameLists = space.getp(new ActualField("playerNameList"), new FormalField(ArrayList.class));
         if (playerNameLists != null) {
             playerNames = (ArrayList<String>) playerNameLists[1];
@@ -91,7 +93,17 @@ public class Room {
 
         Button lobbyButton = (Button) roomLayout.lookup("#lobbyButton");
         Button startGameButton = (Button) roomLayout.lookup("#startGameButton");
-        lobbyButton.setOnAction(e -> stage.setScene(GameApplication.lobbyScene));
+        lobbyButton.setOnAction(e -> {
+            try {
+                ArrayList<String> playerNames = (ArrayList<String>) space.get(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
+                playerNames.remove(name);
+                space.put("playerNameList", playerNames);
+                // TODO: switch to lobby scene
+                stage.setScene(GameApplication.startScene);
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         startGameButton.setOnAction(e -> application.launchGame(stage));
         roomController.setRoomNameText(hostName);
 
