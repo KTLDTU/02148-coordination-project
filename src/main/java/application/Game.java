@@ -230,7 +230,11 @@ class KillListener implements Runnable {
                 int shotID = (int) obj[3];
 
                 Platform.runLater(() -> {
-                    game.shotController.removeShot(game.shots.get(shotID));
+                    Shot shot = game.shots.get(shotID);
+
+                    if (shot != null)
+                        game.shotController.removeShot(shot);
+
                     game.gamePane.getChildren().remove(game.tractors.get(playerID));
                     game.tractors.remove(playerID);
 
