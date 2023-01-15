@@ -1,8 +1,6 @@
 package controllers;
 
-import application.Game;
-import application.Shot;
-import application.ShotBroadcaster;
+import application.*;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.BooleanProperty;
@@ -119,17 +117,31 @@ public class ShotController {
         if (game.grid.isWallCollisionVertical(shot))
             shot.setRotate(invertAngleVertical(shot.getRotate()));
 
-        // If a shot is active and it hits a tractor, ded
-        // TODO: this should be in Game.java, but only used for host, who controls who dies (since every shot and player might not be synchronized perfectly)
-        for (Map.Entry<Integer, Rectangle> entry : game.tractors.entrySet()) {
-            Rectangle tractor = entry.getValue();
+        // If a shot hits a tractor, ded
+        if (GameApplication.isHost) {
+            for (Map.Entry<Integer, Rectangle> playerEntry : game.tractors.entrySet()) {
+                Rectangle tractor = playerEntry.getValue();
 
-            if (game.grid.isCollision(shot, tractor)) {
-                shot.getDelay().stop();
-                gamePane.getChildren().remove(shot); // TODO: Remove tractor too.
-//            gamePane.getChildren().remove(movementController.tractor);
-                shot.getTimer().stop();
-                shots--;
+                if (game.grid.isCollision(shot, tractor)) {
+                    int playerID = playerEntry.getKey();
+                    int shotID = -1;
+
+                    // TODO: find a better way to get shotID from shot - perhaps store it as variable in Shot class
+                    for (Map.Entry<Integer, Shot> shotEntry : game.shots.entrySet()) {
+                        if (shotEntry.getValue().equals(shot)) {
+                            shotID = shotEntry.getKey();
+                            break;
+                        }
+                    }
+
+                    if (shotID == -1) {
+                        System.err.println("ERROR: Couldn't find shot in game.shots");
+                        continue;
+                    }
+
+                    new Thread(new KillBroadcaster(game, playerID, shotID)).start();
+                    break;
+                }
             }
         }
     }
