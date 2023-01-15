@@ -55,11 +55,6 @@ public class Game {
         }
     }
 
-    public void initializeGrid() {
-        grid = new Grid(gamePane);
-        gameController.displayGrid(grid);
-    }
-
     public void setGrid(HashSetIntArray connectedSquares) {
         grid = new Grid(gamePane, connectedSquares);
         gameController.displayGrid(grid);
@@ -128,6 +123,23 @@ public class Game {
 
     public void incrementPlayerScores() {
         // TODO
+    }
+
+    public void newGame() {
+        try {
+            if (GameApplication.isHost) {
+                Grid grid = new Grid(gamePane);
+
+                for (int playerID : playersIdNameMap.keySet())
+                    gameSpace.put("connected squares", playerID, grid.connectedSquares);
+            }
+
+            HashSetIntArray connectedSquares = (HashSetIntArray) gameSpace.get(new ActualField("connected squares"), new ActualField(MY_PLAYER_ID), new FormalField(HashSetIntArray.class))[2];
+            setGrid(connectedSquares);
+            spawnPlayers();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 
@@ -262,7 +274,7 @@ class GameEndListener implements Runnable {
         try {
             game.gameSpace.get(new ActualField("game end"), new ActualField(game.MY_PLAYER_ID));
             game.incrementPlayerScores();
-            System.out.println("game has ended, new game should start now"); // TODO
+            game.newGame();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

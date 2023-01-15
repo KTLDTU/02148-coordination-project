@@ -190,21 +190,15 @@ public class GameApplication {
                 repository.add("gameSpace" + GAME_ID, serverGameSpace);
 
                 game = new Game(stage, serverGameSpace, playersIdNameMap, playerID);
-                game.initializeGrid();
-                game.spawnPlayers();
-                game.gameSpace.put("connected squares", game.grid.connectedSquares);
             } else {
                 System.out.println("Client is getting existing game...");
                 String clientUri = PROTOCOL + HOST_IP + PORT + "/gameSpace" + GAME_ID + "?keep";
                 clientGameSpace = new RemoteSpace(clientUri);
 
                 game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);
-
-                HashSetIntArray connectedSquares = (HashSetIntArray) clientGameSpace.query(new ActualField("connected squares"), new FormalField(HashSetIntArray.class))[1];
-                game.setGrid(connectedSquares);
-                game.spawnPlayers();
             }
 
+            game.newGame();
             stage.setScene(game.gameScene);
             game.gameScene.getRoot().requestFocus();
         } catch (InterruptedException | IOException e) {
