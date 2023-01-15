@@ -12,9 +12,7 @@ import javafx.util.Duration;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 
 public class ShotController {
 
@@ -23,14 +21,14 @@ public class ShotController {
     private static final double SHOT_DISTANCE_FROM_TRACTOR_CENTER = Game.PLAYER_WIDTH / 2 + SHOT_RADIUS;
     private static final int MAX_ACTIVE_SHOTS = 6;
     private static final int SHOT_SPEED = 3;
-    private int shots;
+    private int ownNumShots;
     private Pane gamePane;
     private Game game;
 
     public ShotController(Game game) {
         this.game = game;
         gamePane = game.gamePane;
-        shots = 0;
+        ownNumShots = 0;
 
         spacePressed.addListener((((observableValue, aBoolean, t1) -> {
             if (!aBoolean) timer.start();
@@ -41,8 +39,8 @@ public class ShotController {
     AnimationTimer timer = new AnimationTimer() {
         @Override
         public void handle(long timestamp) {
-            if (spacePressed.get() && shots < MAX_ACTIVE_SHOTS) {
-                shots++; // TODO: counter will not be correct, since it's decremented every time ANY shot disappears
+            if (spacePressed.get() && ownNumShots < MAX_ACTIVE_SHOTS) {
+                ownNumShots++;
                 spacePressed.set(false);
 
                 // Place shot in front of tractor
@@ -67,8 +65,8 @@ public class ShotController {
         }
     };
 
-    public Shot shoot(double x, double y, double angleInDegrees) {
-        Shot shot = new Shot(SHOT_RADIUS);
+    public Shot shoot(double x, double y, double angleInDegrees, int playerID) {
+        Shot shot = new Shot(SHOT_RADIUS, playerID);
         shot.setLayoutX(x);
         shot.setLayoutY(y);
         shot.setRotate(angleInDegrees);
@@ -91,7 +89,9 @@ public class ShotController {
         shot.getDelay().stop();
         gamePane.getChildren().remove(shot);
         shot.getTimer().stop();
-        shots--;
+
+        if (shot.getPlayerID() == game.MY_PLAYER_ID)
+            ownNumShots--;
     }
 
     private AnimationTimer updateShotTimer(Shot shot) {

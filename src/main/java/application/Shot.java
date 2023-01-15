@@ -5,12 +5,13 @@ import javafx.animation.PauseTransition;
 import javafx.scene.shape.Circle;
 
 public class Shot extends Circle {
-    private boolean isActive;
     private AnimationTimer timer;
     private PauseTransition delay;
+    private int playerID;
 
-    public Shot(double v) {
+    public Shot(double v, int playerID) {
         super(v);
+        this.playerID = playerID;
     }
 
     public AnimationTimer getTimer() {
@@ -27,5 +28,9 @@ public class Shot extends Circle {
 
     public void setDelay(PauseTransition delay) {
         this.delay = delay;
+    }
+
+    public int getPlayerID() {
+        return playerID;
     }
 }

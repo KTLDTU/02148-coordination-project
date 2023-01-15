@@ -169,7 +169,7 @@ class ShotListener implements Runnable {
                 double shotRot = (double) obj[6];
 
                 Platform.runLater(() -> {
-                    Shot shot = game.shotController.shoot(shotX, shotY, shotRot);
+                    Shot shot = game.shotController.shoot(shotX, shotY, shotRot, playerID);
                     game.shots.put(shotID, shot);
 
                     // if a player shoots directly into a wall, they die immediately
