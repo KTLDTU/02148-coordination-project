@@ -161,7 +161,6 @@ class ShotListener implements Runnable {
         try {
             while (true) {
                 Object[] obj = game.gameSpace.get(new ActualField("new shot"), new FormalField(Integer.class), new ActualField(game.MY_PLAYER_ID), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
-//                System.out.println("got new shot");
                 int playerID = (int) obj[1];
                 int shotID = (int) obj[3];
                 double shotX = (double) obj[4];
@@ -169,7 +168,7 @@ class ShotListener implements Runnable {
                 double shotRot = (double) obj[6];
 
                 Platform.runLater(() -> {
-                    Shot shot = game.shotController.shoot(shotX, shotY, shotRot, playerID);
+                    Shot shot = game.shotController.shoot(shotX, shotY, shotRot, playerID, shotID);
                     game.shots.put(shotID, shot);
 
                     // if a player shoots directly into a wall, they die immediately

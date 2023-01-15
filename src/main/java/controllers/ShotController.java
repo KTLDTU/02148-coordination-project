@@ -65,8 +65,8 @@ public class ShotController {
         }
     };
 
-    public Shot shoot(double x, double y, double angleInDegrees, int playerID) {
-        Shot shot = new Shot(SHOT_RADIUS, playerID);
+    public Shot shoot(double x, double y, double angleInDegrees, int playerID, int shotID) {
+        Shot shot = new Shot(SHOT_RADIUS, playerID, shotID);
         shot.setLayoutX(x);
         shot.setLayoutY(y);
         shot.setRotate(angleInDegrees);
@@ -92,6 +92,8 @@ public class ShotController {
 
         if (shot.getPlayerID() == game.MY_PLAYER_ID)
             ownNumShots--;
+
+        game.shots.remove(shot.getShotID());
     }
 
     private AnimationTimer updateShotTimer(Shot shot) {
@@ -119,27 +121,12 @@ public class ShotController {
 
         // If a shot hits a tractor, ded
         if (GameApplication.isHost) {
-            for (Map.Entry<Integer, Rectangle> playerEntry : game.tractors.entrySet()) {
-                Rectangle tractor = playerEntry.getValue();
+            for (Map.Entry<Integer, Rectangle> entry : game.tractors.entrySet()) {
+                Rectangle tractor = entry.getValue();
 
                 if (game.grid.isCollision(shot, tractor)) {
-                    int playerID = playerEntry.getKey();
-                    int shotID = -1;
-
-                    // TODO: find a better way to get shotID from shot - perhaps store it as variable in Shot class
-                    for (Map.Entry<Integer, Shot> shotEntry : game.shots.entrySet()) {
-                        if (shotEntry.getValue().equals(shot)) {
-                            shotID = shotEntry.getKey();
-                            break;
-                        }
-                    }
-
-                    if (shotID == -1) {
-                        System.err.println("ERROR: Couldn't find shot in game.shots");
-                        continue;
-                    }
-
-                    new Thread(new KillBroadcaster(game, playerID, shotID)).start();
+                    int playerID = entry.getKey();
+                    new Thread(new KillBroadcaster(game, playerID, shot.getShotID())).start();
                     break;
                 }
             }

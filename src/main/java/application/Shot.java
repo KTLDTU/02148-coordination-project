@@ -8,10 +8,12 @@ public class Shot extends Circle {
     private AnimationTimer timer;
     private PauseTransition delay;
     private int playerID;
+    private int shotID;
 
-    public Shot(double v, int playerID) {
+    public Shot(double v, int playerID, int shotID) {
         super(v);
         this.playerID = playerID;
+        this.shotID = shotID;
     }
 
     public AnimationTimer getTimer() {
@@ -32,5 +34,9 @@ public class Shot extends Circle {
 
     public int getPlayerID() {
         return playerID;
+    }
+
+    public int getShotID() {
+        return shotID;
     }
 }
