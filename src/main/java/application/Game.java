@@ -81,13 +81,17 @@ public class Game {
         movementListener.setDaemon(true);
         movementListener.start();
 
-        Thread shotListener = new Thread((new ShotListener(this)));
+        Thread shotListener = new Thread(new ShotListener(this));
         shotListener.setDaemon(true);
         shotListener.start();
 
-        Thread killListener = new Thread((new KillListener(this)));
+        Thread killListener = new Thread(new KillListener(this));
         killListener.setDaemon(true);
         killListener.start();
+
+        Thread gameEndListener = new Thread(new GameEndListener(this));
+        gameEndListener.setDaemon(true);
+        gameEndListener.start();
 
         if (GameApplication.isHost) {
             try {
@@ -116,6 +120,14 @@ public class Game {
         tractor.setRotate(rotation);
         tractor.setFill(Color.ROYALBLUE); // color to distinguish from other tractors (temporary - all should have different colors)
         return tractor;
+    }
+
+    public int numPlayersAlive() {
+        return tractors.size();
+    }
+
+    public void incrementPlayerScores() {
+        // TODO
     }
 }
 
@@ -202,11 +214,55 @@ class KillListener implements Runnable {
                 Platform.runLater(() -> {
                     game.shotController.removeShot(game.shots.get(shotID));
                     game.gamePane.getChildren().remove(game.tractors.get(playerID));
+                    game.tractors.remove(playerID);
+
+                    if (GameApplication.isHost && game.numPlayersAlive() == 1)
+                        new Thread(new GameEndTimer(game)).start();
                 });
 
                 if (playerID == game.MY_PLAYER_ID)
                     game.inputListener.disable();
             }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
+class GameEndTimer implements Runnable {
+    private final int GAME_END_DELAY_IN_MS = 2000;
+    private Game game;
+
+    public GameEndTimer(Game game) {
+        this.game = game;
+    }
+
+    @Override
+    public void run() {
+        try {
+            Thread.sleep(GAME_END_DELAY_IN_MS);
+
+            for (int playerID : game.playersIdNameMap.keySet())
+                game.gameSpace.put("game end", playerID);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
+class GameEndListener implements Runnable {
+    private Game game;
+
+    public GameEndListener(Game game) {
+        this.game = game;
+    }
+
+    @Override
+    public void run() {
+        try {
+            game.gameSpace.get(new ActualField("game end"), new ActualField(game.MY_PLAYER_ID));
+            game.incrementPlayerScores();
+            System.out.println("game has ended, new game should start now"); // TODO
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

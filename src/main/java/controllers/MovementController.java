@@ -22,8 +22,6 @@ public class MovementController {
     public final Rectangle tractor;
     private Long lastBroadcast;
 
-    // TODO: something so player cannot move/shoot after ded
-
     public MovementController(Game game) {
         this.game = game;
         this.tractor = game.myTractor;
