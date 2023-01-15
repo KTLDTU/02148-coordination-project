@@ -34,6 +34,7 @@ public class Game {
     public final int MY_PLAYER_ID;
     public ShotController shotController;
     public HashMap<Integer, Shot> shots;
+    public InputListener inputListener;
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
         try {
@@ -74,7 +75,7 @@ public class Game {
         myTractor = tractors.get(MY_PLAYER_ID);
         MovementController movementController = new MovementController(this);
         shotController = new ShotController(this);
-        new InputListener(this, movementController, shotController);
+        inputListener = new InputListener(this, movementController, shotController);
 
         Thread movementListener = new Thread(new MovementListener(this));
         movementListener.setDaemon(true);
@@ -202,6 +203,9 @@ class KillListener implements Runnable {
                     game.shotController.removeShot(game.shots.get(shotID));
                     game.gamePane.getChildren().remove(game.tractors.get(playerID));
                 });
+
+                if (playerID == game.MY_PLAYER_ID)
+                    game.inputListener.disable();
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
