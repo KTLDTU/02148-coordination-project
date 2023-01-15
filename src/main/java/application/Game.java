@@ -45,11 +45,19 @@ public class Game {
             FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("/game-scene-view.fxml"));
             BorderPane scene = gameLoader.load();
             gameController = gameLoader.getController();
+            gamePane = gameController.gamePane;
             gameScene = new Scene(scene);
             stage.setScene(gameScene);
-            tractors = new HashMap<>();
-            shots = new HashMap<>();
-            gamePane = gameController.gamePane;
+
+            if (GameApplication.isHost) {
+                try {
+                    gameSpace.put("shot id", 0);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            gameController.initializePlayerNames(playersIdNameMap.values());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -57,14 +65,14 @@ public class Game {
 
     public void setGrid(HashSetIntArray connectedSquares) {
         grid = new Grid(gamePane, connectedSquares);
-        gameController.displayGrid(grid);
+        Platform.runLater(() -> gameController.displayGrid(grid));
     }
 
     public void spawnPlayers() {
         for (Integer playerID : playersIdNameMap.keySet()) {
             Rectangle newTractor = (playerID == MY_PLAYER_ID ? randomSpawn() : new Rectangle(PLAYER_WIDTH, PLAYER_HEIGHT));
             tractors.put(playerID, newTractor);
-            gamePane.getChildren().add(tractors.get(playerID));
+            Platform.runLater(() -> gamePane.getChildren().add(tractors.get(playerID)));
         }
 
         myTractor = tractors.get(MY_PLAYER_ID);
@@ -87,16 +95,6 @@ public class Game {
         Thread gameEndListener = new Thread(new GameEndListener(this));
         gameEndListener.setDaemon(true);
         gameEndListener.start();
-
-        if (GameApplication.isHost) {
-            try {
-                gameSpace.put("shot id", 0);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        gameController.initializePlayerNames(playersIdNameMap.values());
     }
 
     private Rectangle randomSpawn() {
@@ -126,6 +124,10 @@ public class Game {
     }
 
     public void newGame() {
+        Platform.runLater(() -> gamePane.getChildren().clear());
+        tractors = new HashMap<>();
+        shots = new HashMap<>();
+
         try {
             if (GameApplication.isHost) {
                 Grid grid = new Grid(gamePane);
@@ -136,10 +138,12 @@ public class Game {
 
             HashSetIntArray connectedSquares = (HashSetIntArray) gameSpace.get(new ActualField("connected squares"), new ActualField(MY_PLAYER_ID), new FormalField(HashSetIntArray.class))[2];
             setGrid(connectedSquares);
-            spawnPlayers();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        spawnPlayers();
+        new Thread(new PlayerPositionBroadcaster(this)).start();
     }
 }
 
@@ -163,9 +167,11 @@ class MovementListener implements Runnable {
                 Rectangle tractor = game.tractors.get(playerID);
 
                 Platform.runLater(() -> {
-                    tractor.setLayoutX(tractorX);
-                    tractor.setLayoutY(tractorY);
-                    tractor.setRotate(tractorRot);
+                    if (tractor != null) {
+                        tractor.setLayoutX(tractorX);
+                        tractor.setLayoutY(tractorY);
+                        tractor.setRotate(tractorRot);
+                    }
                 });
             }
         } catch (InterruptedException e) {
