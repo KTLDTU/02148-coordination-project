@@ -1,6 +1,7 @@
 package controllers;
 
 import application.*;
+import broadcasters.ShotBroadcaster;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.BooleanProperty;
