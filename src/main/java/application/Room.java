@@ -125,7 +125,7 @@ public class Room {
         new Thread(new RoomPlayerListener(space, roomController)).start();
 
         if (!isHost)
-            new Thread(new StartGameListener(stage, space, application)).start();
+            new Thread(new StartGameListener(stage, space, application, ip, isHost)).start();
     }
 
     private void populateChatBoxConstructor(String uri, int players, String name) {
@@ -186,18 +186,22 @@ class StartGameListener implements Runnable {
     private Stage stage;
     private Space space;
     private GameApplication application;
+    private String ip;
+    private boolean isHost;
 
-    public StartGameListener(Stage stage, Space space, GameApplication application) {
+    public StartGameListener(Stage stage, Space space, GameApplication application, String ip, boolean isHost) {
         this.stage = stage;
         this.space = space;
         this.application = application;
+        this.ip = ip;
+        this.isHost = isHost;
     }
 
     @Override
     public void run() {
         try {
             space.get(new ActualField("start game"));
-            Platform.runLater(() -> application.launchGame(stage));
+            Platform.runLater(() -> application.launchGame(stage, ip, isHost));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
