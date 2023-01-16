@@ -95,7 +95,7 @@ public class Room {
         startGameButton.setOnAction(e -> {
             try {
                 application.launchGame(stage);
-                for (int i = 0; i < playerNames.size(); i++) {
+                for (int i = 0; i < playerNames.size() - 1; i++) {
                     space.put("start game");
                 }
             } catch (InterruptedException ex) {
@@ -111,7 +111,9 @@ public class Room {
 
         // After we've set up the scene we start the listener thread to update the ListView when newp players join
         new Thread(new RoomPlayerListener(space, roomController)).start();
-        new Thread(new StartGameListener(stage, space, application)).start();
+
+        if (!GameApplication.isHost)
+            new Thread(new StartGameListener(stage, space, application)).start();
     }
 
     private void populateChatBoxConstructor(String uri, int players, String name) {
