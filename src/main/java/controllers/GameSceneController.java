@@ -1,4 +1,6 @@
 package controllers;
+
+import application.Game;
 import application.GameApplication;
 import application.Grid;
 import javafx.application.Platform;
@@ -8,8 +10,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
-import java.util.*;
-import java.util.List;
+
+import java.util.Map;
 
 public class GameSceneController {
 
@@ -44,6 +46,7 @@ public class GameSceneController {
             String name = playerNames.get(playerId);
             HBox nameContainer = new HBox(5);
             Text nameText = new Text(name + ":");
+            nameText.setFill(Game.colors.get(playerId));
             Text scoreText = new Text(playerScores.get(playerId).toString());
             nameContainer.setAlignment(Pos.CENTER);
             nameContainer.setPrefWidth(GameApplication.WINDOW_WIDTH / playerNames.size());
@@ -51,4 +54,4 @@ public class GameSceneController {
             Platform.runLater(() -> playerScoreContainer.getChildren().add(nameContainer));
         }
     }
-    }
+}
