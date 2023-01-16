@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListCell?>
+<?import javafx.scene.layout.HBox?>
+
+<fx:root prefWidth="638.0" type="javafx.scene.control.ListCell" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">
+    <graphic>
+      <HBox alignment="CENTER_LEFT" fillHeight="false" prefWidth="638.0">
+         <children>
+            <HBox prefWidth="212.666667">
+               <children>
+                  <Label fx:id="roomName" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefWidth="212.666667">
+               <children>
+                        <Label fx:id="roomId" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_RIGHT" prefWidth="212.666667">
+               <children>
+                      <Label fx:id="ipAddress" />
+               </children>
+            </HBox>
+         </children>
+      </HBox>
+    </graphic>
+</fx:root>
