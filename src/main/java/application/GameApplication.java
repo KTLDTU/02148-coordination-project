@@ -123,6 +123,7 @@ public class GameApplication {
 
     public void launchGame(Stage stage, String ip, boolean isHost) {
         try {
+            removeRoom(ip);
             Game game;
             /*
 
@@ -167,6 +168,13 @@ public class GameApplication {
             stage.setScene(game.gameScene);
             game.gameScene.getRoot().requestFocus();
         } catch (InterruptedException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void removeRoom(String ip){
+        try {
+            clientLobby.get(new ActualField("room"), new ActualField(ip), new FormalField(String.class));
+        } catch (InterruptedException e){
             throw new RuntimeException(e);
         }
     }
