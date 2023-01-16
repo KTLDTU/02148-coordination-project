@@ -1,5 +1,6 @@
-package application;
+package listeners;
 
+import application.Game;
 import controllers.MovementController;
 import controllers.ShotController;
 import javafx.scene.input.KeyCode;

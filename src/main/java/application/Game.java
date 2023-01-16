@@ -14,6 +14,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import listeners.InputListener;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 import org.jspace.Space;
