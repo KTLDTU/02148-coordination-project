@@ -72,7 +72,7 @@ public class Game {
         for (Integer playerID : playersIdNameMap.keySet()) {
             Rectangle newTractor = (playerID == MY_PLAYER_ID ? randomSpawn() : new Rectangle(PLAYER_WIDTH, PLAYER_HEIGHT));
             tractors.put(playerID, newTractor);
-            Platform.runLater(() -> gamePane.getChildren().add(tractors.get(playerID)));
+            Platform.runLater(() -> gamePane.getChildren().add(tractors.get(playerID))); // TODO: this line gives NullPointerException occasionally
         }
 
         myTractor = tractors.get(MY_PLAYER_ID);
@@ -123,7 +123,7 @@ public class Game {
         // TODO
     }
 
-    public void newGame() {
+    public void newRound() {
         Platform.runLater(() -> gamePane.getChildren().clear());
         tractors = new HashMap<>();
         shots = new HashMap<>();
@@ -284,7 +284,7 @@ class GameEndListener implements Runnable {
         try {
             game.gameSpace.get(new ActualField("game end"), new ActualField(game.MY_PLAYER_ID));
             game.incrementPlayerScores();
-            game.newGame();
+            game.newRound();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

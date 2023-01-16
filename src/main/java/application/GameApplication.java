@@ -2,7 +2,6 @@ package application;
 
 import controllers.LobbySceneController;
 import datatypes.ArrayListInt;
-import datatypes.HashSetIntArray;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -198,7 +197,7 @@ public class GameApplication {
                 game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);
             }
 
-            game.newGame();
+            game.newRound();
             stage.setScene(game.gameScene);
             game.gameScene.getRoot().requestFocus();
         } catch (InterruptedException | IOException e) {
