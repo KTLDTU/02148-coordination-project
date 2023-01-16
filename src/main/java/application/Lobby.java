@@ -1,6 +1,7 @@
 package application;
 
 import controllers.LobbySceneController;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -9,6 +10,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import org.jspace.*;
+
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -50,10 +52,13 @@ public class Lobby {
                 createRoom(getIp());
                 launchRoom(roomHost);
             });
-            new Thread(new RoomListListener(lobbySpace, roomList)).start();
+            Thread roomListListener = new Thread(new RoomListListener(lobbySpace, roomList));
+            roomListListener.setDaemon(true);
+            roomListListener.start();
             roomList.setOnMouseClicked(e -> {
                 if (e.getClickCount() >= 2 && roomList.getSelectionModel().getSelectedItem() != null) {
                     Room selectedRoom = roomList.getSelectionModel().getSelectedItem();
+                    if (selectedRoom.getPlayers() == 4) return;
                     int roomId = selectedRoom.getRoomId();
                     joinRoom(getIp(), roomId);
                     launchRoom(roomClient);
@@ -78,7 +83,7 @@ public class Lobby {
             String room = "room" + roomId;
             String clientRoomUri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/" + room + "?keep";
 
-            lobbySpace.put("room", ip, roomId, name);
+            lobbySpace.put("room", ip, roomId, name, 1);
             roomHost.put("clientUri", clientRoomUri);
             roomHost.put("turn", 1);
             roomHost.put("players", 1);
@@ -93,8 +98,11 @@ public class Lobby {
             GameApplication.isRoomHost = false;
             String room = "room" + roomId;
             String uri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/" + room + "?keep";
+            // Increment number of players by 1
+            Object[] obj = lobbySpace.get(new ActualField("room"), new FormalField(String.class), new FormalField(Integer.class), new FormalField(String.class), new FormalField(Integer.class));
+            lobbySpace.put(obj[0], obj[1], obj[2], obj[3], (Integer) obj[4] + 1);
             roomClient = new RemoteSpace(uri);
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
@@ -170,15 +178,15 @@ class RoomListListener implements Runnable {
         while (true) {
             try {
                 // Query all the rooms and create a new list
-                List<Object[]> newRoomObjects = lobbySpace.queryAll(new ActualField("room"), new FormalField(String.class), new FormalField(Integer.class), new FormalField(String.class));
+                List<Object[]> newRoomObjects = lobbySpace.queryAll(new ActualField("room"), new FormalField(String.class), new FormalField(Integer.class), new FormalField(String.class), new FormalField(Integer.class));
                 ArrayList<Room> newRoomList = new ArrayList<>();
                 for (Object[] objects : newRoomObjects) {
-                    newRoomList.add(new Room((String) objects[1], (Integer) objects[2], (String) objects[3]));
+                    newRoomList.add(new Room((String) objects[1], (Integer) objects[2], (String) objects[3], (Integer) objects[4]));
                 }
                 // Check if the old roomList and newRoomList are equal
-                if (!roomList.containsAll(newRoomList) && newRoomList.containsAll(roomList)) {
+                if (!(roomList.containsAll(newRoomList) && newRoomList.containsAll(roomList))) {
                     roomList = newRoomList;
-                    roomListView.setItems(FXCollections.observableArrayList(roomList));
+                    Platform.runLater(() -> roomListView.setItems(FXCollections.observableArrayList(roomList)));
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
