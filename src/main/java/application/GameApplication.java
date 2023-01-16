@@ -76,7 +76,6 @@ public class GameApplication {
 
     private void showStartScene(Stage stage) {
         stage.setScene(startScene);
-        stage.centerOnScreen();
     }
 
     private void makeStartScene(Stage stage) {
@@ -157,19 +156,14 @@ public class GameApplication {
             if (isHost) {
                 System.out.println("Host is creating a new game...");
 
-                game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);
-                game.initializeGrid();
-                game.spawnPlayers();
-                game.gameSpace.put("connected squares", game.grid.connectedSquares);
+                game = new Game(stage, serverGameSpace, playersIdNameMap, playerID);
             } else {
                 System.out.println("Client is getting existing game...");
 
                 game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);
-
-                HashSetIntArray connectedSquares = (HashSetIntArray) clientGameSpace.query(new ActualField("connected squares"), new FormalField(HashSetIntArray.class))[1];
-                game.setGrid(connectedSquares);
-                game.spawnPlayers();
             }
+
+            game.newRound();
             stage.setScene(game.gameScene);
             game.gameScene.getRoot().requestFocus();
         } catch (InterruptedException | IOException e) {

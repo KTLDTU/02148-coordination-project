@@ -31,7 +31,6 @@ public class MovementController {
             else timer.stop();
         }));
 
-        new Thread(new PlayerPositionBroadcaster(game)).start();
         lastBroadcast = System.currentTimeMillis();
     }
 
