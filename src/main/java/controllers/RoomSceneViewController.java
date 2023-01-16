@@ -27,6 +27,7 @@ public class RoomSceneViewController {
     @FXML
     void initialize() {
         assert backToLobbyButton != null : "fx:id=\"backToLobbyButton\" was not injected: check your FXML file 'room-scene-view.fxml'.";
+        assert startGameButton != null : "fx:id=\"startGameButton\" was not injected: check your FXML file 'room-scene-view.fxml'.";
         assert playerList != null : "fx:id=\"playerList\" was not injected: check your FXML file 'room-scene-view.fxml'.";
         assert roomNameText != null : "fx:id=\"roomNameText\" was not injected: check your FXML file 'room-scene-view.fxml'.";
 

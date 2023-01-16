@@ -1,0 +1,39 @@
+package listeners;
+
+import application.Room;
+import controllers.RoomSceneViewController;
+import javafx.application.Platform;
+import org.jspace.ActualField;
+import org.jspace.FormalField;
+import org.jspace.Space;
+
+import java.util.ArrayList;
+
+public class RoomPlayerListener implements Runnable {
+    Space space;
+    RoomSceneViewController roomController;
+    ArrayList<String> playerNames = new ArrayList<>();
+
+    public RoomPlayerListener(Space space, RoomSceneViewController roomController) {
+        this.space = space;
+        this.roomController = roomController;
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                ArrayList<String> newPlayerNames = (ArrayList<String>) space.query(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
+
+                // Update list of player names if the two lists are different
+                if (!playerNames.equals(newPlayerNames)) {
+                    playerNames = newPlayerNames;
+                    Platform.runLater(() -> roomController.updatePlayerList(newPlayerNames));
+                    Room.playerNames = newPlayerNames;
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+}

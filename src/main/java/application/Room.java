@@ -11,7 +11,8 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import listeners.RoomListener;
+import listeners.RoomPlayerListener;
+import listeners.StartGameListener;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 import org.jspace.Space;
@@ -33,10 +34,10 @@ public class Room {
     private String name;
     private String uri;
     private int playerId;
-    private int players = 0;
-    private ArrayList<String> playerNames;
+    public static ArrayList<String> playerNames;
     private ArrayListInt playerIds;
     private String hostName;
+
     public Room(Stage stage, GameApplication application, Space space) {
         this.space = space;
         playerNames = new ArrayList();
@@ -92,14 +93,26 @@ public class Room {
         Button lobbyButton = (Button) roomLayout.lookup("#lobbyButton");
         Button startGameButton = (Button) roomLayout.lookup("#startGameButton");
         lobbyButton.setOnAction(e -> stage.setScene(GameApplication.lobbyScene));
-        startGameButton.setOnAction(e -> application.launchGame(stage));
+        startGameButton.setOnAction(e -> {
+            try {
+                application.launchGame(stage);
+                for (int i = 0; i < playerNames.size(); i++) {
+                    space.put("start game");
+                }
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        if (!GameApplication.isHost) startGameButton.setVisible(false);
         roomController.setRoomNameText(hostName);
 
         roomLayout.setRight(chatbox);
         roomScene = new Scene(roomLayout, application.WINDOW_WIDTH, application.WINDOW_HEIGHT);
 
         // After we've set up the scene we start the listener thread to update the ListView when newp players join
-        new Thread(new RoomListener(space, roomController)).start();
+        new Thread(new RoomPlayerListener(space, roomController)).start();
+        new Thread(new StartGameListener(stage, space, application)).start();
     }
 
     private void populateChatBoxConstructor(String uri, int players, String name) {
