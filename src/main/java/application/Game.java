@@ -13,10 +13,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-import listeners.InputListener;
-import listeners.KillListener;
-import listeners.MovementListener;
-import listeners.ShotListener;
+import listeners.*;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 import org.jspace.Space;
@@ -173,22 +170,3 @@ class GameEndTimer implements Runnable {
     }
 }
 
-class GameEndListener implements Runnable {
-    private Game game;
-
-    public GameEndListener(Game game) {
-        this.game = game;
-    }
-
-    @Override
-    public void run() {
-        try {
-            game.gameSpace.get(new ActualField("game end"), new ActualField(game.MY_PLAYER_ID));
-            Integer winnerPlayerID = (game.tractors.isEmpty() ? null : (Integer) game.tractors.keySet().toArray()[0]);
-            game.incrementPlayerScores(winnerPlayerID);
-            game.newRound();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-}
