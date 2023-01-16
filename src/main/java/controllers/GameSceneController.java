@@ -6,11 +6,15 @@ import application.Grid;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class GameSceneController {
@@ -23,6 +27,16 @@ public class GameSceneController {
 
     @FXML
     public HBox playerScoreContainer;
+
+
+    private Collection<String> playerNames;
+
+    public List<Text> scoreTexts;
+
+    public GameSceneController() {
+    }
+
+
 
     @FXML
     void initialize() {

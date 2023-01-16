@@ -7,9 +7,11 @@ import datatypes.HashSetIntArray;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import org.jspace.ActualField;
@@ -35,6 +37,7 @@ public class Game {
     public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.ROYALBLUE, Color.MAGENTA, Color.RED, Color.GREEN));
     public HashMap<Integer, Shot> shots;
     public InputListener inputListener;
+    public String[] imageURL=new String[4];
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
         try {
@@ -77,7 +80,17 @@ public class Game {
             Platform.runLater(() -> gamePane.getChildren().add(tractors.get(playerID))); // TODO: this line gives NullPointerException occasionally
         }
 
+        int counter=0;
+        imageURL = new String[]{"/img1.png", "/img2.png" , "/img3.png" , "/img4.png"};
+        for (Rectangle trac : tractors.values()){
+            Image img = new Image(imageURL[counter]);
+            trac.setFill(new ImagePattern(img));
+            counter += 1;
+        }
+
         myTractor = tractors.get(MY_PLAYER_ID);
+
+
         MovementController movementController = new MovementController(this);
         shotController = new ShotController(this);
         inputListener = new InputListener(this, movementController, shotController);
@@ -117,9 +130,11 @@ public class Game {
         return tractor;
     }
 
-    public void incrementPlayerScore(Integer playerId) {
-        if (playerId != null) {
-            playerScores.replace(playerId, playerScores.get(playerId) + 1);
+    public void incrementPlayerScore(Integer playerId){
+        if(playerId != null){
+            playerScores.put(playerId, playerScores.get(playerId)+1);
+
+
         }
     }
 
@@ -177,6 +192,7 @@ class MovementListener implements Runnable {
                         tractor.setLayoutX(tractorX);
                         tractor.setLayoutY(tractorY);
                         tractor.setRotate(tractorRot);
+
                     }
                 });
             }
@@ -188,6 +204,7 @@ class MovementListener implements Runnable {
 
 class ShotListener implements Runnable {
     private Game game;
+
 
     public ShotListener(Game game) {
         this.game = game;
@@ -277,7 +294,6 @@ class GameEndTimer implements Runnable {
         }
     }
 }
-
 class GameEndListener implements Runnable {
     private Game game;
 

@@ -5,6 +5,7 @@
 
 <BorderPane fx:id="scene" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.GameSceneController">
    <center>
+
       <Pane id="gamePane" fx:id="gamePane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="450.0" BorderPane.alignment="CENTER" />
    </center>
    <left>
