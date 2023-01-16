@@ -42,6 +42,7 @@ public class Room {
     private String ip;
     private int roomId;
     private int numberOfPlayers;
+
     // Constructor used for RoomCell in ListView
     public Room(String ip, int roomId, String name, int numberOfPlayers) {
         this.ip = ip;

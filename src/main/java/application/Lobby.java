@@ -52,12 +52,14 @@ public class Lobby {
                 createRoom(getIp());
                 launchRoom(roomHost);
             });
+            // Start listener to update the roomlist
             Thread roomListListener = new Thread(new RoomListListener(lobbySpace, roomList));
             roomListListener.setDaemon(true);
             roomListListener.start();
             roomList.setOnMouseClicked(e -> {
                 if (e.getClickCount() >= 2 && roomList.getSelectionModel().getSelectedItem() != null) {
                     Room selectedRoom = roomList.getSelectionModel().getSelectedItem();
+                    // Disallow joining a room thats full
                     if (selectedRoom.getNumberOfPlayers() == 4) return;
                     int roomId = selectedRoom.getRoomId();
                     joinRoom(getIp(), roomId);
@@ -83,6 +85,7 @@ public class Lobby {
             String room = "room" + roomId;
             String clientRoomUri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/" + room + "?keep";
 
+            // Create room thats visible from the lobby
             lobbySpace.put("room", ip, roomId, name, 1);
             roomHost.put("clientUri", clientRoomUri);
             roomHost.put("turn", 1);
@@ -117,7 +120,7 @@ public class Lobby {
             if (GameApplication.isRoomHost) {
                 System.out.println("Host is creating a new room");
                 roomSpace.put("host name", name);
-            } else {
+            } else { // TODO: remove else statement
                 System.out.println("Client joining room");
             }
             new Room(stage, application, roomSpace, roomId);
@@ -177,13 +180,13 @@ class RoomListListener implements Runnable {
     public void run() {
         while (true) {
             try {
-                // Query all the rooms and create a new list
+                // Query all the rooms and create a new list of rooms
                 List<Object[]> newRoomObjects = lobbySpace.queryAll(new ActualField("room"), new FormalField(String.class), new FormalField(Integer.class), new FormalField(String.class), new FormalField(Integer.class));
                 ArrayList<Room> newRoomList = new ArrayList<>();
                 for (Object[] objects : newRoomObjects) {
                     newRoomList.add(new Room((String) objects[1], (Integer) objects[2], (String) objects[3], (Integer) objects[4]));
                 }
-                // Check if the old roomList and newRoomList are equal
+                // Check if the old roomList and newRoomList differ, if so update the ListView
                 if (!(roomList.containsAll(newRoomList) && newRoomList.containsAll(roomList))) {
                     roomList = newRoomList;
                     Platform.runLater(() -> roomListView.setItems(FXCollections.observableArrayList(roomList)));
