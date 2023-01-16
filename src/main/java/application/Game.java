@@ -67,7 +67,6 @@ public class Game {
     }
 
     public void spawnPlayers() {
-        System.out.println(playersIdNameMap.toString());
         for (Integer playerID : playersIdNameMap.keySet()) {
             Rectangle newTractor = (playerID == MY_PLAYER_ID ? randomSpawn() : new Rectangle(PLAYER_WIDTH, PLAYER_HEIGHT));
             tractors.put(playerID, newTractor);
