@@ -54,7 +54,7 @@ public class Game {
             for(Integer playerID : playersIdNameMap.keySet()){
                 playerScores.put(playerID,0);
             }
-            gameController.displayPlayersNameAndScore(playersIdNameMap, playerScores);
+
 
 
             if (GameApplication.isHost) {
@@ -125,7 +125,7 @@ public class Game {
         tractor.setFill(Color.ROYALBLUE); // color to distinguish from other tractors (temporary - all should have different colors)
         return tractor;
     }
-    public void incrementPlyerScore(Integer playerId){
+    public void incrementPlayerScore(Integer playerId){
         if(playerId != null){
             playerScores.replace(playerId, playerScores.get(playerId)+1);
         }
@@ -135,11 +135,10 @@ public class Game {
         return tractors.size();
     }
 
-    public void incrementPlayerScores(Integer playerID) {
-        // TODO
-    }
+
 
     public void newRound() {
+        gameController.displayPlayersNameAndScore(playersIdNameMap, playerScores);
         Platform.runLater(() -> gamePane.getChildren().clear());
         tractors = new HashMap<>();
         shots = new HashMap<>();
@@ -300,7 +299,7 @@ class GameEndListener implements Runnable {
         try {
             game.gameSpace.get(new ActualField("game end"), new ActualField(game.MY_PLAYER_ID));
             Integer winnerPlayerID = (game.tractors.isEmpty() ? null : (Integer) game.tractors.keySet().toArray()[0]);
-            game.incrementPlayerScores(winnerPlayerID);
+            game.incrementPlayerScore(winnerPlayerID);
             game.newRound();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
