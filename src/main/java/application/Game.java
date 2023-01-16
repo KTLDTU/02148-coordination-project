@@ -28,6 +28,7 @@ public class Game {
     public Grid grid;
     public Space gameSpace;
     public HashMap<Integer, Rectangle> tractors;
+    public HashMap<Integer, Integer> playerScores;
     public Rectangle myTractor;
     public Map<Integer, String> playersIdNameMap;
     public ShotController shotController;
@@ -48,18 +49,20 @@ public class Game {
             gameScene = new Scene(scene);
             stage.setScene(gameScene);
 
-            if (GameApplication.isHost) {
-                try {
-                    gameSpace.put("shot id", 0);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+
+            playerScores = new HashMap<>();
+            for (Integer playerID : playersIdNameMap.keySet()) {
+                playerScores.put(playerID, 0);
             }
-        } catch (IOException e) {
+
+            if (GameApplication.isHost) {
+                gameSpace.put("shot id", 0);
+            }
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
-        gameController.initializePlayerNames(playersIdNameMap);
     }
+
 
     public void setGrid(HashSetIntArray connectedSquares) {
         grid = new Grid(gamePane, connectedSquares);
@@ -114,15 +117,19 @@ public class Game {
         return tractor;
     }
 
+    public void incrementPlayerScore(Integer playerId) {
+        if (playerId != null) {
+            playerScores.replace(playerId, playerScores.get(playerId) + 1);
+        }
+    }
+
     public int numPlayersAlive() {
         return tractors.size();
     }
 
-    public void incrementPlayerScores(Integer playerID) {
-        // TODO
-    }
 
     public void newRound() {
+        gameController.displayPlayersNameAndScore(playersIdNameMap, playerScores);
         Platform.runLater(() -> gamePane.getChildren().clear());
         tractors = new HashMap<>();
         shots = new HashMap<>();
@@ -283,7 +290,7 @@ class GameEndListener implements Runnable {
         try {
             game.gameSpace.get(new ActualField("game end"), new ActualField(game.MY_PLAYER_ID));
             Integer winnerPlayerID = (game.tractors.isEmpty() ? null : (Integer) game.tractors.keySet().toArray()[0]);
-            game.incrementPlayerScores(winnerPlayerID);
+            game.incrementPlayerScore(winnerPlayerID);
             game.newRound();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

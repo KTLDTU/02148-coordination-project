@@ -11,7 +11,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 
-import java.util.Collection;
 import java.util.Map;
 
 public class GameSceneController {
@@ -23,7 +22,7 @@ public class GameSceneController {
     private BorderPane scene;
 
     @FXML
-    private HBox playerScoreContainer;
+    public HBox playerScoreContainer;
 
     @FXML
     void initialize() {
@@ -40,15 +39,17 @@ public class GameSceneController {
             gamePane.getChildren().add(wall);
     }
 
-    public void initializePlayerNames(Map<Integer, String> playerIdNameMap) {
-        for (Map.Entry<Integer, String> entry : playerIdNameMap.entrySet()) {
-            HBox nameContainer = new HBox(5);
-            Text nameText = new Text(entry.getValue() + ":");
-            nameText.setFill(Game.colors.get(entry.getKey()));
-            Text scoreText = new Text("0");
+    public void displayPlayersNameAndScore(Map<Integer, String> playerNames, Map<Integer, Integer> playerScores) {
+        Platform.runLater(() -> playerScoreContainer.getChildren().clear());
 
+        for (Integer playerId : playerNames.keySet()) {
+            String name = playerNames.get(playerId);
+            HBox nameContainer = new HBox(5);
+            Text nameText = new Text(name + ":");
+            nameText.setFill(Game.colors.get(playerId));
+            Text scoreText = new Text(playerScores.get(playerId).toString());
             nameContainer.setAlignment(Pos.CENTER);
-            nameContainer.setPrefWidth(GameApplication.WINDOW_WIDTH / playerIdNameMap.size());
+            nameContainer.setPrefWidth(GameApplication.WINDOW_WIDTH / playerNames.size());
             nameContainer.getChildren().addAll(nameText, scoreText);
             Platform.runLater(() -> playerScoreContainer.getChildren().add(nameContainer));
         }
