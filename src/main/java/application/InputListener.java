@@ -13,9 +13,17 @@ public class InputListener {
         this.game = game;
         this.movementController = movementController;
         this.shotController = shotController;
+        enable();
+    }
 
+    public void enable() {
         game.gameScene.setOnKeyPressed(e -> setButtonStates(e.getCode(), true));
         game.gameScene.setOnKeyReleased(e -> setButtonStates(e.getCode(), false));
+    }
+
+    public void disable() {
+        game.gameScene.setOnKeyPressed(e -> {});
+        game.gameScene.setOnKeyReleased(e -> {});
     }
 
     private void setButtonStates(KeyCode key, boolean b) {
