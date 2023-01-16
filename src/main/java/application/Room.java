@@ -2,19 +2,16 @@ package application;
 
 import controllers.ChatBoxViewController;
 import controllers.RoomSceneViewController;
-import datatypes.ArrayListInt;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import org.jspace.ActualField;
-import org.jspace.FormalField;
-import org.jspace.Space;
+import org.jspace.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,30 +28,41 @@ public class Room {
     private RoomSceneViewController roomController;
     private Space space;
     private String name;
-    private String uri;
-    private int playerId;
+    private String ip;
     private int players = 0;
     private ArrayList<String> playerNames;
-    private ArrayListInt playerIds;
-    private String hostName;
-    public Room(Stage stage, GameApplication application, Space space) {
-        this.space = space;
-        playerNames = new ArrayList();
-        playerIds = new ArrayListInt();
-        try {
-            uri = (String) space.query(new ActualField("clientUri"), new FormalField(String.class))[1];
-            hostName = (String) space.query(new ActualField("host name"), new FormalField(String.class))[1];
-            name = (String) space.get(new ActualField("name"), new FormalField(String.class))[1];
-            playerId = (int) space.get(new ActualField("player id"), new FormalField(Integer.class))[1];
+    private SpaceRepository repository = new SpaceRepository();
+    private Space gameSpace = new SequentialSpace();
+    private boolean isHost;
 
+    public Room(Stage stage, GameApplication application, String ip, boolean isHost,String name) {
+        this.name = name;
+        this.ip = ip;
+        this.isHost = isHost;
+        playerNames = new ArrayList();
+        try {
+            if(isHost){
+                space = new SequentialSpace();
+                repository.add("room", space);
+                repository.addGate("tcp://" + ip + ":9001/?keep");
+                space.put("clientUri", ip);
+                space.put("turn", 1);
+                space.put("players", 1);
+                space.put("readers", 0);
+                space.put("room", ip, this.name);
+            } else {
+                this.space = new RemoteSpace("tcp://" + ip + ":9001/room?keep");
+            }
+            System.out.println("Hello");
             updatePlayerNames(space);
 
-            updatePlayerIds(space);
+            updateNumberOfPlayers(space);
+            System.out.println("And also here");
 
             roomLoader = new FXMLLoader(RoomSceneViewController.class.getResource(roomFileName));
             chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(chatFileName));
 
-            populateChatBoxConstructor(uri, playerNames.size(), name);
+            populateChatBoxConstructor(ip, players, name);
 
             setupRoomLayout(stage, application);
         } catch (IOException | InterruptedException e) {
@@ -64,13 +72,13 @@ public class Room {
 
     }
 
-    private void updatePlayerIds(Space space) throws InterruptedException {
-        Object[] listOfPlayerIds = space.getp(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
-        if (listOfPlayerIds != null) {
-            playerIds = (ArrayListInt) listOfPlayerIds[1];
+    private void updateNumberOfPlayers(Space space) throws InterruptedException {
+        Object[] numberOfPlayers = space.getp(new ActualField("numberOfPlayer"), new FormalField(Integer.class));
+        if (numberOfPlayers != null) {
+            players = (int) numberOfPlayers[1];
         }
-        playerIds.add(playerId);
-        space.put("playerIdList", playerIds);
+        players++;
+        space.put("numberOfPlayer", players);
     }
 
     private void updatePlayerNames(Space space) throws InterruptedException {
@@ -91,9 +99,11 @@ public class Room {
 
         Button lobbyButton = (Button) roomLayout.lookup("#lobbyButton");
         Button startGameButton = (Button) roomLayout.lookup("#startGameButton");
-        lobbyButton.setOnAction(e -> stage.setScene(GameApplication.lobbyScene));
-        startGameButton.setOnAction(e -> application.launchGame(stage));
-        roomController.setRoomNameText(hostName);
+        lobbyButton.setOnAction(e -> application.makeLobbyScene(stage));
+        startGameButton.setOnAction(e -> {
+            repository.add("gameSpace" + 1535, gameSpace);
+            application.launchGame(stage, ip, isHost);
+        });
 
         roomLayout.setRight(chatbox);
         roomScene = new Scene(roomLayout, application.WINDOW_WIDTH, application.WINDOW_HEIGHT);
@@ -141,13 +151,10 @@ class RoomListener implements Runnable {
         while (true) {
             try {
                 ArrayList<String> newPlayerNames = (ArrayList<String>) space.query(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
-
                 // Update list of player names if the two lists are different
                 if (!playerNames.equals(newPlayerNames)) {
                     playerNames = newPlayerNames;
-                    Platform.runLater(() -> {
-                        roomController.updatePlayerList(newPlayerNames);
-                    });
+                    roomController.updatePlayerList(newPlayerNames);
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);

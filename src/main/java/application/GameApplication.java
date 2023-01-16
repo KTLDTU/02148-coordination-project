@@ -14,6 +14,8 @@ import javafx.stage.Stage;
 import org.jspace.*;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +25,7 @@ import java.util.stream.IntStream;
 public class GameApplication {
 
     private static String HOST_IP;
-    public static final String PORT = ":9001";
+    public static final String PORT = ":9002";
     public static final String PROTOCOL = "tcp://";
     private static final int GAME_ID = 1535;
     public static final int WINDOW_WIDTH = 960;
@@ -50,30 +52,29 @@ public class GameApplication {
 
         try {
             makeStartScene(stage);
-            makeLobbyScene(stage);
+            //makeLobbyScene(stage);
 
-            repository = new SpaceRepository();
-            serverLobby = new SequentialSpace();
-            serverRoom = new SequentialSpace();
+            //repository = new SpaceRepository();
+            //serverLobby = new SequentialSpace();
+            //serverRoom = new SequentialSpace();
 
-            repository.add("lobby", serverLobby);
-            repository.add("room", serverRoom);
-            String serverUri = PROTOCOL + HOST_IP + PORT + "/?keep";
-            repository.addGate(serverUri);
+            //repository.add("lobby", serverLobby);
+            //repository.add("room", serverRoom);
+            //String serverUri = PROTOCOL + HOST_IP + PORT + "/?keep";
+            //repository.addGate(serverUri);
 
             String clientLobbyUri = PROTOCOL + HOST_IP + PORT + "/lobby?keep";
-            String clientRoomUri = PROTOCOL + HOST_IP + PORT + "/room?keep";
+            //String clientRoomUri = PROTOCOL + HOST_IP + PORT + "/room?keep";
 
             clientLobby = new RemoteSpace(clientLobbyUri);
-            clientRoom = new RemoteSpace(clientRoomUri);
+            //clientRoom = new RemoteSpace(clientRoomUri);
 
             if (isHost) {
-                serverLobby.put("player id", 0);
-
-                serverRoom.put("clientUri", clientRoomUri);
-                serverRoom.put("turn", 1);
-                serverRoom.put("players", 1);
-                serverRoom.put("readers", 0);
+                clientLobby.put("player id", 0);
+                //serverRoom.put("clientUri", HOST_IP);
+                //serverRoom.put("turn", 1);
+                //serverRoom.put("players", 1);
+                //serverRoom.put("readers", 0);
             }
             playerID = (int) clientLobby.get(new ActualField("player id"), new FormalField(Integer.class))[1];
             clientLobby.put("player id", playerID + 1);
@@ -100,7 +101,7 @@ public class GameApplication {
         // Make buttons
         Button lobbyButton = new Button("Start lobby");
         lobbyButton.setPrefSize(150, 30);
-        lobbyButton.setOnAction(e -> stage.setScene(lobbyScene));
+        lobbyButton.setOnAction(e -> makeLobbyScene(stage));
 
         Button roomButton = new Button("Start room");
         roomButton.setPrefSize(150, 30);
@@ -108,7 +109,7 @@ public class GameApplication {
 
         Button gameButton = new Button("Start game");
         gameButton.setPrefSize(150, 30);
-        gameButton.setOnAction(e -> launchGame(stage));
+        gameButton.setOnAction(e -> launchGame(stage, HOST_IP, isHost));
 
         Button exitButton = new Button("Exit");
         exitButton.setPrefSize(150, 30);
@@ -125,18 +126,19 @@ public class GameApplication {
         startScene = new Scene(startLayout, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
 
-    private void makeLobbyScene(Stage stage) {
+    public void makeLobbyScene(Stage stage) {
         try {
-            FXMLLoader lobbyLoader = new FXMLLoader(LobbySceneController.class.getResource("/lobbyScene.fxml"));
-            AnchorPane scene = lobbyLoader.load();
-            LobbySceneController lobbyController = lobbyLoader.getController();
-            lobbyScene = new Scene(scene);
-        } catch (IOException e) {
+            new LobbyConnector(stage, this, HOST_IP, name);
+        } catch (IOException | InterruptedException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void launchRoom(Stage stage) {
+    public void launchRoom(Stage stage, String ip, boolean isHost){
+        new Room(stage, this, ip, isHost,name);
+    }
+
+    public void launchRoom(Stage stage) {
         try {
             clientRoom.put("name", name);
             clientRoom.put("player id", playerID);
@@ -144,18 +146,17 @@ public class GameApplication {
             if (isHost) {
                 System.out.println("Host is creating a new room");
                 serverRoom.put("host name", name);
-                new Room(stage, this, serverRoom);
+                new Room(stage, this, HOST_IP, true,name);
             } else {
                 System.out.println("Client joining room");
-                new Room(stage, this, clientRoom);
+                new Room(stage, this, HOST_IP, false,name);
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
     }
 
-    public void launchGame(Stage stage) {
+    public void launchGame(Stage stage, String ip, boolean isHost) {
         try {
             Game game;
             /*
@@ -176,6 +177,9 @@ public class GameApplication {
             playersIdNameMap.put(1, "Bob");
             playersIdNameMap.put(2, "Charlie");
             playersIdNameMap.put(3, "Frank");
+            System.out.println(ip);
+
+            clientRoom = new RemoteSpace(PROTOCOL + ip + ":9001/room?keep");
 
             Object[] playerNameLists = clientRoom.queryp(new ActualField("playerNameList"), new FormalField(ArrayList.class));
             Object[] playerIdLists = clientRoom.queryp(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
@@ -184,20 +188,20 @@ public class GameApplication {
                 ArrayListInt playerIdList = (ArrayListInt) playerIdLists[1];
                 playersIdNameMap = IntStream.range(0, playerNameList.size()).boxed().collect(Collectors.toMap(i -> playerIdList.get(i), i -> playerNameList.get(i)));
             }
-
+            clientGameSpace = new RemoteSpace(PROTOCOL + ip + ":9001" + "/gameSpace" + GAME_ID + "?keep");
             if (isHost) {
                 System.out.println("Host is creating a new game...");
-                serverGameSpace = new SequentialSpace();
-                repository.add("gameSpace" + GAME_ID, serverGameSpace);
+                //clientGameSpace = new RemoteSpace(PROTOCOL + ip + ":9001" + "/gameSpace" + GAME_ID + "?keep");
+                //repository.add("gameSpace" + GAME_ID, serverGameSpace);
 
-                game = new Game(stage, serverGameSpace, playersIdNameMap, playerID);
+                game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);
                 game.initializeGrid();
                 game.spawnPlayers();
                 game.gameSpace.put("connected squares", game.grid.connectedSquares);
             } else {
                 System.out.println("Client is getting existing game...");
-                String clientUri = PROTOCOL + HOST_IP + PORT + "/gameSpace" + GAME_ID + "?keep";
-                clientGameSpace = new RemoteSpace(clientUri);
+                //String clientUri = PROTOCOL + ip + PORT + "/gameSpace" + GAME_ID + "?keep";
+                //clientGameSpace = new RemoteSpace(clientUri);
 
                 game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);
 
@@ -205,7 +209,6 @@ public class GameApplication {
                 game.setGrid(connectedSquares);
                 game.spawnPlayers();
             }
-
             stage.setScene(game.gameScene);
             game.gameScene.getRoot().requestFocus();
         } catch (InterruptedException | IOException e) {

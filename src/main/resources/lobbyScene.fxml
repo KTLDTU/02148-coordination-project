@@ -10,6 +10,7 @@
    <Button id="refresh" layoutX="165.0" layoutY="73.0" mnemonicParsing="false" text="Refresh" />
    <Label layoutX="33.0" layoutY="149.0" prefHeight="18.0" prefWidth="638.0" text="   Room name                                               Number of players                                                 Type" />
    <Label id="playerAmount" alignment="CENTER_RIGHT" layoutX="374.0" layoutY="97.0" prefHeight="18.0" prefWidth="297.0" text="Hello" />
+   <TextField id="ip" layoutX="42.0" layoutY="41.0" promptText="Enter your IP" />
    <effect>
       <InnerShadow />
    </effect>

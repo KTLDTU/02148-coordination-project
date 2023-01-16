@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import org.jspace.*;
@@ -39,10 +40,11 @@ public class LobbyConnector {
         Button refresh = (Button)lobby.lookup("#refresh");
         ListView rooms = (ListView)lobby.lookup("#rooms");
         String finalIp = ip;
+        TextField ipField = (TextField)lobby.lookup("#ip");
         createRoomButton.setOnAction(e -> {
             try {
-                createRoom("uri");
-                application.launchRoom(stage);
+                createRoom(ipField.getText());
+                application.launchRoom(stage, ipField.getText(), true);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -59,14 +61,11 @@ public class LobbyConnector {
         });
         rooms.setOnMouseClicked(e -> {
             if(e.getClickCount() >= 2 && rooms.getSelectionModel().getSelectedItem() != null){
-                Label playerAmount = (Label)lobby.lookup("#playerAmount");
-                playerAmount.setText("Hello, why does this not work?");
                 try {
-                    playerAmount.setText("Joining room: " + joinRoom("" + rooms.getSelectionModel().getSelectedItem()));
+                    application.launchRoom(stage, joinRoom((String)rooms.getSelectionModel().getSelectedItem()), false);
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
-                application.launchRoom(stage);
             }
         });
         stage.setScene(new Scene(lobby, GameApplication.WINDOW_WIDTH, GameApplication.WINDOW_HEIGHT));
@@ -74,11 +73,11 @@ public class LobbyConnector {
     public int getPlayerAmount() throws InterruptedException {
         return (int)space.queryp(new ActualField("players"), new FormalField(Integer.class))[1];
     }
-    public void createRoom(String uri) throws InterruptedException {
+    public void createRoom(String ip) throws InterruptedException {
         Object[] players = space.get(new ActualField("players"), new FormalField(Integer.class));
         space.put("players",(int)players[1]-1);
+        space.put("room", ip,name);
         space.getp(new ActualField("player"),new ActualField(name));
-        space.put("room", uri, name);
     }
     public String joinRoom(String name) throws InterruptedException {
         Object[] players = space.get(new ActualField("players"), new FormalField(Integer.class));

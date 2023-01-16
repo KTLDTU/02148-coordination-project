@@ -10,6 +10,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 public class ApplicationIntro {
     // Made static for simplicity. May not be optimal
@@ -41,6 +42,11 @@ public class ApplicationIntro {
             JoinOrCreate controller = CreateLoader.getController();
             controller.btnCreate.setOnAction(e -> {
                 HOST_IP = controller.textField.getText();
+                try {
+                    new Lobby(HOST_IP);
+                } catch (URISyntaxException | InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
                 new GameApplication(stage, HOST_IP, true, name).startGame(stage);
             });
             controller.btnJoin.setOnAction(e -> {
