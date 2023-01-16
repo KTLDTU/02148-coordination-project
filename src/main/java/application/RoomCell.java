@@ -14,7 +14,7 @@ public class RoomCell extends ListCell<Room> {
     private Label ipAddress;
 
     @FXML
-    private Label roomId;
+    private Label roomCapacity;
 
     @FXML
     private Label roomName;
@@ -46,8 +46,8 @@ public class RoomCell extends ListCell<Room> {
         else {
             roomName.setText(item.getName());
             ipAddress.setText(item.getIp());
-            int roomIdNumber = item.getRoomId();
-            roomId.setText(Integer.toString(roomIdNumber));
+            int numberOfPlayers = item.getNumberOfPlayers();
+            roomCapacity.setText(numberOfPlayers + " / 4");
 
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         }
