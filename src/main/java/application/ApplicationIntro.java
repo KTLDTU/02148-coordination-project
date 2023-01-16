@@ -1,7 +1,6 @@
 package application;
 
-import controllers.JoinOrCreate;
-import controllers.LobbySceneController;
+import controllers.JoinOrCreateController;
 import controllers.PlayerNameInputController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -36,9 +35,9 @@ public class ApplicationIntro {
 
     private void makeCreateJoinScene(Stage stage){
         try {
-            FXMLLoader CreateLoader = new FXMLLoader(JoinOrCreate.class.getResource("/joinOrCreate.fxml"));
+            FXMLLoader CreateLoader = new FXMLLoader(JoinOrCreateController.class.getResource("/joinOrCreate.fxml"));
             AnchorPane scene = CreateLoader.load();
-            JoinOrCreate controller = CreateLoader.getController();
+            JoinOrCreateController controller = CreateLoader.getController();
             controller.btnCreate.setOnAction(e -> {
                 HOST_IP = controller.textField.getText();
                 new GameApplication(stage, HOST_IP, true, name).startGame(stage);

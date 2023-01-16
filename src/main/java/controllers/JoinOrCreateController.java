@@ -5,7 +5,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 
 
-public class JoinOrCreate {
+public class JoinOrCreateController {
 
     @FXML
     public Button btnJoin;
