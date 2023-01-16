@@ -2,10 +2,13 @@ package application;
 
 public class ShotBroadcaster implements Runnable {
     private Game game;
+    private int fromPlayerID, shotID;
     private double x, y, rot;
 
-    public ShotBroadcaster(Game game, double x, double y, double rot) {
+    public ShotBroadcaster(Game game, int fromPlayerID, int shotID, double x, double y, double rot) {
         this.game = game;
+        this.fromPlayerID = fromPlayerID;
+        this.shotID = shotID;
         this.x = x;
         this.y = y;
         this.rot = rot;
@@ -14,9 +17,8 @@ public class ShotBroadcaster implements Runnable {
     @Override
     public void run() {
         try {
-            for (int playerID : game.playersIdNameMap.keySet())
-                if (playerID != game.MY_PLAYER_ID)
-                    game.gameSpace.put("new shot", playerID, x, y, rot);
+            for (int toPlayerID : game.playersIdNameMap.keySet())
+                game.gameSpace.put("new shot", fromPlayerID, toPlayerID, shotID, x, y, rot);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
