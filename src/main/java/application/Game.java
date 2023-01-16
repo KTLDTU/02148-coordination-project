@@ -17,12 +17,11 @@ import org.jspace.FormalField;
 import org.jspace.Space;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class Game {
     public static final double PLAYER_WIDTH = 20, PLAYER_HEIGHT = 15;
+    public final int MY_PLAYER_ID;
     public GameSceneController gameController;
     public Scene gameScene;
     public Pane gamePane;
@@ -31,8 +30,8 @@ public class Game {
     public HashMap<Integer, Rectangle> tractors;
     public Rectangle myTractor;
     public Map<Integer, String> playersIdNameMap;
-    public final int MY_PLAYER_ID;
     public ShotController shotController;
+    public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.ROYALBLUE, Color.MAGENTA, Color.RED, Color.GREEN));
     public HashMap<Integer, Shot> shots;
     public InputListener inputListener;
 
@@ -56,11 +55,10 @@ public class Game {
                     throw new RuntimeException(e);
                 }
             }
-
-            gameController.initializePlayerNames(playersIdNameMap.values());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        gameController.initializePlayerNames(playersIdNameMap);
     }
 
     public void setGrid(HashSetIntArray connectedSquares) {
@@ -72,6 +70,7 @@ public class Game {
         for (Integer playerID : playersIdNameMap.keySet()) {
             Rectangle newTractor = (playerID == MY_PLAYER_ID ? randomSpawn() : new Rectangle(PLAYER_WIDTH, PLAYER_HEIGHT));
             tractors.put(playerID, newTractor);
+            newTractor.setFill(colors.get(playerID));
             Platform.runLater(() -> gamePane.getChildren().add(tractors.get(playerID))); // TODO: this line gives NullPointerException occasionally
         }
 
@@ -95,6 +94,7 @@ public class Game {
         Thread gameEndListener = new Thread(new GameEndListener(this));
         gameEndListener.setDaemon(true);
         gameEndListener.start();
+
     }
 
     private Rectangle randomSpawn() {
@@ -111,7 +111,6 @@ public class Game {
         tractor.setLayoutX(x);
         tractor.setLayoutY(y);
         tractor.setRotate(rotation);
-        tractor.setFill(Color.ROYALBLUE); // color to distinguish from other tractors (temporary - all should have different colors)
         return tractor;
     }
 
