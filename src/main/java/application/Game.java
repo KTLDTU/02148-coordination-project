@@ -15,7 +15,6 @@ import javafx.stage.Stage;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 import org.jspace.Space;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +28,7 @@ public class Game {
     public Grid grid;
     public Space gameSpace;
     public HashMap<Integer, Rectangle> tractors;
+    public HashMap<Integer, Integer> playerScores;
     public Rectangle myTractor;
     public Map<Integer, String> playersIdNameMap;
     public final int MY_PLAYER_ID;
@@ -47,6 +47,11 @@ public class Game {
             stage.setScene(gameScene);
             tractors = new HashMap<>();
             gamePane = gameController.gamePane;
+            playerScores = new HashMap<>();
+            for(Integer playerID : playersIdNameMap.keySet()){
+                playerScores.put(playerID,0);
+            }
+            gameController.displayPlayersNameAndScore(playersIdNameMap, playerScores);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -56,6 +61,7 @@ public class Game {
         grid = new Grid(gamePane);
         gameController.displayGrid(grid);
     }
+
 
     public void setGrid(HashSetIntArray connectedSquares) {
         grid = new Grid(gamePane, connectedSquares);
@@ -82,7 +88,7 @@ public class Game {
         shotListener.setDaemon(true);
         shotListener.start();
 
-        gameController.initializePlayerNames(playersIdNameMap.values());
+
     }
 
     private Rectangle randomSpawn() {
@@ -101,6 +107,11 @@ public class Game {
         tractor.setRotate(rotation);
         tractor.setFill(Color.ROYALBLUE); // color to distinguish from other tractors (temporary - all should have different colors)
         return tractor;
+    }
+    public void incrementPlyerScore(Integer playerId){
+        if(playerId != null){
+            playerScores.replace(playerId, playerScores.get(playerId)+1);
+        }
     }
 
 }
