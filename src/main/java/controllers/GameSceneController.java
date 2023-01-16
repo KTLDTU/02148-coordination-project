@@ -1,6 +1,7 @@
 package controllers;
 import application.GameApplication;
 import application.Grid;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
@@ -53,7 +54,7 @@ public class GameSceneController {
             nameContainer.setAlignment(Pos.CENTER);
             nameContainer.setPrefWidth(GameApplication.WINDOW_WIDTH / playerNames.size());
             nameContainer.getChildren().addAll(nameText, scoreText);
-            playerScoreContainer.getChildren().add(nameContainer);
+            Platform.runLater(() -> playerScoreContainer.getChildren().add(nameContainer));
         }
     }
     }

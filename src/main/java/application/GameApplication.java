@@ -2,7 +2,6 @@ package application;
 
 import controllers.LobbySceneController;
 import datatypes.ArrayListInt;
-import datatypes.HashSetIntArray;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -33,7 +32,7 @@ public class GameApplication {
     private Scene startScene;
     public String name;
 
-    public boolean isHost;
+    public static boolean isHost;
     SpaceRepository repository;
     SequentialSpace serverLobby;
     SequentialSpace serverRoom;
@@ -45,7 +44,7 @@ public class GameApplication {
 
     public GameApplication(Stage stage, String HOST_IP, boolean isHost, String name) {
         GameApplication.HOST_IP = HOST_IP;
-        this.isHost = isHost;
+        GameApplication.isHost = isHost;
         this.name = name;
 
         try {
@@ -91,7 +90,6 @@ public class GameApplication {
 
     private void showStartScene(Stage stage) {
         stage.setScene(startScene);
-        stage.centerOnScreen();
     }
 
     private void makeStartScene(Stage stage) {
@@ -191,21 +189,15 @@ public class GameApplication {
                 repository.add("gameSpace" + GAME_ID, serverGameSpace);
 
                 game = new Game(stage, serverGameSpace, playersIdNameMap, playerID);
-                game.initializeGrid();
-                game.spawnPlayers();
-                game.gameSpace.put("connected squares", game.grid.connectedSquares);
             } else {
                 System.out.println("Client is getting existing game...");
                 String clientUri = PROTOCOL + HOST_IP + PORT + "/gameSpace" + GAME_ID + "?keep";
                 clientGameSpace = new RemoteSpace(clientUri);
 
                 game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);
-
-                HashSetIntArray connectedSquares = (HashSetIntArray) clientGameSpace.query(new ActualField("connected squares"), new FormalField(HashSetIntArray.class))[1];
-                game.setGrid(connectedSquares);
-                game.spawnPlayers();
             }
 
+            game.newRound();
             stage.setScene(game.gameScene);
             game.gameScene.getRoot().requestFocus();
         } catch (InterruptedException | IOException e) {
