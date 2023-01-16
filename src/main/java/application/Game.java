@@ -21,6 +21,7 @@ import java.util.*;
 
 public class Game {
     public static final double PLAYER_WIDTH = 20, PLAYER_HEIGHT = 15;
+    public final int MY_PLAYER_ID;
     public GameSceneController gameController;
     public Scene gameScene;
     public Pane gamePane;
@@ -29,9 +30,8 @@ public class Game {
     public HashMap<Integer, Rectangle> tractors;
     public Rectangle myTractor;
     public Map<Integer, String> playersIdNameMap;
-    public final int MY_PLAYER_ID;
     public ShotController shotController;
-    private List<Color> colors = new ArrayList<>(Arrays.asList(Color.ROYALBLUE, Color.MAGENTA, Color.RED, Color.GREEN));
+    public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.ROYALBLUE, Color.MAGENTA, Color.RED, Color.GREEN));
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
         try {
@@ -82,7 +82,7 @@ public class Game {
         shotListener.setDaemon(true);
         shotListener.start();
 
-        gameController.initializePlayerNames(playersIdNameMap.values());
+        gameController.initializePlayerNames(playersIdNameMap);
     }
 
     private Rectangle randomSpawn() {

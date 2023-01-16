@@ -1,5 +1,6 @@
 package controllers;
 
+import application.Game;
 import application.GameApplication;
 import application.Grid;
 import javafx.fxml.FXML;
@@ -10,6 +11,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 
 import java.util.Collection;
+import java.util.Map;
 
 public class GameSceneController {
 
@@ -37,14 +39,15 @@ public class GameSceneController {
             gamePane.getChildren().add(wall);
     }
 
-    public void initializePlayerNames(Collection<String> playerNames) {
-        for (String name : playerNames) {
+    public void initializePlayerNames(Map<Integer, String> playerIdNameMap) {
+        for (Map.Entry<Integer, String> entry : playerIdNameMap.entrySet()) {
             HBox nameContainer = new HBox(5);
-            Text nameText = new Text(name + ":");
+            Text nameText = new Text(entry.getValue() + ":");
+            nameText.setFill(Game.colors.get(entry.getKey()));
             Text scoreText = new Text("0");
 
             nameContainer.setAlignment(Pos.CENTER);
-            nameContainer.setPrefWidth(GameApplication.WINDOW_WIDTH/playerNames.size());
+            nameContainer.setPrefWidth(GameApplication.WINDOW_WIDTH / playerIdNameMap.size());
             nameContainer.getChildren().addAll(nameText, scoreText);
             playerScoreContainer.getChildren().add(nameContainer);
         }
