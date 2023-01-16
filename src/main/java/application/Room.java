@@ -34,18 +34,20 @@ public class Room {
     private String uri;
     private int playerId;
     public static ArrayList<String> playerNames;
+
     private ArrayListInt playerIds;
     private String hostName;
 
     private String name;
     private String ip;
     private int roomId;
-
+    private int numberOfPlayers;
     // Constructor used for RoomCell in ListView
-    public Room(String ip, int roomId, String name) {
+    public Room(String ip, int roomId, String name, int numberOfPlayers) {
         this.ip = ip;
         this.roomId = roomId;
         this.name = name;
+        this.numberOfPlayers = numberOfPlayers;
     }
     public Room(Stage stage, GameApplication application, Space space, int roomId) {
         this.space = space;
@@ -162,7 +164,7 @@ public class Room {
         return roomId;
     }
 
-    // Two rooms are equal if they have the same roomId, ip and name
+    // Two rooms are equal if they have the same id, ip, name and number of players
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -170,13 +172,19 @@ public class Room {
         Room room = (Room) o;
         return roomId == room.roomId &&
                 Objects.equals(ip, room.ip) &&
-                Objects.equals(name, room.name);
+                Objects.equals(name, room.name) &&
+                numberOfPlayers == room.numberOfPlayers;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ip, roomId, name);
+        return Objects.hash(roomId, ip, name, numberOfPlayers);
     }
+
+    public int getNumberOfPlayers() {
+        return numberOfPlayers;
+    }
+
 }
 
 class RoomPlayerListener implements Runnable {

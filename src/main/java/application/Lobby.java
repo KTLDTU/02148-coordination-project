@@ -58,7 +58,7 @@ public class Lobby {
             roomList.setOnMouseClicked(e -> {
                 if (e.getClickCount() >= 2 && roomList.getSelectionModel().getSelectedItem() != null) {
                     Room selectedRoom = roomList.getSelectionModel().getSelectedItem();
-                    if (selectedRoom.getPlayers() == 4) return;
+                    if (selectedRoom.getNumberOfPlayers() == 4) return;
                     int roomId = selectedRoom.getRoomId();
                     joinRoom(getIp(), roomId);
                     launchRoom(roomClient);
