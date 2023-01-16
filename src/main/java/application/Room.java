@@ -2,6 +2,8 @@ package application;
 
 import controllers.ChatBoxViewController;
 import controllers.RoomSceneViewController;
+import datatypes.ArrayListInt;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -29,17 +31,20 @@ public class Room {
     private Space space;
     private String name;
     private String ip;
-    private int players = 0;
-    private ArrayList<String> playerNames;
+    private boolean isHost;
+    private int playerId;
+    public static ArrayList<String> playerNames;
+    private ArrayListInt playerIds;
+    private String hostName;
     private SpaceRepository repository = new SpaceRepository();
     private Space gameSpace = new SequentialSpace();
-    private boolean isHost;
 
     public Room(Stage stage, GameApplication application, String ip, boolean isHost,String name) {
         this.name = name;
         this.ip = ip;
         this.isHost = isHost;
         playerNames = new ArrayList();
+        playerIds = new ArrayListInt();
         try {
             if(isHost){
                 space = new SequentialSpace();
@@ -55,12 +60,12 @@ public class Room {
             }
             updatePlayerNames(space);
 
-            updateNumberOfPlayers(space);
+            updatePlayerIds(space);
 
             roomLoader = new FXMLLoader(RoomSceneViewController.class.getResource(roomFileName));
             chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(chatFileName));
 
-            populateChatBoxConstructor(ip, players, name);
+            populateChatBoxConstructor(ip, playerNames.size(), name);
 
             setupRoomLayout(stage, application);
         } catch (IOException | InterruptedException e) {
@@ -70,13 +75,13 @@ public class Room {
 
     }
 
-    private void updateNumberOfPlayers(Space space) throws InterruptedException {
-        Object[] numberOfPlayers = space.getp(new ActualField("numberOfPlayer"), new FormalField(Integer.class));
-        if (numberOfPlayers != null) {
-            players = (int) numberOfPlayers[1];
+    private void updatePlayerIds(Space space) throws InterruptedException {
+        Object[] listOfPlayerIds = space.getp(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
+        if (listOfPlayerIds != null) {
+            playerIds = (ArrayListInt) listOfPlayerIds[1];
         }
-        players++;
-        space.put("numberOfPlayer", players);
+        playerIds.add(playerId);
+        space.put("playerIdList", playerIds);
     }
 
     private void updatePlayerNames(Space space) throws InterruptedException {
@@ -100,14 +105,27 @@ public class Room {
         lobbyButton.setOnAction(e -> application.makeLobbyScene(stage));
         startGameButton.setOnAction(e -> {
             repository.add("gameSpace" + 1535, gameSpace);
-            application.launchGame(stage, ip, isHost);
+            try {
+                application.launchGame(stage, ip, isHost);
+                for (int i = 0; i < playerNames.size() - 1; i++) {
+                    space.put("start game");
+                }
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
         });
+
+        if (!isHost) startGameButton.setVisible(false);
+        roomController.setRoomNameText(hostName);
 
         roomLayout.setRight(chatbox);
         roomScene = new Scene(roomLayout, application.WINDOW_WIDTH, application.WINDOW_HEIGHT);
 
         // After we've set up the scene we start the listener thread to update the ListView when newp players join
-        new Thread(new RoomListener(space, roomController)).start();
+        new Thread(new RoomPlayerListener(space, roomController)).start();
+
+        if (!isHost)
+            new Thread(new StartGameListener(stage, space, application)).start();
     }
 
     private void populateChatBoxConstructor(String uri, int players, String name) {
@@ -134,12 +152,12 @@ public class Room {
     }
 }
 
-class RoomListener implements Runnable {
+class RoomPlayerListener implements Runnable {
     Space space;
     RoomSceneViewController roomController;
     ArrayList<String> playerNames = new ArrayList<>();
 
-    public RoomListener(Space space, RoomSceneViewController roomController) {
+    public RoomPlayerListener(Space space, RoomSceneViewController roomController) {
         this.space = space;
         this.roomController = roomController;
     }
@@ -149,14 +167,39 @@ class RoomListener implements Runnable {
         while (true) {
             try {
                 ArrayList<String> newPlayerNames = (ArrayList<String>) space.query(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
+
                 // Update list of player names if the two lists are different
                 if (!playerNames.equals(newPlayerNames)) {
                     playerNames = newPlayerNames;
-                    roomController.updatePlayerList(newPlayerNames);
+                    Platform.runLater(() -> roomController.updatePlayerList(newPlayerNames));
+                    Room.playerNames = newPlayerNames;
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+}
+
+class StartGameListener implements Runnable {
+
+    private Stage stage;
+    private Space space;
+    private GameApplication application;
+
+    public StartGameListener(Stage stage, Space space, GameApplication application) {
+        this.stage = stage;
+        this.space = space;
+        this.application = application;
+    }
+
+    @Override
+    public void run() {
+        try {
+            space.get(new ActualField("start game"));
+            Platform.runLater(() -> application.launchGame(stage));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 }
