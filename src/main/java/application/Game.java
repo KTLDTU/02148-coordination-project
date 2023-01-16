@@ -119,7 +119,7 @@ public class Game {
         return tractors.size();
     }
 
-    public void incrementPlayerScores() {
+    public void incrementPlayerScores(Integer playerID) {
         // TODO
     }
 
@@ -283,7 +283,8 @@ class GameEndListener implements Runnable {
     public void run() {
         try {
             game.gameSpace.get(new ActualField("game end"), new ActualField(game.MY_PLAYER_ID));
-            game.incrementPlayerScores();
+            Integer winnerPlayerID = (game.tractors.isEmpty() ? null : (Integer) game.tractors.keySet().toArray()[0]);
+            game.incrementPlayerScores(winnerPlayerID);
             game.newRound();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
