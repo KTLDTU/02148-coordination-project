@@ -39,7 +39,7 @@ public class LobbyConnector {
 
         Button refresh = (Button)lobby.lookup("#refresh");
         ListView rooms = (ListView)lobby.lookup("#rooms");
-        String finalIp = ip;
+        Label playerAmount = (Label)lobby.lookup("#playerAmount");
         TextField ipField = (TextField)lobby.lookup("#ip");
         createRoomButton.setOnAction(e -> {
             try {
@@ -52,6 +52,7 @@ public class LobbyConnector {
         refresh.setOnAction(e -> {
             rooms.getItems().remove(0,rooms.getItems().size());
             try {
+                playerAmount.setText("There are " + getPlayerAmount() + " players in the lobby");
                 for(Object[] room : getRooms()){
                     rooms.getItems().add(room[2]);
                 }
