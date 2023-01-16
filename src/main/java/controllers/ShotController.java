@@ -1,6 +1,7 @@
 package controllers;
 
 import application.*;
+import broadcasters.KillBroadcaster;
 import broadcasters.ShotBroadcaster;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
