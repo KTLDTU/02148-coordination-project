@@ -39,12 +39,13 @@ public class Room {
     private SpaceRepository repository = new SpaceRepository();
     private Space gameSpace = new SequentialSpace();
 
-    public Room(Stage stage, GameApplication application, String ip, boolean isHost,String name) {
+    public Room(Stage stage, GameApplication application, String ip, boolean isHost,String name, int playerId) {
         this.name = name;
         this.ip = ip;
         this.isHost = isHost;
         playerNames = new ArrayList();
         playerIds = new ArrayListInt();
+        this.playerId = playerId;
         try {
             if(isHost){
                 space = new SequentialSpace();
@@ -55,8 +56,12 @@ public class Room {
                 space.put("players", 1);
                 space.put("readers", 0);
                 space.put("room", ip, this.name);
+                repository.add("gameSpace" + 1535, gameSpace);
+                hostName = name;
+                space.put("host name", name);
             } else {
                 this.space = new RemoteSpace("tcp://" + ip + ":9001/room?keep");
+                hostName = (String)space.query(new ActualField("host name"), new FormalField(String.class))[1];
             }
             updatePlayerNames(space);
 
@@ -104,7 +109,6 @@ public class Room {
         Button startGameButton = (Button) roomLayout.lookup("#startGameButton");
         lobbyButton.setOnAction(e -> application.makeLobbyScene(stage));
         startGameButton.setOnAction(e -> {
-            repository.add("gameSpace" + 1535, gameSpace);
             try {
                 application.launchGame(stage, ip, isHost);
                 for (int i = 0; i < playerNames.size() - 1; i++) {

@@ -118,7 +118,7 @@ public class GameApplication {
     }
 
     public void launchRoom(Stage stage, String ip, boolean isHost){
-        new Room(stage, this, ip, isHost,name);
+        new Room(stage, this, ip, isHost,name, playerID);
     }
 
     public void launchGame(Stage stage, String ip, boolean isHost) {
