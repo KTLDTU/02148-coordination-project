@@ -88,11 +88,13 @@ public class GameApplication {
             System.out.println("clientRoom playernamelist: " + playerNameList.toString());
             ArrayListInt playerIdList = (ArrayListInt) space.query(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
             System.out.println("clientRoom playerIdList: " + playerIdList.toString());
-
+            int roomId = (Integer) space.get(new ActualField("room id"), new FormalField(Integer.class))[1];
+            System.out.println("launch game: " + roomId);
             // Collect the two lists to a map with id as keys and names as values
             Map<Integer, String> playersIdNameMap = IntStream.range(0, playerNameList.size()).boxed().collect(Collectors.toMap(i -> playerIdList.get(i), i -> playerNameList.get(i)));
 
             if (isRoomHost) {
+                clientLobby.get(new ActualField("room"), new FormalField(String.class), new ActualField(roomId), new FormalField(String.class), new FormalField(Integer.class));
                 System.out.println("Host is creating a new game...");
                 serverGameSpace = new SequentialSpace();
                 repository.add("gameSpace" + GAME_ID, serverGameSpace);

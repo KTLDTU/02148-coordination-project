@@ -115,6 +115,7 @@ public class Lobby {
             roomSpace.put("name", name);
             roomSpace.put("player id", playerID);
             int roomId = getRoomId();
+            System.out.println("launch room: " + roomId);
             roomSpace.put("room id", roomId);
 
             if (GameApplication.isRoomHost) {
