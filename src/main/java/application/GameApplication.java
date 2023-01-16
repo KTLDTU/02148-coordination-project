@@ -143,7 +143,6 @@ public class GameApplication {
             playersIdNameMap.put(1, "Bob");
             playersIdNameMap.put(2, "Charlie");
             playersIdNameMap.put(3, "Frank");
-            System.out.println(ip);
 
             clientRoom = new RemoteSpace(PROTOCOL + ip + ":9001/room?keep");
 

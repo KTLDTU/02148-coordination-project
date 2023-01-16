@@ -53,11 +53,9 @@ public class Room {
             } else {
                 this.space = new RemoteSpace("tcp://" + ip + ":9001/room?keep");
             }
-            System.out.println("Hello");
             updatePlayerNames(space);
 
             updateNumberOfPlayers(space);
-            System.out.println("And also here");
 
             roomLoader = new FXMLLoader(RoomSceneViewController.class.getResource(roomFileName));
             chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(chatFileName));
