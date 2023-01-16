@@ -22,18 +22,11 @@ public class GameSceneController {
     @FXML
     public HBox playerScoreContainer;
 
-
-    private Collection<String> playerNames;
-
-    public List<Text> scoreTexts;
-
-
     @FXML
     void initialize() {
         assert gamePane != null : "fx:id=\"game\" was not injected: check your FXML file 'game-scene-view.fxml'.";
         assert playerScoreContainer != null : "fx:id=\"player_scores\" was not injected: check your FXML file 'game-scene-view.fxml'.";
         assert scene != null : "fx:id=\"scene\" was not injected: check your FXML file 'game-scene-view.fxml'.";
-        scoreTexts = new ArrayList<>();
     }
 
     public void displayGrid(Grid grid) {
