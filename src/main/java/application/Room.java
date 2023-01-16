@@ -53,7 +53,6 @@ public class Room {
 
             initializePlayerNames(space);
             initializePlayerIds(space);
-
             populateChatBoxConstructor(uri, playerNames.size(), name);
 
             setupRoomLayout(stage, application);
@@ -100,6 +99,10 @@ public class Room {
                 ArrayListInt playerIds = (ArrayListInt) space.get(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
                 playerIds.remove(Integer.valueOf(playerId));
                 space.put("playerIdList", playerIds);
+
+                ChatBoxViewController chatboxController = chatboxLoader.getController();
+                chatboxController.chatClient.closeClient();
+
                 // TODO: switch to lobby scene
                 stage.setScene(GameApplication.startScene);
             } catch (InterruptedException ex) {

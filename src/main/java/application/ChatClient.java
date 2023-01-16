@@ -52,6 +52,10 @@ public class ChatClient {
     public String getName() {
         return name;
     }
+
+    public void closeClient() {
+        receiver.stop();
+    }
 }
 
 

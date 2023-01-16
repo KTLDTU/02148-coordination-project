@@ -22,7 +22,7 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 
 public class ChatBoxViewController {
-    ChatClient chatClient;
+    public ChatClient chatClient;
     // Not used atm
     private ArrayList<Label> messages = new ArrayList<>();
 

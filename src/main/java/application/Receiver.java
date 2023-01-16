@@ -11,6 +11,7 @@ class Receiver implements Runnable{
     private Space messages;
     private int numberOfPlayers;
     private int player;
+    private boolean exit = false;
 
     public Receiver(Space chat, Space messages,int player){
         this.chat = chat;
@@ -20,7 +21,7 @@ class Receiver implements Runnable{
 
     @Override
     public void run(){
-        while(true){
+        while(!exit){
             try {
                 chat.get(new ActualField("turn"), new ActualField(player));
                 Object[] players = chat.query(new ActualField("players"), new FormalField(Integer.class));
@@ -39,5 +40,9 @@ class Receiver implements Runnable{
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public void stop() {
+        exit = true;
     }
 }
