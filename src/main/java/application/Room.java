@@ -18,6 +18,7 @@ import org.jspace.Space;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Room {
 
@@ -30,15 +31,26 @@ public class Room {
     private FXMLLoader roomLoader;
     private RoomSceneViewController roomController;
     private Space space;
-    private String name;
     private String uri;
     private int playerId;
     public static ArrayList<String> playerNames;
     private ArrayListInt playerIds;
     private String hostName;
 
-    public Room(Stage stage, GameApplication application, Space space) {
+    private String name;
+    private String ip;
+    private int roomId;
+
+    // Constructor used for RoomCell in ListView
+    public Room(String ip, int roomId, String name) {
+        this.ip = ip;
+        this.roomId = roomId;
+        this.name = name;
+    }
+    public Room(Stage stage, GameApplication application, Space space, int roomId) {
         this.space = space;
+        this.roomId = roomId;
+        System.out.println("room id: " + roomId);
         playerNames = new ArrayList();
         playerIds = new ArrayListInt();
         try {
@@ -50,7 +62,7 @@ public class Room {
             updatePlayerNames(space);
 
             updatePlayerIds(space);
-
+            System.out.println("Room " + roomId + " playerNames" + playerNames.toString() + " playerIds " + playerIds.toString());
             roomLoader = new FXMLLoader(RoomSceneViewController.class.getResource(roomFileName));
             chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(chatFileName));
 
@@ -94,7 +106,7 @@ public class Room {
         lobbyButton.setOnAction(e -> stage.setScene(GameApplication.lobbyScene));
         startGameButton.setOnAction(e -> {
             try {
-                application.launchGame(stage);
+                application.launchGame(stage, space);
                 for (int i = 0; i < playerNames.size() - 1; i++) {
                     space.put("start game");
                 }
@@ -103,7 +115,7 @@ public class Room {
             }
         });
 
-        if (!GameApplication.isHost) startGameButton.setVisible(false);
+        if (!GameApplication.isRoomHost) startGameButton.setVisible(false);
         roomController.setRoomNameText(hostName);
 
         roomLayout.setRight(chatbox);
@@ -112,7 +124,7 @@ public class Room {
         // After we've set up the scene we start the listener thread to update the ListView when newp players join
         new Thread(new RoomPlayerListener(space, roomController)).start();
 
-        if (!GameApplication.isHost)
+        if (!GameApplication.isRoomHost)
             new Thread(new StartGameListener(stage, space, application)).start();
     }
 
@@ -137,6 +149,33 @@ public class Room {
                     }
             }
         });
+    }
+    public String getName() {
+        return name;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public int getRoomId() {
+        return roomId;
+    }
+
+    // Two rooms are equal if they have the same roomId, ip and name
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Room room = (Room) o;
+        return roomId == room.roomId &&
+                Objects.equals(ip, room.ip) &&
+                Objects.equals(name, room.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ip, roomId, name);
     }
 }
 
@@ -167,6 +206,7 @@ class RoomPlayerListener implements Runnable {
             }
         }
     }
+
 }
 
 class StartGameListener implements Runnable {
@@ -185,7 +225,7 @@ class StartGameListener implements Runnable {
     public void run() {
         try {
             space.get(new ActualField("start game"));
-            Platform.runLater(() -> application.launchGame(stage));
+            Platform.runLater(() -> application.launchGame(stage, space));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
