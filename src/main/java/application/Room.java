@@ -184,10 +184,8 @@ class StartGameListener implements Runnable {
     @Override
     public void run() {
         try {
-            if (!GameApplication.isHost) {
-                space.get(new ActualField("start game"));
-                Platform.runLater(() -> application.launchGame(stage));
-            }
+            space.get(new ActualField("start game"));
+            Platform.runLater(() -> application.launchGame(stage));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
