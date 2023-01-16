@@ -45,7 +45,8 @@ public class GameSceneController {
     }
 
     public void displayPlayersNameAndScore(Map<Integer, String> playerNames, Map<Integer, Integer> playerScores) {
-        playerScoreContainer.getChildren().clear();
+        Platform.runLater(() -> playerScoreContainer.getChildren().clear());
+
         for (Integer playerId : playerNames.keySet()) {
             String name = playerNames.get(playerId);
             HBox nameContainer = new HBox(5);
