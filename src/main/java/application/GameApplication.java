@@ -156,11 +156,11 @@ public class GameApplication {
             if (isHost) {
                 System.out.println("Host is creating a new game...");
 
-                game = new Game(stage, serverGameSpace, playersIdNameMap, playerID);
+                game = new Game(stage, clientGameSpace, playersIdNameMap, playerID, isHost);
             } else {
                 System.out.println("Client is getting existing game...");
 
-                game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);
+                game = new Game(stage, clientGameSpace, playersIdNameMap, playerID, isHost);
             }
 
             game.newRound();

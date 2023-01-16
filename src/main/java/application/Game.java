@@ -35,8 +35,10 @@ public class Game {
     public ShotController shotController;
     public HashMap<Integer, Shot> shots;
     public InputListener inputListener;
+    public boolean isHost;
 
-    public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
+    public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID, boolean isHost) {
+        this.isHost = isHost;
         try {
             this.gameSpace = gameSpace;
             this.MY_PLAYER_ID = MY_PLAYER_ID;
@@ -49,7 +51,7 @@ public class Game {
             gameScene = new Scene(scene);
             stage.setScene(gameScene);
 
-            if (GameApplication.isHost) {
+            if (this.isHost) {
                 try {
                     gameSpace.put("shot id", 0);
                 } catch (InterruptedException e) {
@@ -129,7 +131,7 @@ public class Game {
         shots = new HashMap<>();
 
         try {
-            if (GameApplication.isHost) {
+            if (this.isHost) {
                 Grid grid = new Grid(gamePane);
 
                 for (int playerID : playersIdNameMap.keySet())
@@ -203,7 +205,7 @@ class ShotListener implements Runnable {
                     game.shots.put(shotID, shot);
 
                     // if a player shoots directly into a wall, they die immediately
-                    if (GameApplication.isHost && game.grid.isWallCollision(shot)) {
+                    if (game.isHost && game.grid.isWallCollision(shot)) {
                         new Thread(new KillBroadcaster(game, playerID, shotID)).start();
                     }
                 });
@@ -238,7 +240,7 @@ class KillListener implements Runnable {
                     game.gamePane.getChildren().remove(game.tractors.get(playerID));
                     game.tractors.remove(playerID);
 
-                    if (GameApplication.isHost && game.numPlayersAlive() == 1)
+                    if (game.isHost && game.numPlayersAlive() == 1)
                         new Thread(new GameEndTimer(game)).start();
                 });
 
