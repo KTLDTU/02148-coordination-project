@@ -52,29 +52,13 @@ public class GameApplication {
 
         try {
             makeStartScene(stage);
-            //makeLobbyScene(stage);
-
-            //repository = new SpaceRepository();
-            //serverLobby = new SequentialSpace();
-            //serverRoom = new SequentialSpace();
-
-            //repository.add("lobby", serverLobby);
-            //repository.add("room", serverRoom);
-            //String serverUri = PROTOCOL + HOST_IP + PORT + "/?keep";
-            //repository.addGate(serverUri);
 
             String clientLobbyUri = PROTOCOL + HOST_IP + PORT + "/lobby?keep";
-            //String clientRoomUri = PROTOCOL + HOST_IP + PORT + "/room?keep";
 
             clientLobby = new RemoteSpace(clientLobbyUri);
-            //clientRoom = new RemoteSpace(clientRoomUri);
 
             if (isHost) {
                 clientLobby.put("player id", 0);
-                //serverRoom.put("clientUri", HOST_IP);
-                //serverRoom.put("turn", 1);
-                //serverRoom.put("players", 1);
-                //serverRoom.put("readers", 0);
             }
             playerID = (int) clientLobby.get(new ActualField("player id"), new FormalField(Integer.class))[1];
             clientLobby.put("player id", playerID + 1);
@@ -105,7 +89,7 @@ public class GameApplication {
 
         Button roomButton = new Button("Start room");
         roomButton.setPrefSize(150, 30);
-        roomButton.setOnAction(e -> launchRoom(stage));
+        roomButton.setOnAction(e -> launchRoom(stage, HOST_IP, isHost));
 
         Button gameButton = new Button("Start game");
         gameButton.setPrefSize(150, 30);
@@ -136,24 +120,6 @@ public class GameApplication {
 
     public void launchRoom(Stage stage, String ip, boolean isHost){
         new Room(stage, this, ip, isHost,name);
-    }
-
-    public void launchRoom(Stage stage) {
-        try {
-            clientRoom.put("name", name);
-            clientRoom.put("player id", playerID);
-
-            if (isHost) {
-                System.out.println("Host is creating a new room");
-                serverRoom.put("host name", name);
-                new Room(stage, this, HOST_IP, true,name);
-            } else {
-                System.out.println("Client joining room");
-                new Room(stage, this, HOST_IP, false,name);
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void launchGame(Stage stage, String ip, boolean isHost) {
@@ -191,8 +157,6 @@ public class GameApplication {
             clientGameSpace = new RemoteSpace(PROTOCOL + ip + ":9001" + "/gameSpace" + GAME_ID + "?keep");
             if (isHost) {
                 System.out.println("Host is creating a new game...");
-                //clientGameSpace = new RemoteSpace(PROTOCOL + ip + ":9001" + "/gameSpace" + GAME_ID + "?keep");
-                //repository.add("gameSpace" + GAME_ID, serverGameSpace);
 
                 game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);
                 game.initializeGrid();
@@ -200,8 +164,6 @@ public class GameApplication {
                 game.gameSpace.put("connected squares", game.grid.connectedSquares);
             } else {
                 System.out.println("Client is getting existing game...");
-                //String clientUri = PROTOCOL + ip + PORT + "/gameSpace" + GAME_ID + "?keep";
-                //clientGameSpace = new RemoteSpace(clientUri);
 
                 game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);
 
