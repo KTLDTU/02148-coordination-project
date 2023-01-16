@@ -1,5 +1,6 @@
-package application;
+package broadcasters;
 
+import application.Game;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 

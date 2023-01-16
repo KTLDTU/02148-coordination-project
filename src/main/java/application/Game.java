@@ -1,5 +1,6 @@
 package application;
 
+import broadcasters.PlayerPositionBroadcaster;
 import controllers.GameSceneController;
 import controllers.MovementController;
 import controllers.ShotController;
