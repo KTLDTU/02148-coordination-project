@@ -34,10 +34,10 @@ public class Game {
     public Rectangle myTractor;
     public Map<Integer, String> playersIdNameMap;
     public ShotController shotController;
-    public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.YELLOWGREEN, Color.RED, Color.GREEN, Color.BLUE));
     public HashMap<Integer, Shot> shots;
     public InputListener inputListener;
-    public String[] imageURL=new String[4];
+    public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.YELLOWGREEN, Color.RED, Color.GREEN, Color.BLUE));
+    public String[] imageURL = new String[]{"/yellow.png", "/red.png", "/green.png", "/blue.png"};
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
         try {
@@ -73,19 +73,17 @@ public class Game {
     }
 
     public void spawnPlayers() {
-        imageURL = new String[]{"/yellow.png", "/red.png", "/green.png", "/blue.png"};
+        int index = 0;
+
         for (Integer playerID : playersIdNameMap.keySet()) {
             Rectangle newTractor = (playerID == MY_PLAYER_ID ? randomSpawn() : new Rectangle(PLAYER_WIDTH, PLAYER_HEIGHT));
             tractors.put(playerID, newTractor);
-            Image img = new Image(imageURL[playerID]);
+            Image img = new Image(imageURL[index++]);
             newTractor.setFill(new ImagePattern(img));
             Platform.runLater(() -> gamePane.getChildren().add(tractors.get(playerID))); // TODO: this line gives NullPointerException occasionally
         }
 
-
         myTractor = tractors.get(MY_PLAYER_ID);
-
-
         MovementController movementController = new MovementController(this);
         shotController = new ShotController(this);
         inputListener = new InputListener(this, movementController, shotController);
@@ -127,9 +125,7 @@ public class Game {
 
     public void incrementPlayerScore(Integer playerId){
         if(playerId != null){
-            playerScores.put(playerId, playerScores.get(playerId)+1);
-
-
+            playerScores.replace(playerId, playerScores.get(playerId)+1);
         }
     }
 
@@ -187,7 +183,6 @@ class MovementListener implements Runnable {
                         tractor.setLayoutX(tractorX);
                         tractor.setLayoutY(tractorY);
                         tractor.setRotate(tractorRot);
-
                     }
                 });
             }
@@ -199,7 +194,6 @@ class MovementListener implements Runnable {
 
 class ShotListener implements Runnable {
     private Game game;
-
 
     public ShotListener(Game game) {
         this.game = game;
@@ -289,6 +283,7 @@ class GameEndTimer implements Runnable {
         }
     }
 }
+
 class GameEndListener implements Runnable {
     private Game game;
 

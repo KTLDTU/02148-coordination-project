@@ -6,11 +6,9 @@ import application.Grid;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 
 import java.util.Collection;
@@ -27,16 +25,6 @@ public class GameSceneController {
 
     @FXML
     public HBox playerScoreContainer;
-
-
-    private Collection<String> playerNames;
-
-    public List<Text> scoreTexts;
-
-    public GameSceneController() {
-    }
-
-
 
     @FXML
     void initialize() {
@@ -55,12 +43,13 @@ public class GameSceneController {
 
     public void displayPlayersNameAndScore(Map<Integer, String> playerNames, Map<Integer, Integer> playerScores) {
         Platform.runLater(() -> playerScoreContainer.getChildren().clear());
+        int index = 0;
 
         for (Integer playerId : playerNames.keySet()) {
             String name = playerNames.get(playerId);
             HBox nameContainer = new HBox(5);
             Text nameText = new Text(name + ":");
-            nameText.setFill(Game.colors.get(playerId));
+            nameText.setFill(Game.colors.get(index++));
             Text scoreText = new Text(playerScores.get(playerId).toString());
             nameContainer.setAlignment(Pos.CENTER);
             nameContainer.setPrefWidth(GameApplication.WINDOW_WIDTH / playerNames.size());

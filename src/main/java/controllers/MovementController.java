@@ -6,14 +6,9 @@ import javafx.animation.AnimationTimer;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.ImagePattern;
-import javafx.scene.paint.Paint;
-import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 
-public class MovementController<pattern> {
+public class MovementController {
     public static final int MAX_DELAY = 25;
     public final BooleanProperty upPressed = new SimpleBooleanProperty();
     public final BooleanProperty downPressed = new SimpleBooleanProperty();
@@ -26,9 +21,6 @@ public class MovementController<pattern> {
     private final Game game;
     public final Rectangle tractor;
     private Long lastBroadcast;
-
-
-
 
     public MovementController(Game game) {
         this.game = game;
@@ -53,8 +45,6 @@ public class MovementController<pattern> {
     };
 
     private void move(String dir) {
-
-
         double angle = tractor.getRotate() * Math.PI / 180;
         double dX = Math.cos(angle) * MOVEMENT_SPEED * (dir.equals("forwards") ? 1 : -1);
         double dY = Math.sin(angle) * MOVEMENT_SPEED * (dir.equals("forwards") ? 1 : -1);
