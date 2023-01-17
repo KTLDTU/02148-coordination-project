@@ -4,6 +4,7 @@ import controllers.GameSceneController;
 import controllers.MovementController;
 import controllers.ShotController;
 import datatypes.HashSetIntArray;
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -38,7 +39,7 @@ public class Game {
     public InputListener inputListener;
     public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.YELLOWGREEN, Color.RED, Color.GREEN, Color.BLUE));
     public String[] imageURL = new String[]{"/yellow.png", "/red.png", "/green.png", "/blue.png"};
-    private boolean movementPrediction;
+    public boolean movementPrediction = false;
     private MovementController movementController;
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
@@ -165,9 +166,61 @@ public class Game {
 
 class MovementListener implements Runnable {
     private Game game;
+    private HashMap<Integer, Integer> keysPressed;
+    private HashMap<Integer, AnimationTimer> timers;
 
     public MovementListener(Game game) {
         this.game = game;
+        keysPressed = new HashMap<>();
+        timers = new HashMap<>();
+
+        // create animation timer for all enemy tractors
+        for (Integer playerID : game.playersIdNameMap.keySet()) {
+            keysPressed.put(playerID, 0);
+            timers.put(playerID, new AnimationTimer() {
+                @Override
+                public void handle(long l) {
+                    int curKeysPressed = keysPressed.get(playerID);
+
+                    if ((curKeysPressed & (1 << 0)) > 0) move(playerID, "forwards");
+                    if ((curKeysPressed & (1 << 1)) > 0) move(playerID, "backwards");
+                    if ((curKeysPressed & (1 << 2)) > 0) rotate(playerID, "counterclockwise");
+                    if ((curKeysPressed & (1 << 3)) > 0) rotate(playerID, "clockwise");
+                }
+            });
+        }
+    }
+
+    private void move(int playerID, String dir) {
+        Rectangle tractor = game.tractors.get(playerID);
+
+        if (tractor != null) {
+            double angle = tractor.getRotate() * Math.PI / 180;
+            double dX = Math.cos(angle) * MovementController.MOVEMENT_SPEED * (dir.equals("forwards") ? 1 : -1);
+            double dY = Math.sin(angle) * MovementController.MOVEMENT_SPEED * (dir.equals("forwards") ? 1 : -1);
+
+            tractor.setLayoutX(tractor.getLayoutX() + dX);
+            tractor.setLayoutY(tractor.getLayoutY() + dY);
+
+            // naive collision detection - undo movement if colliding with wall
+            if (game.grid.isWallCollision(tractor)) {
+                tractor.setLayoutX(tractor.getLayoutX() - dX);
+                tractor.setLayoutY(tractor.getLayoutY() - dY);
+            }
+        }
+    }
+
+    private void rotate(int playerID, String dir) {
+        Rectangle tractor = game.tractors.get(playerID);
+
+        if (tractor != null) {
+            double dAngle = MovementController.ROTATION_SPEED * (dir.equals("clockwise") ? 1 : -1);
+            tractor.setRotate(tractor.getRotate() + dAngle);
+
+            if (game.grid.isWallCollision(tractor)) {
+                tractor.setRotate(tractor.getRotate() - dAngle); // undo rotation
+            }
+        }
     }
 
     @Override
@@ -179,9 +232,8 @@ class MovementListener implements Runnable {
                 double tractorX = (double) obj[3];
                 double tractorY = (double) obj[4];
                 double tractorRot = (double) obj[5];
-                int keysPressed = (int) obj[6];
-
-                System.out.println("keysPressed: " + keysPressed);
+                int curKeysPressed = (int) obj[6];
+                keysPressed.replace(playerID, curKeysPressed);
 
                 Rectangle tractor = game.tractors.get(playerID);
 
@@ -190,6 +242,13 @@ class MovementListener implements Runnable {
                         tractor.setLayoutX(tractorX);
                         tractor.setLayoutY(tractorY);
                         tractor.setRotate(tractorRot);
+
+                        AnimationTimer timer = timers.get(playerID);
+
+                        if (game.movementPrediction && curKeysPressed > 0)
+                            timer.start();
+                        else
+                            timers.get(playerID).stop();
                     }
                 });
             }

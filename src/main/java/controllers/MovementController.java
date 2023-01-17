@@ -17,7 +17,7 @@ public class MovementController {
 
     private final BooleanBinding keyPressed = upPressed.or(downPressed).or(leftPressed).or(rightPressed);
 
-    private static final double MOVEMENT_SPEED = 1.9, ROTATION_SPEED = 4.2;
+    public static final double MOVEMENT_SPEED = 1.9, ROTATION_SPEED = 4.2;
     private final Game game;
     public final Rectangle tractor;
     private Long lastBroadcast;
