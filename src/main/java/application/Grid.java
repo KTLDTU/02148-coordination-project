@@ -98,8 +98,9 @@ public class Grid {
         double paneWidth = gamePane.getWidth();
         double paneHeight = gamePane.getHeight();
         double wallThickness = 2.0;
-        double wallWidth = paneWidth / COLS + wallThickness;
-        double wallHeight = paneHeight / ROWS + wallThickness;
+        double offset = wallThickness / 2;
+        double wallWidth = paneWidth / COLS;
+        double wallHeight = paneHeight / ROWS;
 
         // inner walls
         for (int row = 0; row < ROWS; row++) {
@@ -112,7 +113,7 @@ public class Grid {
                     p2 = new Integer[]{row + 1, col};
 
                     if (notConnected(p1, p2)) {
-                        double x = paneWidth * col / COLS;
+                        double x = paneWidth * col / COLS + offset;
                         double y = paneHeight * (row + 1) / ROWS;
                         addInnerWall(new Rectangle(x, y, wallWidth, wallThickness), "horizontal");
                     }
@@ -125,7 +126,7 @@ public class Grid {
 
                     if (notConnected(p1, p2)) {
                         double x = paneWidth * (col + 1) / COLS;
-                        double y = paneHeight * row / ROWS;
+                        double y = paneHeight * row / ROWS + offset;
                         addInnerWall(new Rectangle(x, y, wallThickness, wallHeight), "vertical");
                     }
                 }
