@@ -36,6 +36,7 @@ public class Game {
     public Map<Integer, String> playersIdNameMap;
     public ShotController shotController;
     public HashMap<Integer, Shot> shots;
+    public final Object shotsLock = new Object();
     public InputListener inputListener;
     public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.YELLOWGREEN, Color.RED, Color.GREEN, Color.BLUE));
     public String[] imageURL = new String[]{"/yellow.png", "/red.png", "/green.png", "/blue.png"};
@@ -147,7 +148,10 @@ public class Game {
             gameController.displayPlayersNameAndScore(playersIdNameMap, playerScores);
             Platform.runLater(() -> gamePane.getChildren().clear());
             tractors = new HashMap<>();
-            shots = new HashMap<>();
+
+            synchronized (shotsLock) {
+                shots = new HashMap<>();
+            }
 
             if (GameApplication.isHost) {
                 Grid grid = new Grid(gamePane);
@@ -164,7 +168,6 @@ public class Game {
             playerPositionBroadcaster.start();
             playerPositionBroadcaster.join();
 
-            waitForRunLater();
             synchronizePlayers();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -272,8 +275,12 @@ class ShotListener implements Runnable {
                 if (playerID == -1)
                     break;
 
-                Shot shot = game.shotController.shoot(shotX, shotY, shotRot, playerID, shotID);
-                game.shots.put(shotID, shot);
+                Shot shot;
+
+                synchronized (game.shotsLock) {
+                    shot = game.shotController.shoot(shotX, shotY, shotRot, playerID, shotID);
+                    game.shots.put(shotID, shot);
+                }
 
                 // if a player shoots directly into a wall, they die immediately
                 if (GameApplication.isHost && game.grid.isWallCollision(shot)) {
@@ -307,10 +314,12 @@ class KillListener implements Runnable {
                 if (playerID == -1)
                     break;
 
-                Shot shot = game.shots.get(shotID);
+                synchronized (game.shotsLock) {
+                    Shot shot = game.shots.get(shotID);
 
-                if (shot != null)
-                    game.shotController.removeShot(shot);
+                    if (shot != null)
+                        game.shotController.removeShot(shot);
+                }
 
                 Rectangle tractor = game.tractors.get(playerID);
 
@@ -364,6 +373,18 @@ class GameEndListener implements Runnable {
     public void run() {
         try {
             game.gameSpace.get(new ActualField("game end"), new ActualField(game.MY_PLAYER_ID));
+
+            synchronized (game.shotsLock) {
+                while (!game.shots.isEmpty()) {
+                    Shot shot = (Shot) game.shots.values().toArray()[0];
+
+                    if (shot != null)
+                        game.shotController.removeShot(shot);
+                    else
+                        game.shots.remove(shot.getShotID());
+                }
+            }
+
             Integer winnerPlayerID = (game.tractors.isEmpty() ? null : (Integer) game.tractors.keySet().toArray()[0]);
             game.incrementPlayerScore(winnerPlayerID);
             game.newRound();
