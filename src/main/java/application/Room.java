@@ -50,10 +50,8 @@ public class Room {
         this.name = name;
         this.numberOfPlayers = numberOfPlayers;
     }
-    public Room(Stage stage, GameApplication application, Space space, int roomId) {
+    public Room(Stage stage, GameApplication application, Space space) {
         this.space = space;
-        this.roomId = roomId;
-        System.out.println("room id: " + roomId);
         playerNames = new ArrayList();
         playerIds = new ArrayListInt();
         try {

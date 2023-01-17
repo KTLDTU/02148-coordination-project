@@ -79,16 +79,18 @@ public class GameApplication {
         }
     }
 
-    public void launchGame(Stage stage, Space space) {
+    public void launchGame(Stage stage, Space roomSpace) {
         try {
             Game game;
 
             // Query the list of player names and id provided by room
-            ArrayList<String> playerNameList = (ArrayList<String>) space.query(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
+            ArrayList<String> playerNameList = (ArrayList<String>) roomSpace.query(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
             System.out.println("clientRoom playernamelist: " + playerNameList.toString());
-            ArrayListInt playerIdList = (ArrayListInt) space.query(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
+            ArrayListInt playerIdList = (ArrayListInt) roomSpace.query(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
             System.out.println("clientRoom playerIdList: " + playerIdList.toString());
-            int roomId = (Integer) space.get(new ActualField("room id"), new FormalField(Integer.class))[1];
+            Object[] roomObjs = roomSpace.get(new ActualField("room id"), new FormalField(Integer.class), new FormalField(String.class));
+            int roomId = (Integer) roomObjs[1];
+            String ip = (String) roomObjs[2];
             System.out.println("launch game: " + roomId);
             // Collect the two lists to a map with id as keys and names as values
             Map<Integer, String> playersIdNameMap = IntStream.range(0, playerNameList.size()).boxed().collect(Collectors.toMap(i -> playerIdList.get(i), i -> playerNameList.get(i)));
@@ -102,7 +104,8 @@ public class GameApplication {
                 game = new Game(stage, serverGameSpace, playersIdNameMap, playerID);
             } else {
                 System.out.println("Client is getting existing game...");
-                String clientUri = PROTOCOL + LOBBY_HOST_IP + PORT + "/gameSpace" + GAME_ID + "?keep";
+                String clientUri = PROTOCOL + ip + PORT + "/gameSpace" + GAME_ID + "?keep";
+                System.out.println("game client uri: " + clientUri);
                 clientGameSpace = new RemoteSpace(clientUri);
 
                 game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);

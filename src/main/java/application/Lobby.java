@@ -84,13 +84,14 @@ public class Lobby {
             application.repository.addGate(uri);
             String room = "room" + roomId;
             String clientRoomUri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/" + room + "?keep";
-
+            System.out.println("Client room URI: " + clientRoomUri);
             // Create room thats visible from the lobby
             lobbySpace.put("room", ip, roomId, name, 1);
             roomHost.put("clientUri", clientRoomUri);
             roomHost.put("turn", 1);
             roomHost.put("players", 1);
             roomHost.put("readers", 0);
+            roomHost.put("room id", roomId, ip);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -101,10 +102,12 @@ public class Lobby {
             GameApplication.isRoomHost = false;
             String room = "room" + roomId;
             // Increment number of players by 1
-            Object[] obj = lobbySpace.get(new ActualField("room"), new FormalField(String.class), new FormalField(Integer.class), new FormalField(String.class), new FormalField(Integer.class));
+            Object[] obj = lobbySpace.get(new ActualField("room"), new FormalField(String.class), new ActualField(roomId), new FormalField(String.class), new FormalField(Integer.class));
             String ip = (String) obj[1];
             String uri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/" + room + "?keep";
+            System.out.println("join room uri: " + uri);
             roomClient = new RemoteSpace(uri);
+            roomClient.put("room id", roomId, ip);
             lobbySpace.put(obj[0], obj[1], obj[2], obj[3], (Integer) obj[4] + 1);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -115,9 +118,6 @@ public class Lobby {
         try {
             roomSpace.put("name", name);
             roomSpace.put("player id", playerID);
-            int roomId = getRoomId();
-            System.out.println("launch room: " + roomId);
-            roomSpace.put("room id", roomId);
 
             if (GameApplication.isRoomHost) {
                 System.out.println("Host is creating a new room");
@@ -125,7 +125,7 @@ public class Lobby {
             } else { // TODO: remove else statement
                 System.out.println("Client joining room");
             }
-            new Room(stage, application, roomSpace, roomId);
+            new Room(stage, application, roomSpace);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -133,19 +133,9 @@ public class Lobby {
 
     private int getUpdatedRoomId() {
         try {
-            Object[] obj = lobbySpace.getp(new ActualField("room id"), new FormalField(Integer.class));
+            Object[] obj = lobbySpace.getp(new ActualField("room id"), new FormalField(Integer.class), new FormalField(String.class));
             int roomId = obj == null ? 0 : (int) obj[1] + 1;
             lobbySpace.put("room id", roomId);
-            return roomId;
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private int getRoomId() {
-        try {
-            Object[] obj = lobbySpace.queryp(new ActualField("room id"), new FormalField(Integer.class));
-            int roomId = obj == null ? 0 : (int) obj[1];
             return roomId;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
