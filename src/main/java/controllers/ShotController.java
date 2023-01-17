@@ -3,6 +3,7 @@ package controllers;
 import application.*;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Bounds;
@@ -70,7 +71,7 @@ public class ShotController {
         shot.setLayoutX(x);
         shot.setLayoutY(y);
         shot.setRotate(angleInDegrees);
-        gamePane.getChildren().add(shot);
+        Platform.runLater(() -> gamePane.getChildren().add(shot));
 
         shot.setTimer(updateShotTimer(shot));
         shot.getTimer().start();
@@ -87,7 +88,7 @@ public class ShotController {
 
     public void removeShot(Shot shot) {
         shot.getDelay().stop();
-        gamePane.getChildren().remove(shot);
+        Platform.runLater(() -> gamePane.getChildren().remove(shot));
         shot.getTimer().stop();
 
         if (shot.getPlayerID() == game.MY_PLAYER_ID)

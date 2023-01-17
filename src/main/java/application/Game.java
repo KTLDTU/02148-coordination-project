@@ -123,9 +123,9 @@ public class Game {
         return tractor;
     }
 
-    public void incrementPlayerScore(Integer playerId){
-        if(playerId != null){
-            playerScores.replace(playerId, playerScores.get(playerId)+1);
+    public void incrementPlayerScore(Integer playerId) {
+        if (playerId != null) {
+            playerScores.replace(playerId, playerScores.get(playerId) + 1);
         }
     }
 
@@ -210,15 +210,13 @@ class ShotListener implements Runnable {
                 double shotY = (double) obj[5];
                 double shotRot = (double) obj[6];
 
-                Platform.runLater(() -> {
-                    Shot shot = game.shotController.shoot(shotX, shotY, shotRot, playerID, shotID);
-                    game.shots.put(shotID, shot);
+                Shot shot = game.shotController.shoot(shotX, shotY, shotRot, playerID, shotID);
+                game.shots.put(shotID, shot);
 
-                    // if a player shoots directly into a wall, they die immediately
-                    if (GameApplication.isHost && game.grid.isWallCollision(shot)) {
-                        new Thread(new KillBroadcaster(game, playerID, shotID)).start();
-                    }
-                });
+                // if a player shoots directly into a wall, they die immediately
+                if (GameApplication.isHost && game.grid.isWallCollision(shot)) {
+                    new Thread(new KillBroadcaster(game, playerID, shotID)).start();
+                }
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -241,18 +239,16 @@ class KillListener implements Runnable {
                 int playerID = (int) obj[2];
                 int shotID = (int) obj[3];
 
-                Platform.runLater(() -> {
-                    Shot shot = game.shots.get(shotID);
+                Shot shot = game.shots.get(shotID);
 
-                    if (shot != null)
-                        game.shotController.removeShot(shot);
+                if (shot != null)
+                    game.shotController.removeShot(shot);
 
-                    game.gamePane.getChildren().remove(game.tractors.get(playerID));
-                    game.tractors.remove(playerID);
+                Platform.runLater(() -> game.gamePane.getChildren().remove(game.tractors.get(playerID)));
+                game.tractors.remove(playerID);
 
-                    if (GameApplication.isHost && game.numPlayersAlive() == 1)
-                        new Thread(new GameEndTimer(game)).start();
-                });
+                if (GameApplication.isHost && game.numPlayersAlive() == 1)
+                    new Thread(new GameEndTimer(game)).start();
 
                 if (playerID == game.MY_PLAYER_ID)
                     game.inputListener.disable();
