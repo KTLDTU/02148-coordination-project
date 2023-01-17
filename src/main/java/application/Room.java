@@ -40,16 +40,15 @@ public class Room {
 
     private String name;
     private String ip;
-    private int roomId;
     private int numberOfPlayers;
 
     // Constructor used for RoomCell in ListView
-    public Room(String ip, int roomId, String name, int numberOfPlayers) {
+    public Room(String ip, String name, int numberOfPlayers) {
         this.ip = ip;
-        this.roomId = roomId;
         this.name = name;
         this.numberOfPlayers = numberOfPlayers;
     }
+
     public Room(Stage stage, GameApplication application, Space roomSpace) {
         this.roomSpace = roomSpace;
         playerNames = new ArrayList();
@@ -63,7 +62,6 @@ public class Room {
             updatePlayerNames(roomSpace);
 
             updatePlayerIds(roomSpace);
-            System.out.println("Room " + roomId + " playerNames" + playerNames.toString() + " playerIds " + playerIds.toString());
             roomLoader = new FXMLLoader(RoomSceneViewController.class.getResource(roomFileName));
             chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(chatFileName));
 
@@ -151,6 +149,7 @@ public class Room {
             }
         });
     }
+
     public String getName() {
         return name;
     }
@@ -159,25 +158,20 @@ public class Room {
         return ip;
     }
 
-    public int getRoomId() {
-        return roomId;
-    }
-
     // Two rooms are equal if they have the same id, ip, name and number of players
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Room room = (Room) o;
-        return roomId == room.roomId &&
-                Objects.equals(ip, room.ip) &&
+        return Objects.equals(ip, room.ip) &&
                 Objects.equals(name, room.name) &&
                 numberOfPlayers == room.numberOfPlayers;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(roomId, ip, name, numberOfPlayers);
+        return Objects.hash(ip, name, numberOfPlayers);
     }
 
     public int getNumberOfPlayers() {

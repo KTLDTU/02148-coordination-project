@@ -61,8 +61,8 @@ public class Lobby {
                     Room selectedRoom = roomList.getSelectionModel().getSelectedItem();
                     // Disallow joining a room thats full
                     if (selectedRoom.getNumberOfPlayers() == 4) return;
-                    int roomId = selectedRoom.getRoomId();
-                    joinRoom(roomId);
+                    String ip = selectedRoom.getIp();
+                    joinRoom(ip);
                     launchRoom(roomClient);
                 }
             });
@@ -78,37 +78,31 @@ public class Lobby {
             GameApplication.isRoomHost = true;
             roomHost = new SequentialSpace();
             String uri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/?keep";
-            int roomId = getUpdatedRoomId();
-            System.out.println("Creating room " + roomId);
-            application.repository.add("room" + roomId, roomHost);
+            application.repository.add("room", roomHost);
             application.repository.addGate(uri);
-            String room = "room" + roomId;
-            String clientRoomUri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/" + room + "?keep";
+            String clientRoomUri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/room?keep";
             System.out.println("Client room URI: " + clientRoomUri);
             // Create room thats visible from the lobby
-            lobbySpace.put("room", ip, roomId, name, 1);
+            lobbySpace.put("room", ip, name, 1);
             roomHost.put("clientUri", clientRoomUri);
+            roomHost.put("room ip", ip);
             roomHost.put("turn", 1);
             roomHost.put("players", 1);
             roomHost.put("readers", 0);
-            roomHost.put("room id", roomId, ip);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void joinRoom(int roomId) {
+    private void joinRoom(String ip) {
         try {
             GameApplication.isRoomHost = false;
-            String room = "room" + roomId;
             // Increment number of players by 1
-            Object[] obj = lobbySpace.get(new ActualField("room"), new FormalField(String.class), new ActualField(roomId), new FormalField(String.class), new FormalField(Integer.class));
-            String ip = (String) obj[1];
-            String uri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/" + room + "?keep";
+            Object[] obj = lobbySpace.get(new ActualField("room"), new ActualField(ip), new FormalField(String.class), new FormalField(Integer.class));
+            String uri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/room?keep";
             System.out.println("join room uri: " + uri);
             roomClient = new RemoteSpace(uri);
-            roomClient.put("room id", roomId, ip);
-            lobbySpace.put(obj[0], obj[1], obj[2], obj[3], (Integer) obj[4] + 1);
+            lobbySpace.put(obj[0], obj[1], obj[2], (Integer) obj[3] + 1);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -126,17 +120,6 @@ public class Lobby {
                 System.out.println("Client joining room");
             }
             new Room(stage, application, roomSpace);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private int getUpdatedRoomId() {
-        try {
-            Object[] obj = lobbySpace.getp(new ActualField("room id"), new FormalField(Integer.class), new FormalField(String.class));
-            int roomId = obj == null ? 0 : (int) obj[1] + 1;
-            lobbySpace.put("room id", roomId);
-            return roomId;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -173,10 +156,10 @@ class RoomListListener implements Runnable {
         while (true) {
             try {
                 // Query all the rooms and create a new list of rooms
-                List<Object[]> newRoomObjects = lobbySpace.queryAll(new ActualField("room"), new FormalField(String.class), new FormalField(Integer.class), new FormalField(String.class), new FormalField(Integer.class));
+                List<Object[]> newRoomObjects = lobbySpace.queryAll(new ActualField("room"), new FormalField(String.class), new FormalField(String.class), new FormalField(Integer.class));
                 ArrayList<Room> newRoomList = new ArrayList<>();
                 for (Object[] objects : newRoomObjects) {
-                    newRoomList.add(new Room((String) objects[1], (Integer) objects[2], (String) objects[3], (Integer) objects[4]));
+                    newRoomList.add(new Room((String) objects[1], (String) objects[2], (Integer) objects[3]));
                 }
                 // Check if the old roomList and newRoomList differ, if so update the ListView
                 if (!(roomList.containsAll(newRoomList) && newRoomList.containsAll(roomList))) {
