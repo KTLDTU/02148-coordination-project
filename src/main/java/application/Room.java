@@ -50,19 +50,19 @@ public class Room {
         this.name = name;
         this.numberOfPlayers = numberOfPlayers;
     }
-    public Room(Stage stage, GameApplication application, Space space) {
-        this.space = space;
+    public Room(Stage stage, GameApplication application, Space roomSpace) {
+        this.space = roomSpace;
         playerNames = new ArrayList();
         playerIds = new ArrayListInt();
         try {
-            uri = (String) space.query(new ActualField("clientUri"), new FormalField(String.class))[1];
-            hostName = (String) space.query(new ActualField("host name"), new FormalField(String.class))[1];
-            name = (String) space.get(new ActualField("name"), new FormalField(String.class))[1];
-            playerId = (int) space.get(new ActualField("player id"), new FormalField(Integer.class))[1];
+            uri = (String) roomSpace.query(new ActualField("clientUri"), new FormalField(String.class))[1];
+            hostName = (String) roomSpace.query(new ActualField("host name"), new FormalField(String.class))[1];
+            name = (String) roomSpace.get(new ActualField("name"), new FormalField(String.class))[1];
+            playerId = (int) roomSpace.get(new ActualField("player id"), new FormalField(Integer.class))[1];
 
-            updatePlayerNames(space);
+            updatePlayerNames(roomSpace);
 
-            updatePlayerIds(space);
+            updatePlayerIds(roomSpace);
             System.out.println("Room " + roomId + " playerNames" + playerNames.toString() + " playerIds " + playerIds.toString());
             roomLoader = new FXMLLoader(RoomSceneViewController.class.getResource(roomFileName));
             chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(chatFileName));
