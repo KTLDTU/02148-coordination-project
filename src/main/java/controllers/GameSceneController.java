@@ -11,8 +11,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 public class GameSceneController {
