@@ -12,8 +12,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 
-import java.awt.event.KeyEvent;
-import java.beans.EventHandler;
 import java.util.Map;
 
 public class GameSceneController {

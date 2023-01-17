@@ -39,7 +39,7 @@ public class Game {
     public InputListener inputListener;
     public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.YELLOWGREEN, Color.RED, Color.GREEN, Color.BLUE));
     public String[] imageURL = new String[]{"/yellow.png", "/red.png", "/green.png", "/blue.png"};
-    public boolean movementPrediction = false;
+    public boolean movementPrediction = true;
     public MovementController movementController;
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
@@ -178,13 +178,16 @@ class MovementListener implements Runnable {
 
         // create animation timer for all enemy tractors
         for (Integer playerID : game.playersIdNameMap.keySet()) {
+            if (playerID == game.MY_PLAYER_ID)
+                return;
+
             keysPressed.put(playerID, 0);
             lastBroadcast.put(playerID, System.currentTimeMillis());
 
             timers.put(playerID, new AnimationTimer() {
                 @Override
                 public void handle(long l) {
-                    if (System.currentTimeMillis() - lastBroadcast.get(playerID) < MovementController.MAX_DELAY) {
+                    if (System.currentTimeMillis() - lastBroadcast.get(playerID) < MovementController.MAX_DELAY * 2) {
                         int curKeysPressed = keysPressed.get(playerID);
                         Rectangle tractor = game.tractors.get(playerID);
 
