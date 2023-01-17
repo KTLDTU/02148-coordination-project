@@ -62,7 +62,7 @@ public class Lobby {
                     // Disallow joining a room thats full
                     if (selectedRoom.getNumberOfPlayers() == 4) return;
                     int roomId = selectedRoom.getRoomId();
-                    joinRoom(getIp(), roomId);
+                    joinRoom(roomId);
                     launchRoom(roomClient);
                 }
             });
@@ -96,15 +96,16 @@ public class Lobby {
         }
     }
 
-    private void joinRoom(String ip, int roomId) {
+    private void joinRoom(int roomId) {
         try {
             GameApplication.isRoomHost = false;
             String room = "room" + roomId;
-            String uri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/" + room + "?keep";
             // Increment number of players by 1
             Object[] obj = lobbySpace.get(new ActualField("room"), new FormalField(String.class), new FormalField(Integer.class), new FormalField(String.class), new FormalField(Integer.class));
-            lobbySpace.put(obj[0], obj[1], obj[2], obj[3], (Integer) obj[4] + 1);
+            String ip = (String) obj[1];
+            String uri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/" + room + "?keep";
             roomClient = new RemoteSpace(uri);
+            lobbySpace.put(obj[0], obj[1], obj[2], obj[3], (Integer) obj[4] + 1);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
