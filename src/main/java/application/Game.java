@@ -40,7 +40,7 @@ public class Game {
     public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.YELLOWGREEN, Color.RED, Color.GREEN, Color.BLUE));
     public String[] imageURL = new String[]{"/yellow.png", "/red.png", "/green.png", "/blue.png"};
     public boolean movementPrediction = false;
-    private MovementController movementController;
+    public MovementController movementController;
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
         try {
@@ -178,53 +178,25 @@ class MovementListener implements Runnable {
 
         // create animation timer for all enemy tractors
         for (Integer playerID : game.playersIdNameMap.keySet()) {
-            lastBroadcast.put(playerID, System.currentTimeMillis());
             keysPressed.put(playerID, 0);
+            lastBroadcast.put(playerID, System.currentTimeMillis());
+
             timers.put(playerID, new AnimationTimer() {
                 @Override
                 public void handle(long l) {
                     if (System.currentTimeMillis() - lastBroadcast.get(playerID) < MovementController.MAX_DELAY) {
                         int curKeysPressed = keysPressed.get(playerID);
+                        Rectangle tractor = game.tractors.get(playerID);
 
-                        if ((curKeysPressed & (1 << 0)) > 0) move(playerID, "forwards");
-                        if ((curKeysPressed & (1 << 1)) > 0) move(playerID, "backwards");
-                        if ((curKeysPressed & (1 << 2)) > 0) rotate(playerID, "counterclockwise");
-                        if ((curKeysPressed & (1 << 3)) > 0) rotate(playerID, "clockwise");
+                        if (tractor != null) {
+                            if ((curKeysPressed & (1 << 0)) > 0) game.movementController.move(tractor, "forwards");
+                            if ((curKeysPressed & (1 << 1)) > 0) game.movementController.move(tractor, "backwards");
+                            if ((curKeysPressed & (1 << 2)) > 0) game.movementController.rotate(tractor, "counterclockwise");
+                            if ((curKeysPressed & (1 << 3)) > 0) game.movementController.rotate(tractor, "clockwise");
+                        }
                     }
                 }
             });
-        }
-    }
-
-    private void move(int playerID, String dir) {
-        Rectangle tractor = game.tractors.get(playerID);
-
-        if (tractor != null) {
-            double angle = tractor.getRotate() * Math.PI / 180;
-            double dX = Math.cos(angle) * MovementController.MOVEMENT_SPEED * (dir.equals("forwards") ? 1 : -1);
-            double dY = Math.sin(angle) * MovementController.MOVEMENT_SPEED * (dir.equals("forwards") ? 1 : -1);
-
-            tractor.setLayoutX(tractor.getLayoutX() + dX);
-            tractor.setLayoutY(tractor.getLayoutY() + dY);
-
-            // naive collision detection - undo movement if colliding with wall
-            if (game.grid.isWallCollision(tractor)) {
-                tractor.setLayoutX(tractor.getLayoutX() - dX);
-                tractor.setLayoutY(tractor.getLayoutY() - dY);
-            }
-        }
-    }
-
-    private void rotate(int playerID, String dir) {
-        Rectangle tractor = game.tractors.get(playerID);
-
-        if (tractor != null) {
-            double dAngle = MovementController.ROTATION_SPEED * (dir.equals("clockwise") ? 1 : -1);
-            tractor.setRotate(tractor.getRotate() + dAngle);
-
-            if (game.grid.isWallCollision(tractor)) {
-                tractor.setRotate(tractor.getRotate() - dAngle); // undo rotation
-            }
         }
     }
 
