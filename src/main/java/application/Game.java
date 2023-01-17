@@ -38,6 +38,8 @@ public class Game {
     public InputListener inputListener;
     public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.YELLOWGREEN, Color.RED, Color.GREEN, Color.BLUE));
     public String[] imageURL = new String[]{"/yellow.png", "/red.png", "/green.png", "/blue.png"};
+    private boolean movementPrediction;
+    private MovementController movementController;
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
         try {
@@ -52,7 +54,6 @@ public class Game {
             gameScene = new Scene(scene);
             stage.setScene(gameScene);
 
-
             playerScores = new HashMap<>();
             for (Integer playerID : playersIdNameMap.keySet()) {
                 playerScores.put(playerID, 0);
@@ -61,6 +62,9 @@ public class Game {
             if (GameApplication.isHost) {
                 gameSpace.put("shot id", 0);
             }
+
+            gameController.movementPredictionOn.setOnMouseReleased(e -> movementPrediction = true);
+            gameController.movementPredictionOff.setOnMouseReleased(e -> movementPrediction = false);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -84,7 +88,7 @@ public class Game {
         }
 
         myTractor = tractors.get(MY_PLAYER_ID);
-        MovementController movementController = new MovementController(this);
+        movementController = new MovementController(this);
         shotController = new ShotController(this);
         inputListener = new InputListener(this, movementController, shotController);
 
@@ -155,7 +159,7 @@ public class Game {
         }
 
         spawnPlayers();
-        new Thread(new PlayerPositionBroadcaster(this)).start();
+        new Thread(new PlayerPositionBroadcaster(this, movementController)).start();
     }
 }
 
@@ -170,11 +174,14 @@ class MovementListener implements Runnable {
     public void run() {
         try {
             while (true) {
-                Object[] obj = game.gameSpace.get(new ActualField("player position"), new FormalField(Integer.class), new ActualField(game.MY_PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
+                Object[] obj = game.gameSpace.get(new ActualField("player position"), new FormalField(Integer.class), new ActualField(game.MY_PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class));
                 int playerID = (int) obj[1];
                 double tractorX = (double) obj[3];
                 double tractorY = (double) obj[4];
                 double tractorRot = (double) obj[5];
+                int keysPressed = (int) obj[6];
+
+                System.out.println("keysPressed: " + keysPressed);
 
                 Rectangle tractor = game.tractors.get(playerID);
 

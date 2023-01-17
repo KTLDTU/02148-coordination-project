@@ -58,7 +58,7 @@ public class MovementController {
             tractor.setLayoutY(tractor.getLayoutY() - dY);
         } else if (getLastBroadcastTime() > MAX_DELAY) {
             lastBroadcast = System.currentTimeMillis();
-            new Thread(new PlayerPositionBroadcaster(game)).start();
+            new Thread(new PlayerPositionBroadcaster(game, this)).start();
         }
     }
 
@@ -70,7 +70,7 @@ public class MovementController {
             tractor.setRotate(tractor.getRotate() - dAngle); // undo rotation
         } else if (getLastBroadcastTime() > MAX_DELAY) {
             lastBroadcast = System.currentTimeMillis();
-            new Thread(new PlayerPositionBroadcaster(game)).start();
+            new Thread(new PlayerPositionBroadcaster(game, this)).start();
         }
     }
 
