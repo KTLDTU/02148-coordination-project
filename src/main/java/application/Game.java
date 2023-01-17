@@ -61,6 +61,8 @@ public class Game {
             if (GameApplication.isHost) {
                 gameSpace.put("shot id", 0);
             }
+
+            gameSpace.put("new round token", MY_PLAYER_ID);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -80,7 +82,7 @@ public class Game {
             tractors.put(playerID, newTractor);
             Image img = new Image(imageURL[index++]);
             newTractor.setFill(new ImagePattern(img));
-            Platform.runLater(() -> gamePane.getChildren().add(tractors.get(playerID))); // TODO: this line gives NullPointerException occasionally
+            Platform.runLater(() -> gamePane.getChildren().add(tractors.get(playerID)));
         }
 
         myTractor = tractors.get(MY_PLAYER_ID);
@@ -103,7 +105,6 @@ public class Game {
         Thread gameEndListener = new Thread(new GameEndListener(this));
         gameEndListener.setDaemon(true);
         gameEndListener.start();
-
     }
 
     private Rectangle randomSpawn() {
@@ -135,12 +136,14 @@ public class Game {
 
 
     public void newRound() {
-        gameController.displayPlayersNameAndScore(playersIdNameMap, playerScores);
-        Platform.runLater(() -> gamePane.getChildren().clear());
-        tractors = new HashMap<>();
-        shots = new HashMap<>();
-
         try {
+            gameSpace.get(new ActualField("new round token"), new ActualField(MY_PLAYER_ID));
+
+            gameController.displayPlayersNameAndScore(playersIdNameMap, playerScores);
+            Platform.runLater(() -> gamePane.getChildren().clear());
+            tractors = new HashMap<>();
+            shots = new HashMap<>();
+
             if (GameApplication.isHost) {
                 Grid grid = new Grid(gamePane);
 
@@ -150,12 +153,14 @@ public class Game {
 
             HashSetIntArray connectedSquares = (HashSetIntArray) gameSpace.get(new ActualField("connected squares"), new ActualField(MY_PLAYER_ID), new FormalField(HashSetIntArray.class))[2];
             setGrid(connectedSquares);
+
+            spawnPlayers();
+            new Thread(new PlayerPositionBroadcaster(this)).start();
+
+            gameSpace.put("new round token", MY_PLAYER_ID);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
-        spawnPlayers();
-        new Thread(new PlayerPositionBroadcaster(this)).start();
     }
 }
 
@@ -236,6 +241,8 @@ class KillListener implements Runnable {
         try {
             while (true) {
                 Object[] obj = game.gameSpace.get(new ActualField("kill"), new ActualField(game.MY_PLAYER_ID), new FormalField(Integer.class), new FormalField(Integer.class));
+
+                game.gameSpace.get(new ActualField("new round token"), new ActualField(game.MY_PLAYER_ID));
                 int playerID = (int) obj[2];
                 int shotID = (int) obj[3];
 
@@ -244,14 +251,26 @@ class KillListener implements Runnable {
                 if (shot != null)
                     game.shotController.removeShot(shot);
 
-                Platform.runLater(() -> game.gamePane.getChildren().remove(game.tractors.get(playerID)));
-                game.tractors.remove(playerID);
+                Platform.runLater(() -> {
+                    Rectangle tractor = game.tractors.get(playerID);
 
-                if (GameApplication.isHost && game.numPlayersAlive() == 1)
-                    new Thread(new GameEndTimer(game)).start();
+                    if (tractor != null) {
+                        game.gamePane.getChildren().remove(tractor);
+                        game.tractors.remove(playerID);
 
-                if (playerID == game.MY_PLAYER_ID)
-                    game.inputListener.disable();
+                        if (GameApplication.isHost && game.numPlayersAlive() == 1)
+                            new Thread(new GameEndTimer(game)).start();
+
+                        if (playerID == game.MY_PLAYER_ID)
+                            game.inputListener.disable();
+                    }
+
+                    try {
+                        game.gameSpace.put("new round token", game.MY_PLAYER_ID);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

@@ -128,6 +128,7 @@ public class ShotController {
                 if (game.grid.isCollision(shot, tractor)) {
                     int playerID = entry.getKey();
                     new Thread(new KillBroadcaster(game, playerID, shot.getShotID())).start();
+                    shot.getTimer().stop();
                     break;
                 }
             }
