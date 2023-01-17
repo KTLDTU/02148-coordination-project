@@ -34,7 +34,7 @@ public class Game {
     public Rectangle myTractor;
     public Map<Integer, String> playersIdNameMap;
     public ShotController shotController;
-    public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.ROYALBLUE, Color.MAGENTA, Color.RED, Color.GREEN));
+    public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.YELLOWGREEN, Color.RED, Color.GREEN, Color.BLUE));
     public HashMap<Integer, Shot> shots;
     public InputListener inputListener;
     public String[] imageURL=new String[4];
@@ -73,20 +73,15 @@ public class Game {
     }
 
     public void spawnPlayers() {
+        imageURL = new String[]{"/yellow.png", "/red.png", "/green.png", "/blue.png"};
         for (Integer playerID : playersIdNameMap.keySet()) {
             Rectangle newTractor = (playerID == MY_PLAYER_ID ? randomSpawn() : new Rectangle(PLAYER_WIDTH, PLAYER_HEIGHT));
             tractors.put(playerID, newTractor);
-            newTractor.setFill(colors.get(playerID));
+            Image img = new Image(imageURL[playerID]);
+            newTractor.setFill(new ImagePattern(img));
             Platform.runLater(() -> gamePane.getChildren().add(tractors.get(playerID))); // TODO: this line gives NullPointerException occasionally
         }
 
-        int counter=0;
-        imageURL = new String[]{"/img1.png", "/img2.png" , "/img3.png" , "/img4.png"};
-        for (Rectangle trac : tractors.values()){
-            Image img = new Image(imageURL[counter]);
-            trac.setFill(new ImagePattern(img));
-            counter += 1;
-        }
 
         myTractor = tractors.get(MY_PLAYER_ID);
 
