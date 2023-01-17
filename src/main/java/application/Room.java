@@ -136,7 +136,7 @@ public class Room {
     private void populateChatBoxConstructor(String uri, int players, String name) {
         ArrayList arrayData = new ArrayList();
         arrayData.add(uri);
-        arrayData.add(players);
+        arrayData.add(playerId);
         arrayData.add(name);
 
         ObservableList<String> data = FXCollections.observableArrayList(arrayData);
@@ -144,7 +144,7 @@ public class Room {
             @Override
             public Object call(Class<?> param) {
                 if (param == ChatBoxViewController.class) {
-                    return new ChatBoxViewController(data);
+                    return new ChatBoxViewController(data, playerIds);
                 } else
                     try {
                         return param.newInstance();

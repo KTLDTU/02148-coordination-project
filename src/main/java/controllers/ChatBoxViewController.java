@@ -1,6 +1,8 @@
 package controllers;
 
 import application.ChatClient;
+import application.GameApplication;
+import datatypes.ArrayListInt;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.collections.ObservableList;
@@ -20,6 +22,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ChatBoxViewController {
     public ChatClient chatClient;
@@ -28,8 +31,9 @@ public class ChatBoxViewController {
 
     public VBox chatBox;
 
-    public ChatBoxViewController(ObservableList data) {
-        chatClient = new ChatClient((String) data.get(0), (int) data.get(1), (String) data.get(2));
+    public ChatBoxViewController(ObservableList data, ArrayListInt players) {
+        System.out.println("Amount of players " + players);
+        chatClient = new ChatClient((String) data.get(0), (int) data.get(1), (String) data.get(2), players);
     }
     @FXML
     private TextArea area;
@@ -37,6 +41,7 @@ public class ChatBoxViewController {
     private ScrollPane container;
 
     void postMessage(String message) {
+        System.out.println("Posted in box " + message);
         // HBox to hold messages
         HBox messageBox = new HBox();
         messageBox.setPrefWidth(200);
@@ -44,12 +49,14 @@ public class ChatBoxViewController {
         if (message.trim().isEmpty()) {
             return;
         }
+        System.out.println("Got past return");
         Label textLabel = new Label(message);
         textLabel.setPrefWidth(175);
         textLabel.setWrapText(true);
         textLabel.setPadding(new Insets(0, 5, 0, 0));
         messageBox.getChildren().add(textLabel);
         messages.add(textLabel);
+        System.out.println("The label is " + textLabel.getText());
 
         if (!message.startsWith(chatClient.getName() + ":")) {
             messageBox.setStyle("-fx-background-color:#d7d7d7");
@@ -96,6 +103,7 @@ public class ChatBoxViewController {
                             public void handle(ActionEvent event) {
                                 try {
                                     for (String message : chatClient.receiveMessages()) {
+                                        System.out.println("Recieved " + message);
                                         postMessage(message);
                                     }
                                 } catch (InterruptedException e) {
