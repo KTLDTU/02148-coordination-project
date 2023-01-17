@@ -179,7 +179,7 @@ class MovementListener implements Runnable {
         // create animation timer for all enemy tractors
         for (Integer playerID : game.playersIdNameMap.keySet()) {
             if (playerID == game.MY_PLAYER_ID)
-                return;
+                continue;
 
             keysPressed.put(playerID, 0);
             lastBroadcast.put(playerID, System.currentTimeMillis());
