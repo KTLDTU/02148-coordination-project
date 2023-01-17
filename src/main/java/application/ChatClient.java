@@ -12,9 +12,11 @@ public class ChatClient {
     private Receiver receiver;
     private Thread thread;
     private String name;
+    int player;
 
     public ChatClient(String uri, int player, String name) {
         try {
+            this.player = player;
             this.name = name;
             if (uri == null) {
                 uri = "tcp://127.0.0.1:9001/room?keep";
@@ -53,7 +55,13 @@ public class ChatClient {
         return name;
     }
 
-    public void closeClient() {
+    public void closeClient() throws InterruptedException {
+        int remainingPlayers = (int)chat.get(new ActualField("players"), new FormalField(Integer.class))[1];
+        chat.put("players", remainingPlayers-1);
+        chat.put("leftPlayer", player);
+        chat.put("turn", player+1);
+        sendMessage("Left the game");
+        player = remainingPlayers;
         receiver.stop();
     }
 }

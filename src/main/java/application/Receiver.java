@@ -24,17 +24,23 @@ class Receiver implements Runnable{
         while(!exit){
             try {
                 chat.get(new ActualField("turn"), new ActualField(player));
+                Object[] leftPlayer = chat.queryp(new ActualField("leftPlayer"), new FormalField(Integer.class));
+                if(leftPlayer!=null && (int)leftPlayer[1] < player){
+                    player--;
+                }
                 Object[] players = chat.query(new ActualField("players"), new FormalField(Integer.class));
                 numberOfPlayers = (int)players[1];
                 List<Object[]> messages = chat.queryAll(new ActualField("message"), new FormalField(String.class));
                 for (Object[] message : messages) {
                     this.messages.put(message[1]);
                 }
+                System.out.println(player + "  " + numberOfPlayers);
                 if(player != numberOfPlayers) chat.put("turn", player+1);
                 else {
                     for(Object[] message : messages){
                         chat.get(new ActualField(message[0]), new ActualField(message[1]));
                     }
+                    chat.getp(new ActualField("leftPlayer"), new FormalField(Integer.class));
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
