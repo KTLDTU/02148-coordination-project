@@ -9,7 +9,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.shape.Rectangle;
 
 public class MovementController {
-    public static final int MAX_DELAY = 25;
+    public static final int MAX_DELAY = 50;
     public final BooleanProperty upPressed = new SimpleBooleanProperty();
     public final BooleanProperty downPressed = new SimpleBooleanProperty();
     public final BooleanProperty leftPressed = new SimpleBooleanProperty();

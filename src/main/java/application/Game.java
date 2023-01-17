@@ -168,24 +168,29 @@ class MovementListener implements Runnable {
     private Game game;
     private HashMap<Integer, Integer> keysPressed;
     private HashMap<Integer, AnimationTimer> timers;
+    private HashMap<Integer, Long> lastBroadcast;
 
     public MovementListener(Game game) {
         this.game = game;
         keysPressed = new HashMap<>();
         timers = new HashMap<>();
+        lastBroadcast = new HashMap<>();
 
         // create animation timer for all enemy tractors
         for (Integer playerID : game.playersIdNameMap.keySet()) {
+            lastBroadcast.put(playerID, System.currentTimeMillis());
             keysPressed.put(playerID, 0);
             timers.put(playerID, new AnimationTimer() {
                 @Override
                 public void handle(long l) {
-                    int curKeysPressed = keysPressed.get(playerID);
+                    if (System.currentTimeMillis() - lastBroadcast.get(playerID) < MovementController.MAX_DELAY) {
+                        int curKeysPressed = keysPressed.get(playerID);
 
-                    if ((curKeysPressed & (1 << 0)) > 0) move(playerID, "forwards");
-                    if ((curKeysPressed & (1 << 1)) > 0) move(playerID, "backwards");
-                    if ((curKeysPressed & (1 << 2)) > 0) rotate(playerID, "counterclockwise");
-                    if ((curKeysPressed & (1 << 3)) > 0) rotate(playerID, "clockwise");
+                        if ((curKeysPressed & (1 << 0)) > 0) move(playerID, "forwards");
+                        if ((curKeysPressed & (1 << 1)) > 0) move(playerID, "backwards");
+                        if ((curKeysPressed & (1 << 2)) > 0) rotate(playerID, "counterclockwise");
+                        if ((curKeysPressed & (1 << 3)) > 0) rotate(playerID, "clockwise");
+                    }
                 }
             });
         }
@@ -244,6 +249,7 @@ class MovementListener implements Runnable {
                         tractor.setRotate(tractorRot);
 
                         AnimationTimer timer = timers.get(playerID);
+                        lastBroadcast.replace(playerID, System.currentTimeMillis());
 
                         if (game.movementPrediction && curKeysPressed > 0)
                             timer.start();
