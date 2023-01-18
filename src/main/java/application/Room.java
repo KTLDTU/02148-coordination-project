@@ -33,10 +33,10 @@ public class Room {
     private Space roomSpace;
     private String uri;
     private int playerId;
+    private String hostName;
     public static ArrayList<String> playerNames;
 
     private ArrayListInt playerIds;
-    private String hostName;
 
     private String name;
     private String ip;
@@ -59,12 +59,11 @@ public class Room {
             name = (String) roomSpace.get(new ActualField("name"), new FormalField(String.class))[1];
             playerId = (int) roomSpace.get(new ActualField("player id"), new FormalField(Integer.class))[1];
 
-            updatePlayerNames(roomSpace);
-
-            updatePlayerIds(roomSpace);
             roomLoader = new FXMLLoader(RoomSceneViewController.class.getResource(roomFileName));
             chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(chatFileName));
 
+            initializePlayerNames(roomSpace);
+            initializePlayerIds(roomSpace);
             populateChatBoxConstructor(uri, playerNames.size(), name);
 
             setupRoomLayout(stage, application);
@@ -75,22 +74,30 @@ public class Room {
 
     }
 
-    private void updatePlayerIds(Space roomSpace) throws InterruptedException {
-        Object[] listOfPlayerIds = roomSpace.getp(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
-        if (listOfPlayerIds != null) {
-            playerIds = (ArrayListInt) listOfPlayerIds[1];
+    private void initializePlayerIds(Space space) {
+        try {
+            Object[] listOfPlayerIds = space.getp(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
+            if (listOfPlayerIds != null) {
+                playerIds = (ArrayListInt) listOfPlayerIds[1];
+            }
+            playerIds.add(playerId);
+            roomSpace.put("playerIdList", playerIds);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        playerIds.add(playerId);
-        roomSpace.put("playerIdList", playerIds);
     }
 
-    private void updatePlayerNames(Space roomSpace) throws InterruptedException {
-        Object[] playerNameLists = roomSpace.getp(new ActualField("playerNameList"), new FormalField(ArrayList.class));
-        if (playerNameLists != null) {
-            playerNames = (ArrayList<String>) playerNameLists[1];
+    private void initializePlayerNames(Space space) {
+        try {
+            Object[] playerNameLists = space.getp(new ActualField("playerNameList"), new FormalField(ArrayList.class));
+            if (playerNameLists != null) {
+                playerNames = (ArrayList<String>) playerNameLists[1];
+            }
+            playerNames.add(name);
+            roomSpace.put("playerNameList", playerNames);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        playerNames.add(name);
-        roomSpace.put("playerNameList", playerNames);
     }
 
 
@@ -102,7 +109,25 @@ public class Room {
 
         Button lobbyButton = (Button) roomLayout.lookup("#lobbyButton");
         Button startGameButton = (Button) roomLayout.lookup("#startGameButton");
-        lobbyButton.setOnAction(e -> stage.setScene(GameApplication.lobbyScene));
+        lobbyButton.setOnAction(e -> {
+            try {
+                ArrayList<String> playerNames = (ArrayList<String>) roomSpace.get(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
+                playerNames.remove(name);
+                roomSpace.put("playerNameList", playerNames);
+
+                ArrayListInt playerIds = (ArrayListInt) roomSpace.get(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
+                playerIds.remove(Integer.valueOf(playerId));
+                roomSpace.put("playerIdList", playerIds);
+
+                ChatBoxViewController chatboxController = chatboxLoader.getController();
+                chatboxController.chatClient.closeClient();
+
+                stage.setScene(GameApplication.lobbyScene);
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
         startGameButton.setOnAction(e -> {
             try {
                 for (int i = 0; i < playerNames.size() - 1; i++) {
@@ -130,7 +155,7 @@ public class Room {
     private void populateChatBoxConstructor(String uri, int players, String name) {
         ArrayList arrayData = new ArrayList();
         arrayData.add(uri);
-        arrayData.add(players);
+        arrayData.add(playerId);
         arrayData.add(name);
 
         ObservableList<String> data = FXCollections.observableArrayList(arrayData);
@@ -138,7 +163,7 @@ public class Room {
             @Override
             public Object call(Class<?> param) {
                 if (param == ChatBoxViewController.class) {
-                    return new ChatBoxViewController(data);
+                    return new ChatBoxViewController(data, playerIds);
                 } else
                     try {
                         return param.newInstance();
@@ -184,6 +209,7 @@ class RoomPlayerListener implements Runnable {
     Space roomSpace;
     RoomSceneViewController roomController;
     ArrayList<String> playerNames = new ArrayList<>();
+    ArrayListInt playerIds = new ArrayListInt();
 
     public RoomPlayerListener(Space roomSpace, RoomSceneViewController roomController) {
         this.roomSpace = roomSpace;
@@ -201,6 +227,13 @@ class RoomPlayerListener implements Runnable {
                     playerNames = newPlayerNames;
                     Platform.runLater(() -> roomController.updatePlayerList(newPlayerNames));
                     Room.playerNames = newPlayerNames;
+                }
+                ArrayListInt newPlayerIds = (ArrayListInt) roomSpace.query(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
+
+                if (!playerIds.equals(newPlayerIds)) {
+                    roomSpace.get(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
+                    playerIds = newPlayerIds;
+                    roomSpace.put("playerIdList", playerIds);
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
