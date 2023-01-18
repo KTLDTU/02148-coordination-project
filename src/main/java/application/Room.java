@@ -64,7 +64,7 @@ public class Room {
 
             initializePlayerNames(roomSpace);
             initializePlayerIds(roomSpace);
-            populateChatBoxConstructor(uri, playerNames.size(), name);
+            populateChatBoxConstructor(uri, playerId, name);
 
             setupRoomLayout(stage, application);
         } catch (IOException | InterruptedException e) {
@@ -111,13 +111,21 @@ public class Room {
         Button startGameButton = (Button) roomLayout.lookup("#startGameButton");
         lobbyButton.setOnAction(e -> {
             try {
+                System.out.println("Leaving room");
                 ArrayList<String> playerNames = (ArrayList<String>) roomSpace.get(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
                 playerNames.remove(name);
                 roomSpace.put("playerNameList", playerNames);
+                System.out.println("put playernamelist: " + playerNames);
 
                 ArrayListInt playerIds = (ArrayListInt) roomSpace.get(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
                 playerIds.remove(Integer.valueOf(playerId));
                 roomSpace.put("playerIdList", playerIds);
+                System.out.println("put playeridlist: " + playerIds);
+
+                String ip = (String) roomSpace.query(new ActualField("room ip"), new FormalField(String.class))[1];
+                Object[] obj = Lobby.lobbySpace.get(new ActualField("room"), new ActualField(ip), new FormalField(String.class), new FormalField(Integer.class));
+                Lobby.lobbySpace.put(obj[0], obj[1], obj[2], (Integer) obj[3] - 1);
+                System.out.println("put room in lobby space");
 
                 ChatBoxViewController chatboxController = chatboxLoader.getController();
                 chatboxController.chatClient.closeClient();

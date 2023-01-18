@@ -22,7 +22,7 @@ import java.util.List;
 public class Lobby {
     private Stage stage;
     private GameApplication application;
-    private Space lobbySpace;
+    public static Space lobbySpace;
     private String lobbyFileName = "/lobbyScene.fxml";
 
     private SequentialSpace roomHost;
@@ -85,6 +85,7 @@ public class Lobby {
             // Create room thats visible from the lobby
             lobbySpace.put("room", ip, name, 1);
             roomHost.put("clientUri", clientRoomUri);
+            roomHost.put("hostID", playerID);
             roomHost.put("room ip", ip);
             roomHost.put("turn", 1);
             roomHost.put("players", 1);
@@ -102,6 +103,10 @@ public class Lobby {
             String uri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/room?keep";
             System.out.println("join room uri: " + uri);
             roomClient = new RemoteSpace(uri);
+            int hostID = (int) roomClient.query(new ActualField("hostID"), new FormalField(Integer.class))[1];
+            if (playerID == hostID) {
+                GameApplication.isRoomHost = true;
+            }
             lobbySpace.put(obj[0], obj[1], obj[2], (Integer) obj[3] + 1);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
