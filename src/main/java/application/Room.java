@@ -269,7 +269,7 @@ class StartGameListener implements Runnable {
     @Override
     public void run() {
         try {
-            roomSpace.get(new ActualField("start game"));
+            roomSpace.query(new ActualField("start game"));
             Platform.runLater(() -> application.launchGame(stage, roomSpace));
         } catch (InterruptedException e) {
         }
