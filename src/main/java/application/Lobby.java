@@ -71,11 +71,9 @@ public class Lobby {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     private void createRoom(String ip) {
-        ip = "25.20.181.255";
         try {
             GameApplication.isRoomHost = true;
             roomHost = new SequentialSpace();
