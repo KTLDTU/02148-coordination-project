@@ -18,6 +18,7 @@ import org.jspace.Space;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Room {
 
@@ -33,27 +34,25 @@ public class Room {
     private String name;
     private String uri;
     private int playerId;
+    private String hostName;
     public static ArrayList<String> playerNames;
     private ArrayListInt playerIds;
-    private String hostName;
 
     public Room(Stage stage, GameApplication application, Space space) {
         this.space = space;
-        playerNames = new ArrayList();
-        playerIds = new ArrayListInt();
+        this.playerNames = new ArrayList<>();
+        this.playerIds = new ArrayListInt();
         try {
             uri = (String) space.query(new ActualField("clientUri"), new FormalField(String.class))[1];
             hostName = (String) space.query(new ActualField("host name"), new FormalField(String.class))[1];
             name = (String) space.get(new ActualField("name"), new FormalField(String.class))[1];
             playerId = (int) space.get(new ActualField("player id"), new FormalField(Integer.class))[1];
 
-            updatePlayerNames(space);
-
-            updatePlayerIds(space);
-
             roomLoader = new FXMLLoader(RoomSceneViewController.class.getResource(roomFileName));
             chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(chatFileName));
 
+            initializePlayerNames(space);
+            initializePlayerIds(space);
             populateChatBoxConstructor(uri, playerNames.size(), name);
 
             setupRoomLayout(stage, application);
@@ -64,7 +63,7 @@ public class Room {
 
     }
 
-    private void updatePlayerIds(Space space) throws InterruptedException {
+    private void initializePlayerIds(Space space) throws InterruptedException {
         Object[] listOfPlayerIds = space.getp(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
         if (listOfPlayerIds != null) {
             playerIds = (ArrayListInt) listOfPlayerIds[1];
@@ -73,7 +72,7 @@ public class Room {
         space.put("playerIdList", playerIds);
     }
 
-    private void updatePlayerNames(Space space) throws InterruptedException {
+    private void initializePlayerNames(Space space) throws InterruptedException {
         Object[] playerNameLists = space.getp(new ActualField("playerNameList"), new FormalField(ArrayList.class));
         if (playerNameLists != null) {
             playerNames = (ArrayList<String>) playerNameLists[1];
@@ -91,7 +90,26 @@ public class Room {
 
         Button lobbyButton = (Button) roomLayout.lookup("#lobbyButton");
         Button startGameButton = (Button) roomLayout.lookup("#startGameButton");
-        lobbyButton.setOnAction(e -> stage.setScene(GameApplication.lobbyScene));
+        lobbyButton.setOnAction(e -> {
+            try {
+                ArrayList<String> playerNames = (ArrayList<String>) space.get(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
+                playerNames.remove(name);
+                space.put("playerNameList", playerNames);
+
+                ArrayListInt playerIds = (ArrayListInt) space.get(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
+                playerIds.remove(Integer.valueOf(playerId));
+                space.put("playerIdList", playerIds);
+
+                ChatBoxViewController chatboxController = chatboxLoader.getController();
+                chatboxController.chatClient.closeClient();
+
+                // TODO: switch to lobby scene
+                stage.setScene(GameApplication.startScene);
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
         startGameButton.setOnAction(e -> {
             try {
                 for (int i = 0; i < playerNames.size() - 1; i++) {
@@ -102,7 +120,6 @@ public class Room {
                 throw new RuntimeException(ex);
             }
         });
-
         if (!GameApplication.isHost) startGameButton.setVisible(false);
         roomController.setRoomNameText(hostName);
 
@@ -119,7 +136,7 @@ public class Room {
     private void populateChatBoxConstructor(String uri, int players, String name) {
         ArrayList arrayData = new ArrayList();
         arrayData.add(uri);
-        arrayData.add(players);
+        arrayData.add(playerId);
         arrayData.add(name);
 
         ObservableList<String> data = FXCollections.observableArrayList(arrayData);
@@ -127,7 +144,7 @@ public class Room {
             @Override
             public Object call(Class<?> param) {
                 if (param == ChatBoxViewController.class) {
-                    return new ChatBoxViewController(data);
+                    return new ChatBoxViewController(data, playerIds);
                 } else
                     try {
                         return param.newInstance();
@@ -144,6 +161,7 @@ class RoomPlayerListener implements Runnable {
     Space space;
     RoomSceneViewController roomController;
     ArrayList<String> playerNames = new ArrayList<>();
+    ArrayListInt playerIds = new ArrayListInt();
 
     public RoomPlayerListener(Space space, RoomSceneViewController roomController) {
         this.space = space;
@@ -161,6 +179,13 @@ class RoomPlayerListener implements Runnable {
                     playerNames = newPlayerNames;
                     Platform.runLater(() -> roomController.updatePlayerList(newPlayerNames));
                     Room.playerNames = newPlayerNames;
+                }
+                ArrayListInt newPlayerIds = (ArrayListInt) space.query(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
+
+                if (!playerIds.equals(newPlayerIds)) {
+                    space.get(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
+                    playerIds = newPlayerIds;
+                    space.put("playerIdList", playerIds);
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);

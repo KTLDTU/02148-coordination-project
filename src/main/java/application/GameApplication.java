@@ -29,7 +29,7 @@ public class GameApplication {
     public static final int WINDOW_HEIGHT = 540;
 
     public static Scene lobbyScene;
-    private Scene startScene;
+    public static Scene startScene;
     public String name;
 
     public static boolean isHost;
