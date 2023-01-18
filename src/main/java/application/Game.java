@@ -20,6 +20,7 @@ import org.jspace.Space;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 public class Game {
     public static final double PLAYER_WIDTH = 20, PLAYER_HEIGHT = 15;
@@ -35,15 +36,18 @@ public class Game {
     public Map<Integer, String> playersIdNameMap;
     public ShotController shotController;
     public HashMap<Integer, Shot> shots;
+    public final Object shotsLock = new Object();
     public InputListener inputListener;
     public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.YELLOWGREEN, Color.RED, Color.GREEN, Color.BLUE));
     public String[] imageURL = new String[]{"/yellow.png", "/red.png", "/green.png", "/blue.png"};
+    public Thread movementListener, shotListener, killListener;
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
         try {
             this.gameSpace = gameSpace;
             this.MY_PLAYER_ID = MY_PLAYER_ID;
             this.playersIdNameMap = playersIdNameMap;
+            movementListener = shotListener = killListener = null;
 
             FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("/game-scene-view.fxml"));
             BorderPane scene = gameLoader.load();
@@ -52,8 +56,8 @@ public class Game {
             gameScene = new Scene(scene);
             stage.setScene(gameScene);
 
-
             playerScores = new HashMap<>();
+
             for (Integer playerID : playersIdNameMap.keySet()) {
                 playerScores.put(playerID, 0);
             }
@@ -80,7 +84,7 @@ public class Game {
             tractors.put(playerID, newTractor);
             Image img = new Image(imageURL[index++]);
             newTractor.setFill(new ImagePattern(img));
-            Platform.runLater(() -> gamePane.getChildren().add(tractors.get(playerID))); // TODO: this line gives NullPointerException occasionally
+            Platform.runLater(() -> gamePane.getChildren().add(tractors.get(playerID)));
         }
 
         myTractor = tractors.get(MY_PLAYER_ID);
@@ -88,22 +92,21 @@ public class Game {
         shotController = new ShotController(this);
         inputListener = new InputListener(this, movementController, shotController);
 
-        Thread movementListener = new Thread(new MovementListener(this));
+        movementListener = new Thread(new MovementListener(this));
         movementListener.setDaemon(true);
         movementListener.start();
 
-        Thread shotListener = new Thread(new ShotListener(this));
+        shotListener = new Thread(new ShotListener(this));
         shotListener.setDaemon(true);
         shotListener.start();
 
-        Thread killListener = new Thread(new KillListener(this));
+        killListener = new Thread(new KillListener(this));
         killListener.setDaemon(true);
         killListener.start();
 
         Thread gameEndListener = new Thread(new GameEndListener(this));
         gameEndListener.setDaemon(true);
         gameEndListener.start();
-
     }
 
     private Rectangle randomSpawn() {
@@ -123,9 +126,9 @@ public class Game {
         return tractor;
     }
 
-    public void incrementPlayerScore(Integer playerId){
-        if(playerId != null){
-            playerScores.replace(playerId, playerScores.get(playerId)+1);
+    public void incrementPlayerScore(Integer playerId) {
+        if (playerId != null) {
+            playerScores.replace(playerId, playerScores.get(playerId) + 1);
         }
     }
 
@@ -133,14 +136,23 @@ public class Game {
         return tractors.size();
     }
 
-
     public void newRound() {
-        gameController.displayPlayersNameAndScore(playersIdNameMap, playerScores);
-        Platform.runLater(() -> gamePane.getChildren().clear());
-        tractors = new HashMap<>();
-        shots = new HashMap<>();
-
         try {
+            if (movementListener != null) {
+                signalGameEndToThreads();
+                joinAllThreads();
+                waitForRunLater();
+                synchronizePlayers();
+            }
+
+            gameController.displayPlayersNameAndScore(playersIdNameMap, playerScores);
+            Platform.runLater(() -> gamePane.getChildren().clear());
+            tractors = new HashMap<>();
+
+            synchronized (shotsLock) {
+                shots = new HashMap<>();
+            }
+
             if (GameApplication.isRoomHost) {
                 Grid grid = new Grid(gamePane);
 
@@ -150,12 +162,59 @@ public class Game {
 
             HashSetIntArray connectedSquares = (HashSetIntArray) gameSpace.get(new ActualField("connected squares"), new ActualField(MY_PLAYER_ID), new FormalField(HashSetIntArray.class))[2];
             setGrid(connectedSquares);
+            spawnPlayers();
+
+            Thread playerPositionBroadcaster = new Thread(new PlayerPositionBroadcaster(this));
+            playerPositionBroadcaster.start();
+            playerPositionBroadcaster.join();
+
+            synchronizePlayers();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
 
-        spawnPlayers();
-        new Thread(new PlayerPositionBroadcaster(this)).start();
+    private void signalGameEndToThreads() {
+        try {
+            gameSpace.put("player position", -1, MY_PLAYER_ID, -1.0, -1.0, -1.0);
+            gameSpace.put("new shot", -1, MY_PLAYER_ID, -1, -1.0, -1.0, -1.0);
+            gameSpace.put("kill", MY_PLAYER_ID, -1, -1);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void joinAllThreads() {
+        try {
+            movementListener.join();
+            shotListener.join();
+            killListener.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void waitForRunLater() {
+        Semaphore semaphore = new Semaphore(0);
+        Platform.runLater(semaphore::release);
+
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void synchronizePlayers() {
+        try {
+            for (int i = 0; i < playersIdNameMap.size(); i++)
+                gameSpace.put("player ready", MY_PLAYER_ID);
+
+            for (Integer playerID : playersIdNameMap.keySet())
+                gameSpace.get(new ActualField("player ready"), new ActualField(playerID));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 
@@ -175,6 +234,9 @@ class MovementListener implements Runnable {
                 double tractorX = (double) obj[3];
                 double tractorY = (double) obj[4];
                 double tractorRot = (double) obj[5];
+
+                if (playerID == -1)
+                    break;
 
                 Rectangle tractor = game.tractors.get(playerID);
 
@@ -210,17 +272,25 @@ class ShotListener implements Runnable {
                 double shotY = (double) obj[5];
                 double shotRot = (double) obj[6];
 
-                Platform.runLater(() -> {
-                    Shot shot = game.shotController.shoot(shotX, shotY, shotRot, playerID, shotID);
-                    game.shots.put(shotID, shot);
+                if (playerID == -1)
+                    break;
 
-                    // if a player shoots directly into a wall, they die immediately
-                    if (GameApplication.isRoomHost && game.grid.isWallCollision(shot)) {
-                        new Thread(new KillBroadcaster(game, playerID, shotID)).start();
-                    }
-                });
+                Shot shot;
+
+                synchronized (game.shotsLock) {
+                    shot = game.shotController.shoot(shotX, shotY, shotRot, playerID, shotID);
+                    game.shots.put(shotID, shot);
+                }
+
+                // if a player shoots directly into a wall, they die immediately
+                if (GameApplication.isRoomHost && game.grid.isWallCollision(shot)) {
+                    Thread killBroadcaster = new Thread(new KillBroadcaster(game, playerID, shotID));
+                    killBroadcaster.start();
+                    killBroadcaster.join();
+                }
             }
-        } catch (InterruptedException e) {
+        } catch (
+                InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
@@ -238,24 +308,33 @@ class KillListener implements Runnable {
         try {
             while (true) {
                 Object[] obj = game.gameSpace.get(new ActualField("kill"), new ActualField(game.MY_PLAYER_ID), new FormalField(Integer.class), new FormalField(Integer.class));
+
                 int playerID = (int) obj[2];
                 int shotID = (int) obj[3];
 
-                Platform.runLater(() -> {
+                if (playerID == -1)
+                    break;
+
+                synchronized (game.shotsLock) {
                     Shot shot = game.shots.get(shotID);
 
                     if (shot != null)
                         game.shotController.removeShot(shot);
+                }
 
-                    game.gamePane.getChildren().remove(game.tractors.get(playerID));
+                Rectangle tractor = game.tractors.get(playerID);
+
+                if (tractor != null) {
+                    Platform.runLater(() -> game.gamePane.getChildren().remove(tractor));
+                    game.waitForRunLater();
                     game.tractors.remove(playerID);
 
                     if (GameApplication.isRoomHost && game.numPlayersAlive() == 1)
                         new Thread(new GameEndTimer(game)).start();
-                });
 
-                if (playerID == game.MY_PLAYER_ID)
-                    game.inputListener.disable();
+                    if (playerID == game.MY_PLAYER_ID)
+                        game.inputListener.disable();
+                }
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -295,6 +374,18 @@ class GameEndListener implements Runnable {
     public void run() {
         try {
             game.gameSpace.get(new ActualField("game end"), new ActualField(game.MY_PLAYER_ID));
+
+            synchronized (game.shotsLock) {
+                while (!game.shots.isEmpty()) {
+                    Shot shot = (Shot) game.shots.values().toArray()[0];
+
+                    if (shot != null)
+                        game.shotController.removeShot(shot);
+                    else
+                        game.shots.remove(shot.getShotID());
+                }
+            }
+
             Integer winnerPlayerID = (game.tractors.isEmpty() ? null : (Integer) game.tractors.keySet().toArray()[0]);
             game.incrementPlayerScore(winnerPlayerID);
             game.newRound();
