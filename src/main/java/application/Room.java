@@ -44,13 +44,10 @@ public class Room {
     private int numberOfPlayers;
 
     // Constructor used for RoomCell in ListView
-    public Room(String ip, String name, Space space) {
+    public Room(String ip, String name, int numberOfPlayers) {
         this.ip = ip;
         this.name = name;
         this.numberOfPlayers = numberOfPlayers;
-        this.roomSpace = space;
-        this.playerNames = new ArrayList<>();
-        this.playerIds = new ArrayListInt();
     }
 
     public Room(Stage stage, GameApplication application, Space roomSpace) {
@@ -115,11 +112,15 @@ public class Room {
                 playerIds.remove(Integer.valueOf(playerId));
                 roomSpace.put("playerIdList", playerIds);
 
+                int remainingPlayers = (int)roomSpace.get(new ActualField("players"), new FormalField(Integer.class))[1];
+                roomSpace.put("players",remainingPlayers-1);
+                //application.clientLobby.get(new ActualField("room"),new ActualField(ip), new FormalField(String.class), new FormalField(Integer.class));
+                //application.clientLobby.put("room",ip,hostName,remainingPlayers-1);
+
                 ChatBoxViewController chatboxController = chatboxLoader.getController();
                 chatboxController.chatClient.closeClient();
 
-                // TODO: switch to lobby scene
-                stage.setScene(GameApplication.startScene);
+                stage.setScene(GameApplication.lobbyScene);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -160,7 +161,7 @@ public class Room {
             @Override
             public Object call(Class<?> param) {
                 if (param == ChatBoxViewController.class) {
-                    return new ChatBoxViewController(data);
+                    return new ChatBoxViewController(data, playerIds);
                 } else
                     try {
                         return param.newInstance();
