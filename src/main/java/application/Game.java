@@ -43,7 +43,6 @@ public class Game {
     public Thread movementListener, shotListener, killListener;
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
-        System.out.println("creating new game");
         try {
             this.gameSpace = gameSpace;
             this.MY_PLAYER_ID = MY_PLAYER_ID;
@@ -56,7 +55,6 @@ public class Game {
             gamePane = gameController.gamePane;
             gameScene = new Scene(scene);
             stage.setScene(gameScene);
-            System.out.println("setup game scene");
             playerScores = new HashMap<>();
 
             for (Integer playerID : playersIdNameMap.keySet()) {
@@ -149,23 +147,19 @@ public class Game {
             Platform.runLater(() -> gamePane.getChildren().clear());
             tractors = new HashMap<>();
 
-            System.out.println("setup shots");
             synchronized (shotsLock) {
                 shots = new HashMap<>();
             }
 
             if (GameApplication.isRoomHost) {
                 Grid grid = new Grid(gamePane);
-                System.out.println("setup connected squares " + playersIdNameMap.toString());
                 for (int playerID : playersIdNameMap.keySet())
                     gameSpace.put("connected squares", playerID, grid.connectedSquares);
             }
 
             HashSetIntArray connectedSquares = (HashSetIntArray) gameSpace.get(new ActualField("connected squares"), new ActualField(MY_PLAYER_ID), new FormalField(HashSetIntArray.class))[2];
             setGrid(connectedSquares);
-            System.out.println("spawn");
             spawnPlayers();
-            System.out.println("spawn end");
 
             Thread playerPositionBroadcaster = new Thread(new PlayerPositionBroadcaster(this));
             playerPositionBroadcaster.start();
@@ -209,14 +203,12 @@ public class Game {
     }
 
     public void synchronizePlayers() {
-        System.out.println("sync players");
         try {
             for (int i = 0; i < playersIdNameMap.size(); i++)
                 gameSpace.put("player ready", MY_PLAYER_ID);
 
             for (Integer playerID : playersIdNameMap.keySet())
                 gameSpace.get(new ActualField("player ready"), new ActualField(playerID));
-        System.out.println("sync players done");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
