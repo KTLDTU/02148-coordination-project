@@ -1,6 +1,7 @@
 package application;
 
 import controllers.LobbySceneController;
+import datatypes.ArrayListInt;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXMLLoader;
@@ -74,7 +75,6 @@ public class Lobby {
     }
 
     private void createRoom(String ip) {
-        ip = "25.20.181.255";
         try {
             GameApplication.isRoomHost = true;
             roomHost = new SequentialSpace();
@@ -85,6 +85,8 @@ public class Lobby {
             System.out.println("Client room URI: " + clientRoomUri);
             // Create room thats visible from the lobby
             lobbySpace.put("room", ip, name, 1);
+            roomHost.put("playerNameList", new ArrayList<String>());
+            roomHost.put("playerIdList", new ArrayListInt());
             roomHost.put("clientUri", clientRoomUri);
             roomHost.put("hostID", playerID);
             roomHost.put("room ip", ip);
@@ -122,6 +124,8 @@ public class Lobby {
 
     private void launchRoom(Space roomSpace) {
         try {
+            System.out.println("roomSpace size: " + roomSpace.size());
+            System.out.println("roomClient size: " + roomClient.size());
             roomSpace.put("name", name);
             roomSpace.put("player id", playerID);
 

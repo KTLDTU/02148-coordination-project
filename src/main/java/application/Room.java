@@ -77,10 +77,7 @@ public class Room {
 
     private void initializePlayerIds(Space space) {
         try {
-            Object[] listOfPlayerIds = space.getp(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
-            if (listOfPlayerIds != null) {
-                playerIds = (ArrayListInt) listOfPlayerIds[1];
-            }
+            playerIds = (ArrayListInt) space.get(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
             playerIds.add(playerId);
             roomSpace.put("playerIdList", playerIds);
         } catch (InterruptedException e) {
@@ -90,10 +87,7 @@ public class Room {
 
     private void initializePlayerNames(Space space) {
         try {
-            Object[] playerNameLists = space.getp(new ActualField("playerNameList"), new FormalField(ArrayList.class));
-            if (playerNameLists != null) {
-                playerNames = (ArrayList<String>) playerNameLists[1];
-            }
+            playerNames = (ArrayList<String>) space.get(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
             playerNames.add(name);
             roomSpace.put("playerNameList", playerNames);
         } catch (InterruptedException e) {
