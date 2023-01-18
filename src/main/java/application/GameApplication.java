@@ -1,19 +1,27 @@
 package application;
 
+import controllers.LobbySceneController;
 import datatypes.ArrayListInt;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.jspace.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GameApplication {
 
-    private final String LOBBY_HOST_IP;
+    private static String LOBBY_HOST_IP;
     public static final String PORT = ":9001";
     public static final String PROTOCOL = "tcp://";
     private static final int GAME_ID = 1535;
@@ -21,14 +29,17 @@ public class GameApplication {
     public static final int WINDOW_HEIGHT = 540;
 
     public static Scene lobbyScene;
+    public static Scene startScene;
     public String name;
 
     public static boolean isServerHost;
     public static boolean isRoomHost;
     public SpaceRepository repository;
     SequentialSpace serverLobby;
+    SequentialSpace serverRoom;
     SequentialSpace serverGameSpace;
     RemoteSpace clientLobby;
+    RemoteSpace clientRoom;
     RemoteSpace clientGameSpace;
     public int playerID;
 

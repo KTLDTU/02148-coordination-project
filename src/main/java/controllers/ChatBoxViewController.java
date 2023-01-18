@@ -1,6 +1,8 @@
 package controllers;
 
 import application.ChatClient;
+import application.GameApplication;
+import datatypes.ArrayListInt;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.collections.ObservableList;
@@ -20,16 +22,17 @@ import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ChatBoxViewController {
-    ChatClient chatClient;
+    public ChatClient chatClient;
     // Not used atm
     private ArrayList<Label> messages = new ArrayList<>();
 
     public VBox chatBox;
 
-    public ChatBoxViewController(ObservableList data) {
-        chatClient = new ChatClient((String) data.get(0), (int) data.get(1), (String) data.get(2));
+    public ChatBoxViewController(ObservableList data, ArrayListInt players) {
+        chatClient = new ChatClient((String) data.get(0), (int) data.get(1), (String) data.get(2), players);
     }
     @FXML
     private TextArea area;
@@ -70,7 +73,6 @@ public class ChatBoxViewController {
     void sendOnEnter(KeyEvent event) {
         if (event.getCode() == KeyCode.getKeyCode("Enter")) {
             if (!area.getText().trim().isEmpty()) {
-                //postMessage(area.getText());
                 chatClient.sendMessage(area.getText());
                 area.clear();
             } else {
