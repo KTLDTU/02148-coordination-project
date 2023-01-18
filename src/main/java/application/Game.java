@@ -286,8 +286,7 @@ class ShotListener implements Runnable {
                     killBroadcaster.join();
                 }
             }
-        } catch (
-                InterruptedException e) {
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
