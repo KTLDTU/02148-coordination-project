@@ -75,6 +75,7 @@ public class Lobby {
     }
 
     private void createRoom(String ip) {
+        ip = "25.20.181.255";
         try {
             GameApplication.isRoomHost = true;
             roomHost = new SequentialSpace();
@@ -125,7 +126,10 @@ public class Lobby {
     private void launchRoom(Space roomSpace) {
         try {
             System.out.println("roomSpace size: " + roomSpace.size());
-            System.out.println("roomClient size: " + roomClient.size());
+            if (roomClient != null) {
+
+                System.out.println("roomClient size: " + roomClient.size());
+            }
             roomSpace.put("name", name);
             roomSpace.put("player id", playerID);
 

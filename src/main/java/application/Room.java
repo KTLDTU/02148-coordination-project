@@ -41,6 +41,8 @@ public class Room {
     private String name;
     private String ip;
     private int numberOfPlayers;
+    private Thread startGameListenerThread;
+    private Thread roomPlayerListenerThread;
 
     // Constructor used for RoomCell in ListView
     public Room(String ip, String name, int numberOfPlayers) {
@@ -102,11 +104,26 @@ public class Room {
 
         roomController = roomLoader.getController();
 
+        // Start the listener thread to update the ListView when new players join
+        roomPlayerListenerThread = new Thread(new RoomPlayerListener(roomSpace, roomController));
+        roomPlayerListenerThread.setDaemon(true);
+        roomPlayerListenerThread.start();
+
+        if (!GameApplication.isRoomHost) {
+            startGameListenerThread = new Thread(new StartGameListener(stage, roomSpace, application));
+            startGameListenerThread.setDaemon(true);
+            startGameListenerThread.start();
+        }
+
         Button lobbyButton = (Button) roomLayout.lookup("#lobbyButton");
         Button startGameButton = (Button) roomLayout.lookup("#startGameButton");
         lobbyButton.setOnAction(e -> {
             try {
                 System.out.println("Leaving room");
+                if (!GameApplication.isRoomHost) {
+                    startGameListenerThread.interrupt();
+                }
+                roomPlayerListenerThread.interrupt();
                 ArrayList<String> playerNames = (ArrayList<String>) roomSpace.get(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
                 playerNames.remove(name);
                 roomSpace.put("playerNameList", playerNames);
@@ -145,12 +162,6 @@ public class Room {
 
         roomLayout.setRight(chatbox);
         roomScene = new Scene(roomLayout, application.WINDOW_WIDTH, application.WINDOW_HEIGHT);
-
-        // After we've set up the scene we start the listener thread to update the ListView when newp players join
-        new Thread(new RoomPlayerListener(roomSpace, roomController)).start();
-
-        if (!GameApplication.isRoomHost)
-            new Thread(new StartGameListener(stage, roomSpace, application)).start();
     }
 
     private void populateChatBoxConstructor(String uri, int players, String name) {
@@ -237,7 +248,6 @@ class RoomPlayerListener implements Runnable {
                     roomSpace.put("playerIdList", playerIds);
                 }
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
             }
         }
     }
@@ -259,10 +269,9 @@ class StartGameListener implements Runnable {
     @Override
     public void run() {
         try {
-            roomSpace.query(new ActualField("start game"));
+            roomSpace.get(new ActualField("start game"));
             Platform.runLater(() -> application.launchGame(stage, roomSpace));
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 }
