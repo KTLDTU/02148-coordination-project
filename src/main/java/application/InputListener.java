@@ -13,7 +13,6 @@ public class InputListener {
         this.game = game;
         this.movementController = movementController;
         this.shotController = shotController;
-        enable();
     }
 
     public void enable() {

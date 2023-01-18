@@ -6,6 +6,7 @@ import application.Grid;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -25,10 +26,18 @@ public class GameSceneController {
     public HBox playerScoreContainer;
 
     @FXML
+    public Button movementPredictionOff;
+
+    @FXML
+    public Button movementPredictionOn;
+
+    @FXML
     void initialize() {
         assert gamePane != null : "fx:id=\"game\" was not injected: check your FXML file 'game-scene-view.fxml'.";
         assert playerScoreContainer != null : "fx:id=\"player_scores\" was not injected: check your FXML file 'game-scene-view.fxml'.";
         assert scene != null : "fx:id=\"scene\" was not injected: check your FXML file 'game-scene-view.fxml'.";
+        movementPredictionOn.setFocusTraversable(false);
+        movementPredictionOff.setFocusTraversable(false);
     }
 
     public void displayGrid(Grid grid) {

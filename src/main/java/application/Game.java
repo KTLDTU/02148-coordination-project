@@ -4,6 +4,7 @@ import controllers.GameSceneController;
 import controllers.MovementController;
 import controllers.ShotController;
 import datatypes.HashSetIntArray;
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -40,6 +41,8 @@ public class Game {
     public InputListener inputListener;
     public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.YELLOWGREEN, Color.RED, Color.GREEN, Color.BLUE));
     public String[] imageURL = new String[]{"/yellow.png", "/red.png", "/green.png", "/blue.png"};
+    public boolean movementPrediction = true;
+    public MovementController movementController;
     public Thread movementListener, shotListener, killListener;
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
@@ -65,6 +68,9 @@ public class Game {
             if (GameApplication.isHost) {
                 gameSpace.put("shot id", 0);
             }
+
+            gameController.movementPredictionOn.setOnMouseReleased(e -> movementPrediction = true);
+            gameController.movementPredictionOff.setOnMouseReleased(e -> movementPrediction = false);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -88,7 +94,7 @@ public class Game {
         }
 
         myTractor = tractors.get(MY_PLAYER_ID);
-        MovementController movementController = new MovementController(this);
+        movementController = new MovementController(this);
         shotController = new ShotController(this);
         inputListener = new InputListener(this, movementController, shotController);
 
@@ -139,8 +145,11 @@ public class Game {
     public void newRound() {
         try {
             if (movementListener != null) {
+                inputListener.disable();
+                movementController.timer.stop();
                 signalGameEndToThreads();
                 joinAllThreads();
+                consumeEverythingInSpace();
                 waitForRunLater();
                 synchronizePlayers();
             }
@@ -164,11 +173,22 @@ public class Game {
             setGrid(connectedSquares);
             spawnPlayers();
 
-            Thread playerPositionBroadcaster = new Thread(new PlayerPositionBroadcaster(this));
+            Thread playerPositionBroadcaster = new Thread(new PlayerPositionBroadcaster(this, movementController));
             playerPositionBroadcaster.start();
             playerPositionBroadcaster.join();
 
             synchronizePlayers();
+            inputListener.enable();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void consumeEverythingInSpace() {
+        try {
+            gameSpace.getAll(new ActualField("player position"), new FormalField(Integer.class), new ActualField(MY_PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class));
+            gameSpace.getAll(new ActualField("new shot"), new FormalField(Integer.class), new ActualField(MY_PLAYER_ID), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
+            gameSpace.getAll(new ActualField("kill"), new ActualField(MY_PLAYER_ID), new FormalField(Integer.class), new FormalField(Integer.class));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -176,7 +196,7 @@ public class Game {
 
     private void signalGameEndToThreads() {
         try {
-            gameSpace.put("player position", -1, MY_PLAYER_ID, -1.0, -1.0, -1.0);
+            gameSpace.put("player position", -1, MY_PLAYER_ID, -1.0, -1.0, -1.0, -1);
             gameSpace.put("new shot", -1, MY_PLAYER_ID, -1, -1.0, -1.0, -1.0);
             gameSpace.put("kill", MY_PLAYER_ID, -1, -1);
         } catch (InterruptedException e) {
@@ -220,20 +240,54 @@ public class Game {
 
 class MovementListener implements Runnable {
     private Game game;
+    private HashMap<Integer, Integer> keysPressed;
+    private HashMap<Integer, AnimationTimer> timers;
+    private HashMap<Integer, Long> lastBroadcast;
 
     public MovementListener(Game game) {
         this.game = game;
+        keysPressed = new HashMap<>();
+        timers = new HashMap<>();
+        lastBroadcast = new HashMap<>();
+
+        // create animation timer for all enemy tractors
+        for (Integer playerID : game.playersIdNameMap.keySet()) {
+            if (playerID == game.MY_PLAYER_ID)
+                continue;
+
+            keysPressed.put(playerID, 0);
+            lastBroadcast.put(playerID, System.currentTimeMillis());
+
+            timers.put(playerID, new AnimationTimer() {
+                @Override
+                public void handle(long l) {
+                    if (System.currentTimeMillis() - lastBroadcast.get(playerID) < MovementController.MAX_DELAY * 2) {
+                        int curKeysPressed = keysPressed.get(playerID);
+                        Rectangle tractor = game.tractors.get(playerID);
+
+                        if (tractor != null) {
+                            if ((curKeysPressed & (1 << 0)) > 0) game.movementController.move(tractor, "forwards");
+                            if ((curKeysPressed & (1 << 1)) > 0) game.movementController.move(tractor, "backwards");
+                            if ((curKeysPressed & (1 << 2)) > 0) game.movementController.rotate(tractor, "counterclockwise");
+                            if ((curKeysPressed & (1 << 3)) > 0) game.movementController.rotate(tractor, "clockwise");
+                        }
+                    }
+                }
+            });
+        }
     }
 
     @Override
     public void run() {
         try {
             while (true) {
-                Object[] obj = game.gameSpace.get(new ActualField("player position"), new FormalField(Integer.class), new ActualField(game.MY_PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
+                Object[] obj = game.gameSpace.get(new ActualField("player position"), new FormalField(Integer.class), new ActualField(game.MY_PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class));
                 int playerID = (int) obj[1];
                 double tractorX = (double) obj[3];
                 double tractorY = (double) obj[4];
                 double tractorRot = (double) obj[5];
+                int curKeysPressed = (int) obj[6];
+                keysPressed.replace(playerID, curKeysPressed);
 
                 if (playerID == -1)
                     break;
@@ -245,9 +299,20 @@ class MovementListener implements Runnable {
                         tractor.setLayoutX(tractorX);
                         tractor.setLayoutY(tractorY);
                         tractor.setRotate(tractorRot);
+
+                        AnimationTimer timer = timers.get(playerID);
+                        lastBroadcast.replace(playerID, System.currentTimeMillis());
+
+                        if (game.movementPrediction && curKeysPressed > 0)
+                            timer.start();
+                        else
+                            timers.get(playerID).stop();
                     }
                 });
             }
+
+            for (AnimationTimer timer : timers.values())
+                timer.stop();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
