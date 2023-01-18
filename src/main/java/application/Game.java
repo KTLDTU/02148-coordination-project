@@ -58,14 +58,13 @@ public class Game {
             gamePane = gameController.gamePane;
             gameScene = new Scene(scene);
             stage.setScene(gameScene);
-
             playerScores = new HashMap<>();
 
             for (Integer playerID : playersIdNameMap.keySet()) {
                 playerScores.put(playerID, 0);
             }
 
-            if (GameApplication.isHost) {
+            if (GameApplication.isRoomHost) {
                 gameSpace.put("shot id", 0);
             }
 
@@ -153,7 +152,6 @@ public class Game {
                 waitForRunLater();
                 synchronizePlayers();
             }
-
             gameController.displayPlayersNameAndScore(playersIdNameMap, playerScores);
             Platform.runLater(() -> gamePane.getChildren().clear());
             tractors = new HashMap<>();
@@ -162,9 +160,8 @@ public class Game {
                 shots = new HashMap<>();
             }
 
-            if (GameApplication.isHost) {
+            if (GameApplication.isRoomHost) {
                 Grid grid = new Grid(gamePane);
-
                 for (int playerID : playersIdNameMap.keySet())
                     gameSpace.put("connected squares", playerID, grid.connectedSquares);
             }
@@ -348,7 +345,7 @@ class ShotListener implements Runnable {
                 }
 
                 // if a player shoots directly into a wall, they die immediately
-                if (GameApplication.isHost && game.grid.isWallCollision(shot)) {
+                if (GameApplication.isRoomHost && game.grid.isWallCollision(shot)) {
                     Thread killBroadcaster = new Thread(new KillBroadcaster(game, playerID, shotID));
                     killBroadcaster.start();
                     killBroadcaster.join();
@@ -393,7 +390,7 @@ class KillListener implements Runnable {
                     game.waitForRunLater();
                     game.tractors.remove(playerID);
 
-                    if (GameApplication.isHost && game.numPlayersAlive() == 1)
+                    if (GameApplication.isRoomHost && game.numPlayersAlive() == 1)
                         new Thread(new GameEndTimer(game)).start();
 
                     if (playerID == game.MY_PLAYER_ID)
