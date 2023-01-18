@@ -145,25 +145,27 @@ public class Game {
                 waitForRunLater();
                 synchronizePlayers();
             }
-
             gameController.displayPlayersNameAndScore(playersIdNameMap, playerScores);
             Platform.runLater(() -> gamePane.getChildren().clear());
             tractors = new HashMap<>();
 
+            System.out.println("setup shots");
             synchronized (shotsLock) {
                 shots = new HashMap<>();
             }
 
             if (GameApplication.isRoomHost) {
                 Grid grid = new Grid(gamePane);
-
+                System.out.println("setup connected squares " + playersIdNameMap.toString());
                 for (int playerID : playersIdNameMap.keySet())
                     gameSpace.put("connected squares", playerID, grid.connectedSquares);
             }
 
             HashSetIntArray connectedSquares = (HashSetIntArray) gameSpace.get(new ActualField("connected squares"), new ActualField(MY_PLAYER_ID), new FormalField(HashSetIntArray.class))[2];
             setGrid(connectedSquares);
+            System.out.println("spawn");
             spawnPlayers();
+            System.out.println("spawn end");
 
             Thread playerPositionBroadcaster = new Thread(new PlayerPositionBroadcaster(this));
             playerPositionBroadcaster.start();
@@ -207,12 +209,14 @@ public class Game {
     }
 
     public void synchronizePlayers() {
+        System.out.println("sync players");
         try {
             for (int i = 0; i < playersIdNameMap.size(); i++)
                 gameSpace.put("player ready", MY_PLAYER_ID);
 
             for (Integer playerID : playersIdNameMap.keySet())
                 gameSpace.get(new ActualField("player ready"), new ActualField(playerID));
+        System.out.println("sync players done");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
