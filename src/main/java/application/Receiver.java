@@ -11,11 +11,11 @@ import java.util.Queue;
 class Receiver implements Runnable{
     private Space chat;
     private Space messages;
-    private List<Integer> players;
+    private ArrayListInt players;
     private int player;
     private boolean exit = false;
 
-    public Receiver(Space chat, Space messages, int player, List<Integer> players){
+    public Receiver(Space chat, Space messages, int player, ArrayListInt players){
         this.chat = chat;
         this.messages = messages;
         this.player = player;
@@ -31,9 +31,7 @@ class Receiver implements Runnable{
                 List<Object[]> messages = chat.queryAll(new ActualField("message"), new FormalField(String.class));
                 for (Object[] message : messages) {
                     this.messages.put(message[1]);
-                    System.out.println((message[1]) + " was posted");
                 }
-                System.out.println("Players in receiver thread " + players);
                 if(player != players.get(players.size()-1)) chat.put("turn", players.get(players.indexOf(player)+1));
                 else {
                     for(Object[] message : messages){

@@ -54,7 +54,6 @@ public class ChatClient {
         List<String> strings = new ArrayList<>();
         for (Object[] message : messages.getAll(new FormalField(String.class))) {
             strings.add((String) message[0]);
-            System.out.println("Posted " + message[0]);
         }
         return strings;
     }
@@ -66,7 +65,6 @@ public class ChatClient {
     public void closeClient() throws InterruptedException {
         players = (ArrayListInt)chat.get(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
         players.remove((Object)player);
-        System.out.println(players);
         chat.put("playerIdList", players);
         receiver.stop();
     }

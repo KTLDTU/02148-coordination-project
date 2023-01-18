@@ -32,7 +32,6 @@ public class ChatBoxViewController {
     public VBox chatBox;
 
     public ChatBoxViewController(ObservableList data, ArrayListInt players) {
-        System.out.println("Amount of players " + players);
         chatClient = new ChatClient((String) data.get(0), (int) data.get(1), (String) data.get(2), players);
     }
     @FXML
@@ -41,7 +40,6 @@ public class ChatBoxViewController {
     private ScrollPane container;
 
     void postMessage(String message) {
-        System.out.println("Posted in box " + message);
         // HBox to hold messages
         HBox messageBox = new HBox();
         messageBox.setPrefWidth(200);
@@ -49,14 +47,12 @@ public class ChatBoxViewController {
         if (message.trim().isEmpty()) {
             return;
         }
-        System.out.println("Got past return");
         Label textLabel = new Label(message);
         textLabel.setPrefWidth(175);
         textLabel.setWrapText(true);
         textLabel.setPadding(new Insets(0, 5, 0, 0));
         messageBox.getChildren().add(textLabel);
         messages.add(textLabel);
-        System.out.println("The label is " + textLabel.getText());
 
         if (!message.startsWith(chatClient.getName() + ":")) {
             messageBox.setStyle("-fx-background-color:#d7d7d7");
@@ -77,7 +73,6 @@ public class ChatBoxViewController {
     void sendOnEnter(KeyEvent event) {
         if (event.getCode() == KeyCode.getKeyCode("Enter")) {
             if (!area.getText().trim().isEmpty()) {
-                //postMessage(area.getText());
                 chatClient.sendMessage(area.getText());
                 area.clear();
             } else {
@@ -103,7 +98,6 @@ public class ChatBoxViewController {
                             public void handle(ActionEvent event) {
                                 try {
                                     for (String message : chatClient.receiveMessages()) {
-                                        System.out.println("Recieved " + message);
                                         postMessage(message);
                                     }
                                 } catch (InterruptedException e) {
