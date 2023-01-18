@@ -139,9 +139,7 @@ public class Room {
 
         startGameButton.setOnAction(e -> {
             try {
-                for (int i = 0; i < playerNames.size() - 1; i++) {
-                    roomSpace.put("start game");
-                }
+                roomSpace.put("start game");
                 application.launchGame(stage, roomSpace);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
@@ -267,7 +265,7 @@ class StartGameListener implements Runnable {
     @Override
     public void run() {
         try {
-            roomSpace.get(new ActualField("start game"));
+            roomSpace.query(new ActualField("start game"));
             Platform.runLater(() -> application.launchGame(stage, roomSpace));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
