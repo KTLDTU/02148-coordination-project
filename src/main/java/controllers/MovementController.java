@@ -1,6 +1,6 @@
 package controllers;
 
-import application.PlayerPositionBroadcaster;
+import broadcasters.PlayerPositionBroadcaster;
 import application.Game;
 import javafx.animation.AnimationTimer;
 import javafx.beans.binding.BooleanBinding;

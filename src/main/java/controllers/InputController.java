@@ -1,15 +1,14 @@
-package application;
+package controllers;
 
-import controllers.MovementController;
-import controllers.ShotController;
+import application.Game;
 import javafx.scene.input.KeyCode;
 
-public class InputListener {
+public class InputController {
     Game game;
     MovementController movementController;
     ShotController shotController;
 
-    public InputListener(Game game, MovementController movementController, ShotController shotController) {
+    public InputController(Game game, MovementController movementController, ShotController shotController) {
         this.game = game;
         this.movementController = movementController;
         this.shotController = shotController;

@@ -3,7 +3,6 @@ package application;
 import controllers.ChatBoxViewController;
 import controllers.RoomSceneViewController;
 import datatypes.ArrayListInt;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -12,6 +11,8 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import listeners.RoomPlayerListener;
+import listeners.StartGameListener;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 import org.jspace.Space;
@@ -213,61 +214,3 @@ public class Room {
 
 }
 
-class RoomPlayerListener implements Runnable {
-    Space roomSpace;
-    RoomSceneViewController roomController;
-    ArrayList<String> playerNames = new ArrayList<>();
-    ArrayListInt playerIds = new ArrayListInt();
-
-    public RoomPlayerListener(Space roomSpace, RoomSceneViewController roomController) {
-        this.roomSpace = roomSpace;
-        this.roomController = roomController;
-    }
-
-    @Override
-    public void run() {
-        while (true) {
-            try {
-                ArrayList<String> newPlayerNames = (ArrayList<String>) roomSpace.query(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
-
-                // Update list of player names if the two lists are different
-                if (!playerNames.equals(newPlayerNames)) {
-                    playerNames = newPlayerNames;
-                    Platform.runLater(() -> roomController.updatePlayerList(newPlayerNames));
-                    Room.playerNames = newPlayerNames;
-                }
-                ArrayListInt newPlayerIds = (ArrayListInt) roomSpace.query(new ActualField("playerIdList"), new FormalField(ArrayListInt.class))[1];
-
-                if (!playerIds.equals(newPlayerIds)) {
-                    roomSpace.get(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
-                    playerIds = newPlayerIds;
-                    roomSpace.put("playerIdList", playerIds);
-                }
-            } catch (InterruptedException e) {
-            }
-        }
-    }
-
-}
-
-class StartGameListener implements Runnable {
-
-    private Stage stage;
-    private Space roomSpace;
-    private GameApplication application;
-
-    public StartGameListener(Stage stage, Space roomSpace, GameApplication application) {
-        this.stage = stage;
-        this.roomSpace = roomSpace;
-        this.application = application;
-    }
-
-    @Override
-    public void run() {
-        try {
-            roomSpace.query(new ActualField("start game"));
-            Platform.runLater(() -> application.launchGame(stage, roomSpace));
-        } catch (InterruptedException e) {
-        }
-    }
-}

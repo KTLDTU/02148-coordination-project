@@ -1,4 +1,6 @@
-package application;
+package broadcasters;
+
+import application.Game;
 
 public class KillBroadcaster implements Runnable {
     private Game game;

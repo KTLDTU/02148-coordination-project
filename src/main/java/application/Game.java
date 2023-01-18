@@ -1,10 +1,11 @@
 package application;
 
+import broadcasters.PlayerPositionBroadcaster;
 import controllers.GameSceneController;
+import controllers.InputController;
 import controllers.MovementController;
 import controllers.ShotController;
 import datatypes.HashSetIntArray;
-import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -15,6 +16,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import listeners.GameEndListener;
+import listeners.KillListener;
+import listeners.MovementListener;
+import listeners.ShotListener;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 import org.jspace.Space;
@@ -38,7 +43,7 @@ public class Game {
     public ShotController shotController;
     public HashMap<Integer, Shot> shots;
     public final Object shotsLock = new Object();
-    public InputListener inputListener;
+    public InputController inputController;
     public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.YELLOWGREEN, Color.RED, Color.GREEN, Color.BLUE));
     public String[] imageURL = new String[]{"/yellow.png", "/red.png", "/green.png", "/blue.png"};
     public boolean movementPrediction = true;
@@ -95,7 +100,7 @@ public class Game {
         myTractor = tractors.get(MY_PLAYER_ID);
         movementController = new MovementController(this);
         shotController = new ShotController(this);
-        inputListener = new InputListener(this, movementController, shotController);
+        inputController = new InputController(this, movementController, shotController);
 
         movementListener = new Thread(new MovementListener(this));
         movementListener.setDaemon(true);
@@ -144,7 +149,7 @@ public class Game {
     public void newRound() {
         try {
             if (movementListener != null) {
-                inputListener.disable();
+                inputController.disable();
                 movementController.timer.stop();
                 signalGameEndToThreads();
                 joinAllThreads();
@@ -175,7 +180,7 @@ public class Game {
             playerPositionBroadcaster.join();
 
             synchronizePlayers();
-            inputListener.enable();
+            inputController.enable();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -235,223 +240,3 @@ public class Game {
     }
 }
 
-class MovementListener implements Runnable {
-    private Game game;
-    private HashMap<Integer, Integer> keysPressed;
-    private HashMap<Integer, AnimationTimer> timers;
-    private HashMap<Integer, Long> lastBroadcast;
-
-    public MovementListener(Game game) {
-        this.game = game;
-        keysPressed = new HashMap<>();
-        timers = new HashMap<>();
-        lastBroadcast = new HashMap<>();
-
-        // create animation timer for all enemy tractors
-        for (Integer playerID : game.playersIdNameMap.keySet()) {
-            if (playerID == game.MY_PLAYER_ID)
-                continue;
-
-            keysPressed.put(playerID, 0);
-            lastBroadcast.put(playerID, System.currentTimeMillis());
-
-            timers.put(playerID, new AnimationTimer() {
-                @Override
-                public void handle(long l) {
-                    if (System.currentTimeMillis() - lastBroadcast.get(playerID) < MovementController.MAX_DELAY * 2) {
-                        int curKeysPressed = keysPressed.get(playerID);
-                        Rectangle tractor = game.tractors.get(playerID);
-
-                        if (tractor != null) {
-                            if ((curKeysPressed & (1 << 0)) > 0) game.movementController.move(tractor, "forwards");
-                            if ((curKeysPressed & (1 << 1)) > 0) game.movementController.move(tractor, "backwards");
-                            if ((curKeysPressed & (1 << 2)) > 0) game.movementController.rotate(tractor, "counterclockwise");
-                            if ((curKeysPressed & (1 << 3)) > 0) game.movementController.rotate(tractor, "clockwise");
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    @Override
-    public void run() {
-        try {
-            while (true) {
-                Object[] obj = game.gameSpace.get(new ActualField("player position"), new FormalField(Integer.class), new ActualField(game.MY_PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class));
-                int playerID = (int) obj[1];
-                double tractorX = (double) obj[3];
-                double tractorY = (double) obj[4];
-                double tractorRot = (double) obj[5];
-                int curKeysPressed = (int) obj[6];
-                keysPressed.replace(playerID, curKeysPressed);
-
-                if (playerID == -1)
-                    break;
-
-                Rectangle tractor = game.tractors.get(playerID);
-
-                Platform.runLater(() -> {
-                    if (tractor != null) {
-                        tractor.setLayoutX(tractorX);
-                        tractor.setLayoutY(tractorY);
-                        tractor.setRotate(tractorRot);
-
-                        AnimationTimer timer = timers.get(playerID);
-                        lastBroadcast.replace(playerID, System.currentTimeMillis());
-
-                        if (game.movementPrediction && curKeysPressed > 0)
-                            timer.start();
-                        else
-                            timers.get(playerID).stop();
-                    }
-                });
-            }
-
-            for (AnimationTimer timer : timers.values())
-                timer.stop();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-}
-
-class ShotListener implements Runnable {
-    private Game game;
-
-    public ShotListener(Game game) {
-        this.game = game;
-    }
-
-    @Override
-    public void run() {
-        try {
-            while (true) {
-                Object[] obj = game.gameSpace.get(new ActualField("new shot"), new FormalField(Integer.class), new ActualField(game.MY_PLAYER_ID), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
-                int playerID = (int) obj[1];
-                int shotID = (int) obj[3];
-                double shotX = (double) obj[4];
-                double shotY = (double) obj[5];
-                double shotRot = (double) obj[6];
-
-                if (playerID == -1)
-                    break;
-
-                Shot shot;
-
-                synchronized (game.shotsLock) {
-                    shot = game.shotController.shoot(shotX, shotY, shotRot, playerID, shotID);
-                    game.shots.put(shotID, shot);
-                }
-
-                // if a player shoots directly into a wall, they die immediately
-                if (GameApplication.isRoomHost && game.grid.isWallCollision(shot)) {
-                    Thread killBroadcaster = new Thread(new KillBroadcaster(game, playerID, shotID));
-                    killBroadcaster.start();
-                    killBroadcaster.join();
-                }
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-}
-
-class KillListener implements Runnable {
-    private Game game;
-
-    public KillListener(Game game) {
-        this.game = game;
-    }
-
-    @Override
-    public void run() {
-        try {
-            while (true) {
-                Object[] obj = game.gameSpace.get(new ActualField("kill"), new ActualField(game.MY_PLAYER_ID), new FormalField(Integer.class), new FormalField(Integer.class));
-
-                int playerID = (int) obj[2];
-                int shotID = (int) obj[3];
-
-                if (playerID == -1)
-                    break;
-
-                synchronized (game.shotsLock) {
-                    Shot shot = game.shots.get(shotID);
-
-                    if (shot != null)
-                        game.shotController.removeShot(shot);
-                }
-
-                Rectangle tractor = game.tractors.get(playerID);
-
-                if (tractor != null) {
-                    Platform.runLater(() -> game.gamePane.getChildren().remove(tractor));
-                    game.waitForRunLater();
-                    game.tractors.remove(playerID);
-
-                    if (GameApplication.isRoomHost && game.numPlayersAlive() == 1)
-                        new Thread(new GameEndTimer(game)).start();
-
-                    if (playerID == game.MY_PLAYER_ID)
-                        game.inputListener.disable();
-                }
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-}
-
-class GameEndTimer implements Runnable {
-    private final int GAME_END_DELAY_IN_MS = 2000;
-    private Game game;
-
-    public GameEndTimer(Game game) {
-        this.game = game;
-    }
-
-    @Override
-    public void run() {
-        try {
-            Thread.sleep(GAME_END_DELAY_IN_MS);
-
-            for (int playerID : game.playersIdNameMap.keySet())
-                game.gameSpace.put("game end", playerID);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-}
-
-class GameEndListener implements Runnable {
-    private Game game;
-
-    public GameEndListener(Game game) {
-        this.game = game;
-    }
-
-    @Override
-    public void run() {
-        try {
-            game.gameSpace.get(new ActualField("game end"), new ActualField(game.MY_PLAYER_ID));
-
-            synchronized (game.shotsLock) {
-                while (!game.shots.isEmpty()) {
-                    Shot shot = (Shot) game.shots.values().toArray()[0];
-
-                    if (shot != null)
-                        game.shotController.removeShot(shot);
-                    else
-                        game.shots.remove(shot.getShotID());
-                }
-            }
-
-            Integer winnerPlayerID = (game.tractors.isEmpty() ? null : (Integer) game.tractors.keySet().toArray()[0]);
-            game.incrementPlayerScore(winnerPlayerID);
-            game.newRound();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-}
