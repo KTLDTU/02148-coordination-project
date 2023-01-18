@@ -97,8 +97,9 @@ public class GameApplication {
                 clientLobby.get(new ActualField("room"), new ActualField(ip), new FormalField(String.class), new FormalField(Integer.class));
                 System.out.println("Host is creating a new game...");
                 serverGameSpace = new SequentialSpace();
+                System.out.println("created new serverGameSpace");
                 repository.add("gameSpace" + GAME_ID, serverGameSpace);
-
+                System.out.println("added game space to repository");
                 game = new Game(stage, serverGameSpace, playersIdNameMap, playerID);
             } else {
                 System.out.println("Client is getting existing game...");
@@ -108,10 +109,12 @@ public class GameApplication {
 
                 game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);
             }
-
+            System.out.println("set scene");
             stage.setScene(game.gameScene);
             game.gameScene.getRoot().requestFocus();
+            System.out.println("start new round");
             game.newRound();
+            System.out.println("finished new round");
         } catch (InterruptedException | IOException e) {
             throw new RuntimeException(e);
         }

@@ -43,6 +43,7 @@ public class Game {
     public Thread movementListener, shotListener, killListener;
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
+        System.out.println("creating new game");
         try {
             this.gameSpace = gameSpace;
             this.MY_PLAYER_ID = MY_PLAYER_ID;
@@ -55,7 +56,7 @@ public class Game {
             gamePane = gameController.gamePane;
             gameScene = new Scene(scene);
             stage.setScene(gameScene);
-
+            System.out.println("setup game scene");
             playerScores = new HashMap<>();
 
             for (Integer playerID : playersIdNameMap.keySet()) {
