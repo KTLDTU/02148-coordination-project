@@ -109,9 +109,9 @@ public class GameApplication {
                 game = new Game(stage, clientGameSpace, playersIdNameMap, playerID);
             }
 
-            game.newRound();
             stage.setScene(game.gameScene);
             game.gameScene.getRoot().requestFocus();
+            game.newRound();
         } catch (InterruptedException | IOException e) {
             throw new RuntimeException(e);
         }

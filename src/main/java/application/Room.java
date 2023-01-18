@@ -105,10 +105,10 @@ public class Room {
         lobbyButton.setOnAction(e -> stage.setScene(GameApplication.lobbyScene));
         startGameButton.setOnAction(e -> {
             try {
-                application.launchGame(stage, roomSpace);
                 for (int i = 0; i < playerNames.size() - 1; i++) {
                     roomSpace.put("start game");
                 }
+                application.launchGame(stage, roomSpace);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
