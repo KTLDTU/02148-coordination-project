@@ -120,7 +120,7 @@ public class ShotController {
             shot.setRotate(invertAngleVertical(shot.getRotate()));
 
         // If a shot hits a tractor, ded
-        if (GameApplication.isHost) {
+        if (GameApplication.isRoomHost) {
             for (Map.Entry<Integer, Rectangle> entry : game.tractors.entrySet()) {
                 Rectangle tractor = entry.getValue();
 

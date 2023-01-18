@@ -18,6 +18,7 @@ import org.jspace.Space;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Room {
 
@@ -29,28 +30,38 @@ public class Room {
     private FXMLLoader chatboxLoader;
     private FXMLLoader roomLoader;
     private RoomSceneViewController roomController;
-    private Space space;
-    private String name;
+    private Space roomSpace;
     private String uri;
     private int playerId;
     public static ArrayList<String> playerNames;
+
     private ArrayListInt playerIds;
     private String hostName;
 
-    public Room(Stage stage, GameApplication application, Space space) {
-        this.space = space;
+    private String name;
+    private String ip;
+    private int numberOfPlayers;
+
+    // Constructor used for RoomCell in ListView
+    public Room(String ip, String name, int numberOfPlayers) {
+        this.ip = ip;
+        this.name = name;
+        this.numberOfPlayers = numberOfPlayers;
+    }
+
+    public Room(Stage stage, GameApplication application, Space roomSpace) {
+        this.roomSpace = roomSpace;
         playerNames = new ArrayList();
         playerIds = new ArrayListInt();
         try {
-            uri = (String) space.query(new ActualField("clientUri"), new FormalField(String.class))[1];
-            hostName = (String) space.query(new ActualField("host name"), new FormalField(String.class))[1];
-            name = (String) space.get(new ActualField("name"), new FormalField(String.class))[1];
-            playerId = (int) space.get(new ActualField("player id"), new FormalField(Integer.class))[1];
+            uri = (String) roomSpace.query(new ActualField("clientUri"), new FormalField(String.class))[1];
+            hostName = (String) roomSpace.query(new ActualField("host name"), new FormalField(String.class))[1];
+            name = (String) roomSpace.get(new ActualField("name"), new FormalField(String.class))[1];
+            playerId = (int) roomSpace.get(new ActualField("player id"), new FormalField(Integer.class))[1];
 
-            updatePlayerNames(space);
+            updatePlayerNames(roomSpace);
 
-            updatePlayerIds(space);
-
+            updatePlayerIds(roomSpace);
             roomLoader = new FXMLLoader(RoomSceneViewController.class.getResource(roomFileName));
             chatboxLoader = new FXMLLoader(ChatBoxViewController.class.getResource(chatFileName));
 
@@ -64,22 +75,22 @@ public class Room {
 
     }
 
-    private void updatePlayerIds(Space space) throws InterruptedException {
-        Object[] listOfPlayerIds = space.getp(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
+    private void updatePlayerIds(Space roomSpace) throws InterruptedException {
+        Object[] listOfPlayerIds = roomSpace.getp(new ActualField("playerIdList"), new FormalField(ArrayListInt.class));
         if (listOfPlayerIds != null) {
             playerIds = (ArrayListInt) listOfPlayerIds[1];
         }
         playerIds.add(playerId);
-        space.put("playerIdList", playerIds);
+        roomSpace.put("playerIdList", playerIds);
     }
 
-    private void updatePlayerNames(Space space) throws InterruptedException {
-        Object[] playerNameLists = space.getp(new ActualField("playerNameList"), new FormalField(ArrayList.class));
+    private void updatePlayerNames(Space roomSpace) throws InterruptedException {
+        Object[] playerNameLists = roomSpace.getp(new ActualField("playerNameList"), new FormalField(ArrayList.class));
         if (playerNameLists != null) {
             playerNames = (ArrayList<String>) playerNameLists[1];
         }
         playerNames.add(name);
-        space.put("playerNameList", playerNames);
+        roomSpace.put("playerNameList", playerNames);
     }
 
 
@@ -94,26 +105,26 @@ public class Room {
         lobbyButton.setOnAction(e -> stage.setScene(GameApplication.lobbyScene));
         startGameButton.setOnAction(e -> {
             try {
-                application.launchGame(stage);
+                application.launchGame(stage, roomSpace);
                 for (int i = 0; i < playerNames.size() - 1; i++) {
-                    space.put("start game");
+                    roomSpace.put("start game");
                 }
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
         });
 
-        if (!GameApplication.isHost) startGameButton.setVisible(false);
+        if (!GameApplication.isRoomHost) startGameButton.setVisible(false);
         roomController.setRoomNameText(hostName);
 
         roomLayout.setRight(chatbox);
         roomScene = new Scene(roomLayout, application.WINDOW_WIDTH, application.WINDOW_HEIGHT);
 
         // After we've set up the scene we start the listener thread to update the ListView when newp players join
-        new Thread(new RoomPlayerListener(space, roomController)).start();
+        new Thread(new RoomPlayerListener(roomSpace, roomController)).start();
 
-        if (!GameApplication.isHost)
-            new Thread(new StartGameListener(stage, space, application)).start();
+        if (!GameApplication.isRoomHost)
+            new Thread(new StartGameListener(stage, roomSpace, application)).start();
     }
 
     private void populateChatBoxConstructor(String uri, int players, String name) {
@@ -138,15 +149,44 @@ public class Room {
             }
         });
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    // Two rooms are equal if they have the same id, ip, name and number of players
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Room room = (Room) o;
+        return Objects.equals(ip, room.ip) &&
+                Objects.equals(name, room.name) &&
+                numberOfPlayers == room.numberOfPlayers;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ip, name, numberOfPlayers);
+    }
+
+    public int getNumberOfPlayers() {
+        return numberOfPlayers;
+    }
+
 }
 
 class RoomPlayerListener implements Runnable {
-    Space space;
+    Space roomSpace;
     RoomSceneViewController roomController;
     ArrayList<String> playerNames = new ArrayList<>();
 
-    public RoomPlayerListener(Space space, RoomSceneViewController roomController) {
-        this.space = space;
+    public RoomPlayerListener(Space roomSpace, RoomSceneViewController roomController) {
+        this.roomSpace = roomSpace;
         this.roomController = roomController;
     }
 
@@ -154,7 +194,7 @@ class RoomPlayerListener implements Runnable {
     public void run() {
         while (true) {
             try {
-                ArrayList<String> newPlayerNames = (ArrayList<String>) space.query(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
+                ArrayList<String> newPlayerNames = (ArrayList<String>) roomSpace.query(new ActualField("playerNameList"), new FormalField(ArrayList.class))[1];
 
                 // Update list of player names if the two lists are different
                 if (!playerNames.equals(newPlayerNames)) {
@@ -167,25 +207,26 @@ class RoomPlayerListener implements Runnable {
             }
         }
     }
+
 }
 
 class StartGameListener implements Runnable {
 
     private Stage stage;
-    private Space space;
+    private Space roomSpace;
     private GameApplication application;
 
-    public StartGameListener(Stage stage, Space space, GameApplication application) {
+    public StartGameListener(Stage stage, Space roomSpace, GameApplication application) {
         this.stage = stage;
-        this.space = space;
+        this.roomSpace = roomSpace;
         this.application = application;
     }
 
     @Override
     public void run() {
         try {
-            space.get(new ActualField("start game"));
-            Platform.runLater(() -> application.launchGame(stage));
+            roomSpace.get(new ActualField("start game"));
+            Platform.runLater(() -> application.launchGame(stage, roomSpace));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
