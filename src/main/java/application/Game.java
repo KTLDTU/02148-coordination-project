@@ -7,9 +7,11 @@ import datatypes.HashSetIntArray;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import org.jspace.ActualField;
@@ -32,9 +34,10 @@ public class Game {
     public Rectangle myTractor;
     public Map<Integer, String> playersIdNameMap;
     public ShotController shotController;
-    public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.ROYALBLUE, Color.MAGENTA, Color.RED, Color.GREEN));
     public HashMap<Integer, Shot> shots;
     public InputListener inputListener;
+    public static List<Color> colors = new ArrayList<>(Arrays.asList(Color.YELLOWGREEN, Color.RED, Color.GREEN, Color.BLUE));
+    public String[] imageURL = new String[]{"/yellow.png", "/red.png", "/green.png", "/blue.png"};
 
     public Game(Stage stage, Space gameSpace, Map<Integer, String> playersIdNameMap, int MY_PLAYER_ID) {
         try {
@@ -70,10 +73,13 @@ public class Game {
     }
 
     public void spawnPlayers() {
+        int index = 0;
+
         for (Integer playerID : playersIdNameMap.keySet()) {
             Rectangle newTractor = (playerID == MY_PLAYER_ID ? randomSpawn() : new Rectangle(PLAYER_WIDTH, PLAYER_HEIGHT));
             tractors.put(playerID, newTractor);
-            newTractor.setFill(colors.get(playerID));
+            Image img = new Image(imageURL[index++]);
+            newTractor.setFill(new ImagePattern(img));
             Platform.runLater(() -> gamePane.getChildren().add(tractors.get(playerID))); // TODO: this line gives NullPointerException occasionally
         }
 
@@ -117,9 +123,9 @@ public class Game {
         return tractor;
     }
 
-    public void incrementPlayerScore(Integer playerId) {
-        if (playerId != null) {
-            playerScores.replace(playerId, playerScores.get(playerId) + 1);
+    public void incrementPlayerScore(Integer playerId){
+        if(playerId != null){
+            playerScores.replace(playerId, playerScores.get(playerId)+1);
         }
     }
 

@@ -41,12 +41,13 @@ public class GameSceneController {
 
     public void displayPlayersNameAndScore(Map<Integer, String> playerNames, Map<Integer, Integer> playerScores) {
         Platform.runLater(() -> playerScoreContainer.getChildren().clear());
+        int index = 0;
 
         for (Integer playerId : playerNames.keySet()) {
             String name = playerNames.get(playerId);
             HBox nameContainer = new HBox(5);
             Text nameText = new Text(name + ":");
-            nameText.setFill(Game.colors.get(playerId));
+            nameText.setFill(Game.colors.get(index++));
             Text scoreText = new Text(playerScores.get(playerId).toString());
             nameContainer.setAlignment(Pos.CENTER);
             nameContainer.setPrefWidth(GameApplication.WINDOW_WIDTH / playerNames.size());
