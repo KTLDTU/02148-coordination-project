@@ -54,6 +54,7 @@ public class Room {
         playerNames = new ArrayList();
         playerIds = new ArrayListInt();
         try {
+            System.out.println("query from roomspace in room");
             uri = (String) roomSpace.query(new ActualField("clientUri"), new FormalField(String.class))[1];
             hostName = (String) roomSpace.query(new ActualField("host name"), new FormalField(String.class))[1];
             name = (String) roomSpace.get(new ActualField("name"), new FormalField(String.class))[1];

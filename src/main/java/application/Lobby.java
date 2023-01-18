@@ -74,6 +74,7 @@ public class Lobby {
     }
 
     private void createRoom(String ip) {
+        ip = "25.20.181.255";
         try {
             GameApplication.isRoomHost = true;
             roomHost = new SequentialSpace();
@@ -100,13 +101,19 @@ public class Lobby {
             GameApplication.isRoomHost = false;
             // Increment number of players by 1
             Object[] obj = lobbySpace.get(new ActualField("room"), new ActualField(ip), new FormalField(String.class), new FormalField(Integer.class));
+            System.out.println("got lobbyspace room");
             String uri = GameApplication.PROTOCOL + ip + GameApplication.PORT + "/room?keep";
             System.out.println("join room uri: " + uri);
             roomClient = new RemoteSpace(uri);
-            int hostID = (int) roomClient.query(new ActualField("hostID"), new FormalField(Integer.class))[1];
-            if (playerID == hostID) {
-                GameApplication.isRoomHost = true;
+            System.out.println("roomClient size: " + roomClient.size());
+            Object[] obj2 = roomClient.queryp(new ActualField("hostID"), new FormalField(Integer.class));
+            if (obj2 != null) {
+                int hostID = (int) obj2[1];
+                if (playerID == hostID) {
+                    GameApplication.isRoomHost = true;
+                }
             }
+            System.out.println("put room back to lobby space");
             lobbySpace.put(obj[0], obj[1], obj[2], (Integer) obj[3] + 1);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
