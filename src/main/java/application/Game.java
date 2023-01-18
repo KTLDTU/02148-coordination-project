@@ -145,8 +145,11 @@ public class Game {
     public void newRound() {
         try {
             if (movementListener != null) {
+                inputListener.disable();
+                movementController.timer.stop();
                 signalGameEndToThreads();
                 joinAllThreads();
+                consumeEverythingInSpace();
                 waitForRunLater();
                 synchronizePlayers();
             }
@@ -175,6 +178,17 @@ public class Game {
             playerPositionBroadcaster.join();
 
             synchronizePlayers();
+            inputListener.enable();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void consumeEverythingInSpace() {
+        try {
+            gameSpace.getAll(new ActualField("player position"), new FormalField(Integer.class), new ActualField(MY_PLAYER_ID), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class));
+            gameSpace.getAll(new ActualField("new shot"), new FormalField(Integer.class), new ActualField(MY_PLAYER_ID), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Double.class));
+            gameSpace.getAll(new ActualField("kill"), new ActualField(MY_PLAYER_ID), new FormalField(Integer.class), new FormalField(Integer.class));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -182,7 +196,7 @@ public class Game {
 
     private void signalGameEndToThreads() {
         try {
-            gameSpace.put("player position", -1, MY_PLAYER_ID, -1.0, -1.0, -1.0);
+            gameSpace.put("player position", -1, MY_PLAYER_ID, -1.0, -1.0, -1.0, -1);
             gameSpace.put("new shot", -1, MY_PLAYER_ID, -1, -1.0, -1.0, -1.0);
             gameSpace.put("kill", MY_PLAYER_ID, -1, -1);
         } catch (InterruptedException e) {

@@ -34,7 +34,7 @@ public class MovementController {
         lastBroadcast = System.currentTimeMillis();
     }
 
-    AnimationTimer timer = new AnimationTimer() {
+    public AnimationTimer timer = new AnimationTimer() {
         @Override
         public void handle(long timestamp) {
             if (upPressed.get()) move(myTractor, "forwards");
