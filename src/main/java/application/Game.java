@@ -245,14 +245,14 @@ public class Game {
 
             for (int i = 0; i < playersIdNameMap.size(); i++) {
                 gameSpace.put("player ready", MY_PLAYER_ID);
-                Thread.sleep(1000);
             }
 
+            Thread.sleep(1000);
             List<Object[]> player_ready = gameSpace.queryAll(new ActualField("player ready"), new FormalField(Integer.class));
             for (Object[] objects : player_ready) {
                 System.out.println(objects[0] + " " + objects[1]);
-                Thread.sleep(1000);
             }
+            Thread.sleep(1000);
 
             for (Integer playerID : playersIdNameMap.keySet()) {
                 Object[] player_readies = gameSpace.get(new ActualField("player ready"), new ActualField(playerID));
