@@ -241,6 +241,8 @@ public class Game {
 
     public void synchronizePlayers() {
         try {
+            System.out.println(playersIdNameMap.toString());
+
             for (int i = 0; i < playersIdNameMap.size(); i++)
                 gameSpace.put("player ready", MY_PLAYER_ID);
 
