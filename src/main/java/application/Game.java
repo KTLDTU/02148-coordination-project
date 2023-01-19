@@ -229,14 +229,13 @@ public class Game {
 
     public void synchronizePlayers() {
         try {
-            for (int i = 0; i < playersIdNameMap.size(); i++)
-                gameSpace.put("player ready", MY_PLAYER_ID);
+            for (Integer playerID : playersIdNameMap.keySet())
+                gameSpace.put("player ready", MY_PLAYER_ID, playerID);
 
             for (Integer playerID : playersIdNameMap.keySet())
-                gameSpace.get(new ActualField("player ready"), new ActualField(playerID));
+                gameSpace.get(new ActualField("player ready"), new ActualField(playerID), new ActualField(MY_PLAYER_ID));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 }
-
