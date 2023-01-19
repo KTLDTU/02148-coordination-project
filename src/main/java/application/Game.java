@@ -147,16 +147,26 @@ public class Game {
     }
 
     public void newRound() {
+        System.out.println("Entered newRound()...");
+
         try {
             if (movementListener != null) {
+                System.out.println("Disabling inputController and stopping movementController timer...");
                 inputController.disable();
                 movementController.timer.stop();
+                System.out.println("Signalling threads...");
                 signalGameEndToThreads();
+                System.out.println("Joining threads...");
                 joinAllThreads();
+                System.out.println("Consuming space...");
                 consumeEverythingInSpace();
+                System.out.println("Waiting for runLater...");
                 waitForRunLater();
+                System.out.println("Synchronizing players...");
                 synchronizePlayers();
             }
+
+            System.out.println("Got past all synchronization stuff...");
             gameController.displayPlayersNameAndScore(playersIdNameMap, playerScores);
             Platform.runLater(() -> gamePane.getChildren().clear());
             tractors = new HashMap<>();
@@ -179,7 +189,9 @@ public class Game {
             playerPositionBroadcaster.start();
             playerPositionBroadcaster.join();
 
+            System.out.println("Synchronizing players (end of newRound() function)...");
             synchronizePlayers();
+            System.out.println("Enabling inputController...");
             inputController.enable();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
