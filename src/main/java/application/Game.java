@@ -246,8 +246,14 @@ public class Game {
             for (int i = 0; i < playersIdNameMap.size(); i++)
                 gameSpace.put("player ready", MY_PLAYER_ID);
 
-            for (Integer playerID : playersIdNameMap.keySet())
+
+            for (Integer playerID : playersIdNameMap.keySet()) {
+                List<Object[]> player_ready = gameSpace.queryAll(new ActualField("player ready"), new FormalField(Integer.class));
+                for (Object[] objects : player_ready) {
+                    System.out.println(objects[0] + " " + objects[1]);
+                }
                 gameSpace.get(new ActualField("player ready"), new ActualField(playerID));
+            }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
